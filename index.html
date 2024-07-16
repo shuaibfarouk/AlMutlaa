@@ -5,11 +5,13 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geometry"></script>
     <script>
         function initMap() {
+            // Initialize the map, centered at the specified coordinates
             var map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 15,  // Adjust the zoom level as needed
                 center: {lat: 29.478324, lng: 47.607149} // Set the center to your specified coordinates
             });
 
+            // Example building data, replace with your actual building data
             var buildings = [
                 {
                     code: "B001",
@@ -33,8 +35,13 @@
                         {lat: 29.479024, lng: 47.607849}
                     ]
                 }
-                // Add more
+                // Add more buildings here
+            ];
+
+            // Iterate over the buildings array to create polygons
+            buildings.forEach(function(building) {
                 var color;
+                // Determine the color based on the stage of construction
                 switch(building.stage) {
                     case 'completed':
                         color = 'green';
@@ -47,6 +54,7 @@
                         break;
                 }
 
+                // Create the polygon for the building
                 var buildingShape = new google.maps.Polygon({
                     paths: building.coordinates,
                     strokeColor: color,
@@ -56,12 +64,15 @@
                     fillOpacity: 0.35
                 });
 
+                // Set the polygon on the map
                 buildingShape.setMap(map);
 
+                // Create an info window for the building
                 var infowindow = new google.maps.InfoWindow({
                     content: `Building ID: ${building.code}<br>Name: ${building.name}`
                 });
 
+                // Add a click listener to the polygon to show the info window
                 buildingShape.addListener('click', function(event) {
                     infowindow.setPosition(event.latLng);
                     infowindow.open(map);
