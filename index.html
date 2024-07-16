@@ -2,12 +2,12 @@
 <html>
 <head>
     <title>Building Shapes on Google Maps</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=geometry"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geometry"></script>
     <script>
         function initMap() {
             var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 10,
-                center: {lat: -34.397, lng: 150.644} // Change to your desired center location
+                zoom: 15,  // Adjust the zoom level as needed
+                center: {lat: 29.478324, lng: 47.607149} // Set the center to your specified coordinates
             });
 
             var buildings = [
@@ -16,10 +16,10 @@
                     name: "Building 1",
                     stage: "completed",
                     coordinates: [
-                        {lat: -34.397, lng: 150.644},
-                        {lat: -34.398, lng: 150.645},
-                        {lat: -34.399, lng: 150.646},
-                        {lat: -34.400, lng: 150.647}
+                        {lat: 29.478324, lng: 47.607149},
+                        {lat: 29.478424, lng: 47.607249},
+                        {lat: 29.478524, lng: 47.607349},
+                        {lat: 29.478624, lng: 47.607449}
                     ]
                 },
                 {
@@ -27,16 +27,13 @@
                     name: "Building 2",
                     stage: "in_progress",
                     coordinates: [
-                        {lat: -34.397, lng: 150.654},
-                        {lat: -34.398, lng: 150.655},
-                        {lat: -34.399, lng: 150.656},
-                        {lat: -34.400, lng: 150.657}
+                        {lat: 29.478724, lng: 47.607549},
+                        {lat: 29.478824, lng: 47.607649},
+                        {lat: 29.478924, lng: 47.607749},
+                        {lat: 29.479024, lng: 47.607849}
                     ]
                 }
-                // Add more buildings here
-            ];
-
-            buildings.forEach(function(building) {
+                // Add more
                 var color;
                 switch(building.stage) {
                     case 'completed':
