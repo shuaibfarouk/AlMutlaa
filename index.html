@@ -3,25 +3,26 @@
 <head>
     <title>Building Shapes on Google Maps</title>
     <style>
-        /* Ensure html and body take up the full height of the viewport */
-        html, body {
+        /* Ensure html, body, and #map take up the full height of the viewport */
+        html, body, #map {
             height: 100%;
             margin: 0;
             padding: 0;
         }
         /* Set the map container to take up the full height and width of the body */
         #map {
-            height: 100%;
-            width: 100%;
+            height: 100vh;
+            width: 100vw;
         }
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=geometry"></script>
     <script>
         function initMap() {
-            // Initialize the map, centered at the specified coordinates
+            // Initialize the map, centered at the specified coordinates with the custom Map ID
             var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 12,  // Adjust the zoom level as needed (higher number means more zoomed in)
-                center: {lat: 29.478324, lng: 47.607149} // Set the center to your specified coordinates
+                zoom: 8,  // Adjust the zoom level as needed (higher number means more zoomed in)
+                center: {lat: 29.478324, lng: 47.607149}, // Set the center to your specified coordinates
+                mapId: '7241fd4fdf5c0624' // Apply the custom Map ID
             });
 
             // Example building data, replace with your actual building data
