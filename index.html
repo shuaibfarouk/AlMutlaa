@@ -3,93 +3,50 @@
 <head>
     <title>Building Shapes on Google Maps</title>
     <style>
-        /* Ensure html, body, and #map take up the full height of the viewport */
         html, body, #map {
             height: 100%;
             margin: 0;
             padding: 0;
         }
-        /* Set the map container to take up the full height and width of the body */
         #map {
             height: 100vh;
             width: 100vw;
         }
     </style>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NMVLNX9NYH"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-NMVLNX9NYH');
+    </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=geometry"></script>
     <script>
-        function initMap() {
-            // Initialize the map, centered at the specified coordinates with the custom Map ID
+        async function initMap() {
             var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 13,  // Adjust the zoom level as needed (higher number means more zoomed in)
-                center: {lat: 29.478324, lng: 47.607149}, // Set the center to your specified coordinates
-                mapId: '7241fd4fdf5c0624' // Apply the custom Map ID
+                zoom: 13,
+                center: {lat: 29.478324, lng: 47.607149},
+                mapId: '7241fd4fdf5c0624'
             });
 
-            // Example building data, replace with your actual building data
-            var buildings = [
-                {
-                    code: "B001",
-                    name: "Building 1",
-                    stage: "completed",
-                    coordinates: [
-                        {lat: 29.478324, lng: 47.607149},
-                        {lat: 29.478424, lng: 47.607249},
-                        {lat: 29.478524, lng: 47.607349},
-                        {lat: 29.478624, lng: 47.607449}
-                    ]
-                },
-                {
-                    code: "B002",
-                    name: "Building 2",
-                    stage: "in_progress",
-                    coordinates: [
-                        {lat: 29.478724, lng: 47.607549},
-                        {lat: 29.478824, lng: 47.607649},
-                        {lat: 29.478924, lng: 47.607749},
-                        {lat: 29.479024, lng: 47.607849}
-                    ]
-                }
-                // Add more buildings here
-            ];
+            const response = await fetch('building_locations.json');
+            const buildings = await response.json();
 
-            // Iterate over the buildings array to create polygons
             buildings.forEach(function(building) {
-                var color;
-                // Determine the color based on the stage of construction
-                switch(building.stage) {
-                    case 'completed':
-                        color = 'green';
-                        break;
-                    case 'in_progress':
-                        color = 'yellow';
-                        break;
-                    case 'planned':
-                        color = 'red';
-                        break;
-                }
-
-                // Create the polygon for the building
-                var buildingShape = new google.maps.Polygon({
-                    paths: building.coordinates,
-                    strokeColor: color,
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: color,
-                    fillOpacity: 0.35
+                var marker = new google.maps.Marker({
+                    position: {lat: building.Latitude, lng: building.Longitude},
+                    map: map,
+                    title: building['Building Code']
                 });
 
-                // Set the polygon on the map
-                buildingShape.setMap(map);
-
-                // Create an info window for the building
                 var infowindow = new google.maps.InfoWindow({
-                    content: `Building ID: ${building.code}<br>Name: ${building.name}`
+                    content: `Building Code: ${building['Building Code']}`
                 });
 
-                // Add a click listener to the polygon to show the info window
-                buildingShape.addListener('click', function(event) {
-                    infowindow.setPosition(event.latLng);
-                    infowindow.open(map);
+                marker.addListener('click', function() {
+                    infowindow.open(map, marker);
                 });
             });
         }
