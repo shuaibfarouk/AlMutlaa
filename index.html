@@ -30,7 +30,6 @@
         })({
             key: "AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY",
             v: "weekly",
-            // Add other bootstrap parameters as needed, using camel case.
         });
     </script>
     <style>
@@ -80,7 +79,12 @@
 
             // Fetch the dataset and add it to the map
             fetch(datasetUrl)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     map.data.addGeoJson(data);
 
