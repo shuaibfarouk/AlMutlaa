@@ -1,58 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Building Shapes on Google Maps</title>
-    <style>
-        html, body, #map {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        #map {
-            height: 100vh;
-            width: 100vw;
-        }
-    </style>
-    <!-- Google tag (gtag.js) -->
+    <title>Google Maps with Data-Driven Styling</title>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-NMVLNX9NYH"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
         gtag('config', 'G-NMVLNX9NYH');
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=geometry"></script>
+    <!-- Load the Maps JavaScript API with v=beta -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&v=beta&callback=initMap" async defer></script>
+    <style>
+        /* Make the map full screen */
+        #map {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
     <script>
-        async function initMap() {
-            var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 13,
+        var map;
+        var coordinates = [
+            {lat: 29.432388, lng: 47.59242},
+            {lat: 29.432283, lng: 47.591092},
+            {lat: 29.433489, lng: 47.591124},
+            // Add more coordinates here
+        ];
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
                 center: {lat: 29.478324, lng: 47.607149},
+                zoom: 14,
                 mapId: '7241fd4fdf5c0624'
             });
 
-            const response = await fetch('building_locations.json');
-            const buildings = await response.json();
+            // Define the data-driven styling
+            const featureStyle = {
+                fillColor: 'blue',
+                fillOpacity: 0.5,
+                strokeColor: 'blue',
+                strokeWeight: 2
+            };
 
-            buildings.forEach(function(building) {
-                var marker = new google.maps.Marker({
-                    position: {lat: building.Latitude, lng: building.Longitude},
-                    map: map,
-                    title: building['Building Code']
+            // Loop through the coordinates and add markers with styles
+            coordinates.forEach(coord => {
+                const marker = new google.maps.Marker({
+                    position: coord,
+                    map: map
                 });
 
-                var infowindow = new google.maps.InfoWindow({
-                    content: `Building Code: ${building['Building Code']}`
-                });
-
-                marker.addListener('click', function() {
-                    infowindow.open(map, marker);
+                const circle = new google.maps.Circle({
+                    strokeColor: featureStyle.strokeColor,
+                    strokeOpacity: 0.8,
+                    strokeWeight: featureStyle.strokeWeight,
+                    fillColor: featureStyle.fillColor,
+                    fillOpacity: featureStyle.fillOpacity,
+                    map,
+                    center: coord,
+                    radius: 50 // Adjust the radius as needed
                 });
             });
         }
     </script>
-</head>
-<body onload="initMap()">
-    <div id="map"></div>
 </body>
 </html>
