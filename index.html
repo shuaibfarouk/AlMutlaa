@@ -7,6 +7,7 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
+
         gtag('config', 'G-NMVLNX9NYH');
     </script>
     <!-- Load the Maps JavaScript API with v=beta -->
@@ -30,13 +31,7 @@
 <body>
     <div id="map"></div>
     <script>
-        var map;
-        var coordinates = [
-            {lat: 29.432388, lng: 47.59242},
-            {lat: 29.432283, lng: 47.591092},
-            {lat: 29.433489, lng: 47.591124},
-            // Add more coordinates here
-        ];
+        let map;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -45,31 +40,31 @@
                 mapId: '7241fd4fdf5c0624'
             });
 
-            // Define the data-driven styling
-            const featureStyle = {
-                fillColor: 'blue',
-                fillOpacity: 0.5,
-                strokeColor: 'blue',
-                strokeWeight: 2
-            };
+            // Load the dataset
+            map.data.loadGeoJson('https://your-dataset-url');
 
-            // Loop through the coordinates and add markers with styles
-            coordinates.forEach(coord => {
-                const marker = new google.maps.Marker({
-                    position: coord,
-                    map: map
-                });
+            // Style the dataset
+            map.data.setStyle(feature => {
+                return {
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 5,
+                        fillColor: 'blue',
+                        fillOpacity: 0.6,
+                        strokeWeight: 1
+                    }
+                };
+            });
 
-                const circle = new google.maps.Circle({
-                    strokeColor: featureStyle.strokeColor,
-                    strokeOpacity: 0.8,
-                    strokeWeight: featureStyle.strokeWeight,
-                    fillColor: featureStyle.fillColor,
-                    fillOpacity: featureStyle.fillOpacity,
-                    map,
-                    center: coord,
-                    radius: 50 // Adjust the radius as needed
-                });
+            // Add click event to show info window
+            const infoWindow = new google.maps.InfoWindow();
+
+            map.data.addListener('click', event => {
+                const feature = event.feature;
+                const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
+                infoWindow.setContent(content);
+                infoWindow.setPosition(event.latLng);
+                infoWindow.open(map);
             });
         }
     </script>
