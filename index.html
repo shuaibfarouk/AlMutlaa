@@ -41,32 +41,42 @@
                 mapId: '7241fd4fdf5c0624'
             });
 
-            // Load the dataset
-            map.data.loadGeoJson('https://your-dataset-url');
+            // Load the dataset using the dataset ID
+            const datasetId = '485d49b7-0741-49b6-ab48-d9668cfab6db';
+            const apiKey = 'AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY';
+            const datasetUrl = `https://maps.googleapis.com/maps/v1/datasets/${datasetId}?key=${apiKey}`;
 
-            // Style the dataset
-            map.data.setStyle(feature => {
-                return {
-                    icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 5,
-                        fillColor: 'blue',
-                        fillOpacity: 0.6,
-                        strokeWeight: 1
-                    }
-                };
-            });
+            // Fetch the dataset and add it to the map
+            fetch(datasetUrl)
+                .then(response => response.json())
+                .then(data => {
+                    map.data.addGeoJson(data);
 
-            // Add click event to show info window
-            const infoWindow = new google.maps.InfoWindow();
+                    // Style the dataset
+                    map.data.setStyle(feature => {
+                        return {
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 5,
+                                fillColor: 'blue',
+                                fillOpacity: 0.6,
+                                strokeWeight: 1
+                            }
+                        };
+                    });
 
-            map.data.addListener('click', event => {
-                const feature = event.feature;
-                const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
-                infoWindow.setContent(content);
-                infoWindow.setPosition(event.latLng);
-                infoWindow.open(map);
-            });
+                    // Add click event to show info window
+                    const infoWindow = new google.maps.InfoWindow();
+
+                    map.data.addListener('click', event => {
+                        const feature = event.feature;
+                        const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
+                        infoWindow.setContent(content);
+                        infoWindow.setPosition(event.latLng);
+                        infoWindow.open(map);
+                    });
+                })
+                .catch(error => console.error('Error loading dataset:', error));
         }
     </script>
 </body>
