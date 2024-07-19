@@ -59,7 +59,7 @@
             map = new google.maps.Map(document.getElementById('map'), {
                 center: {lat: 29.478324, lng: 47.607149},
                 zoom: 12,
-                mapId: '7241fd4fdf5c0624'
+                mapId: 'a89a4f111a4d5081' // Your map style ID
             });
 
             // Optional: subscribe to map capability changes
@@ -71,48 +71,6 @@
                     console.log('Data-driven styling is available.');
                 }
             });
-
-            // Load the dataset using the dataset ID
-            const datasetId = 'cc0e76b1-44e0-4bb9-9dcc-7d3fa54d5b2b';
-            const apiKey = 'AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY';
-            const datasetUrl = `https://maps.googleapis.com/maps/v1/datasets/${datasetId}?key=${apiKey}`;
-
-            // Fetch the dataset and add it to the map
-            fetch(datasetUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    map.data.addGeoJson(data);
-
-                    // Style the dataset
-                    map.data.setStyle(feature => {
-                        return {
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                scale: 5,
-                                fillColor: 'blue',
-                                fillOpacity: 0.6,
-                                strokeWeight: 1
-                            }
-                        };
-                    });
-
-                    // Add click event to show info window
-                    const infoWindow = new google.maps.InfoWindow();
-
-                    map.data.addListener('click', event => {
-                        const feature = event.feature;
-                        const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
-                        infoWindow.setContent(content);
-                        infoWindow.setPosition(event.latLng);
-                        infoWindow.open(map);
-                    });
-                })
-                .catch(error => console.error('Error loading dataset:', error));
         }
 
         initMap();
