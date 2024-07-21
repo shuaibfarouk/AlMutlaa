@@ -63,14 +63,16 @@
             });
 
             // Load the GeoJSON file from GitHub
-            map.data.loadGeoJson('https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson');
+            map.data.loadGeoJson('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson');
 
             // Style the GeoJSON data
-            map.data.setStyle({
-                fillColor: 'green',
-                fillOpacity: 0.5,
-                strokeColor: 'black',
-                strokeWeight: 1
+            map.data.setStyle(feature => {
+                return {
+                    fillColor: 'green',
+                    fillOpacity: 0.6,
+                    strokeColor: 'black',
+                    strokeWeight: 1
+                };
             });
 
             // Add click event to show info window
@@ -78,7 +80,7 @@
 
             map.data.addListener('click', event => {
                 const feature = event.feature;
-                const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
+                const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id') || 'undefined'}</div>`;
                 infoWindow.setContent(content);
                 infoWindow.setPosition(event.latLng);
                 infoWindow.open(map);
