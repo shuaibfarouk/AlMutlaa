@@ -72,13 +72,11 @@
                 }
             });
 
-            // Load the dataset using the dataset ID
-            const datasetId = 'cc0e76b1-44e0-4bb9-9dcc-7d3fa54d5b2b';
-            const apiKey = 'AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY';
-            const datasetUrl = `https://maps.googleapis.com/maps/v1/datasets/${datasetId}?key=${apiKey}`;
+            // Load the GeoJSON file from GitHub
+            const geoJsonUrl = 'https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson';
 
-            // Fetch the dataset and add it to the map
-            fetch(datasetUrl)
+            // Fetch the GeoJSON data and add it to the map
+            fetch(geoJsonUrl)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -88,16 +86,12 @@
                 .then(data => {
                     map.data.addGeoJson(data);
 
-                    // Style the dataset
+                    // Style the GeoJSON data
                     map.data.setStyle(feature => {
                         return {
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                scale: 5,
-                                fillColor: 'blue',
-                                fillOpacity: 0.6,
-                                strokeWeight: 1
-                            }
+                            fillColor: 'blue',
+                            fillOpacity: 0.6,
+                            strokeWeight: 1
                         };
                     });
 
@@ -112,7 +106,7 @@
                         infoWindow.open(map);
                     });
                 })
-                .catch(error => console.error('Error loading dataset:', error));
+                .catch(error => console.error('Error loading GeoJSON:', error));
         }
 
         initMap();
