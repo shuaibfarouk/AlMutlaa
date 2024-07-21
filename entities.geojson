@@ -1,8 +1,7 @@
 {
-"type": "FeatureCollection",
-"name": "entities",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-"features": [
+  "type": "FeatureCollection",
+  "name": "entities",
+  "features": [
 { "type": "Feature", "properties": { "Layer": "Puplic building", "SubClasses": "AcDbEntity:AcDbPolyline", "EntityHandle": "117A" }, "geometry": { "type": "LineString", "coordinates": [ [ 47.59242, 29.432388 ], [ 47.591092, 29.432283 ], [ 47.591124, 29.433489 ], [ 47.592317, 29.433564 ], [ 47.59242, 29.432388 ] ] } },
 { "type": "Feature", "properties": { "Layer": "Puplic building", "SubClasses": "AcDbEntity:AcDbPolyline", "EntityHandle": "117B" }, "geometry": { "type": "LineString", "coordinates": [ [ 47.593899, 29.432504 ], [ 47.593797, 29.433657 ], [ 47.592317, 29.433564 ], [ 47.59242, 29.432388 ], [ 47.593899, 29.432504 ] ] } },
 { "type": "Feature", "properties": { "Layer": "Puplic building", "SubClasses": "AcDbEntity:AcDbPolyline", "EntityHandle": "117C" }, "geometry": { "type": "LineString", "coordinates": [ [ 47.578, 29.442049 ], [ 47.576867, 29.441101 ], [ 47.576921, 29.441052 ], [ 47.577284, 29.440781 ], [ 47.577502, 29.440675 ], [ 47.577648, 29.440737 ], [ 47.578135, 29.440589 ], [ 47.578205, 29.440465 ], [ 47.578545, 29.440425 ], [ 47.578902, 29.440417 ], [ 47.579111, 29.440512 ], [ 47.579139, 29.441604 ], [ 47.578958, 29.441788 ], [ 47.57827, 29.441801 ], [ 47.578, 29.442049 ] ] } },
