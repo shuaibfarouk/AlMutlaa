@@ -66,11 +66,13 @@
             map.data.loadGeoJson('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson');
 
             // Style the GeoJSON data
-            map.data.setStyle({
-                fillColor: 'green',
-                fillOpacity: 1,
-                strokeColor: 'black',
-                strokeWeight: 1
+            map.data.setStyle(function(feature) {
+                return {
+                    fillColor: 'green',
+                    fillOpacity: 0.7,
+                    strokeColor: 'black',
+                    strokeWeight: 1
+                };
             });
 
             // Add click event to show info window
@@ -78,10 +80,27 @@
 
             map.data.addListener('click', event => {
                 const feature = event.feature;
-                const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
+                const content = `
+                    <div>
+                        <strong>Building ID:</strong> ${feature.getProperty('building_id')}
+                        <br>
+                        <strong>Area:</strong> ${feature.getProperty('area') || 'N/A'} sq m
+                        <br>
+                        <strong>Type:</strong> ${feature.getProperty('type') || 'N/A'}
+                    </div>
+                `;
                 infoWindow.setContent(content);
                 infoWindow.setPosition(event.latLng);
                 infoWindow.open(map);
+            });
+
+            // Add hover effect
+            map.data.addListener('mouseover', function(event) {
+                map.data.overrideStyle(event.feature, {fillColor: 'yellow', fillOpacity: 0.8});
+            });
+
+            map.data.addListener('mouseout', function(event) {
+                map.data.revertStyle();
             });
         }
 
