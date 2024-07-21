@@ -62,16 +62,6 @@
                 mapId: '7241fd4fdf5c0624'
             });
 
-            // Optional: subscribe to map capability changes
-            map.addListener('mapcapabilities_changed', () => {
-                const mapCapabilities = map.getMapCapabilities();
-                if (!mapCapabilities.isDataDrivenStylingAvailable) {
-                    console.warn('Data-driven styling is not available. Check your map ID and ensure it is associated with a vector map.');
-                } else {
-                    console.log('Data-driven styling is available.');
-                }
-            });
-
             // Load the GeoJSON file from GitHub
             const geoJsonUrl = 'https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson';
 
