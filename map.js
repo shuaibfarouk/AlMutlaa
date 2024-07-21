@@ -1,6 +1,7 @@
 let map;
 
 async function initMap() {
+    // Load the Maps JavaScript API
     await google.maps.importLibrary("maps");
 
     map = new google.maps.Map(document.getElementById('map'), {
@@ -21,7 +22,7 @@ async function initMap() {
     map.data.setStyle(function(feature) {
         return {
             fillColor: 'green',
-            fillOpacity: 0.8,
+            fillOpacity: 0.7,
             strokeColor: 'black',
             strokeWeight: 1,
             clickable: true
@@ -61,4 +62,4 @@ async function initMap() {
 }
 
 // Call initMap when the page loads
-google.maps.event.addDomListener(window, 'load', initMap);
+initMap();
