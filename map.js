@@ -21,7 +21,7 @@ async function initMap() {
     map.data.setStyle(function(feature) {
         return {
             fillColor: 'green',
-            fillOpacity: 0.7,
+            fillOpacity: 0.8,
             strokeColor: 'black',
             strokeWeight: 1,
             clickable: true
