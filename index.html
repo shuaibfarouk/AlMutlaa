@@ -62,37 +62,28 @@
                 mapId: '7241fd4fdf5c0624'
             });
 
-            // Optional: subscribe to map capability changes
-            map.addListener('mapcapabilities_changed', () => {
-                const mapCapabilities = map.getMapCapabilities();
-                if (!mapCapabilities.isDataDrivenStylingAvailable) {
-                    console.warn('Data-driven styling is not available. Check your map ID and ensure it is associated with a vector map.');
-                } else {
-                    console.log('Data-driven styling is available.');
-                }
+            // Load the GeoJSON file
+            map.data.loadGeoJson('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson');
+
+            // Style the features
+            map.data.setStyle(feature => {
+                return {
+                    fillColor: 'green',
+                    fillOpacity: 1,
+                    strokeColor: 'black',
+                    strokeWeight: 1
+                };
             });
 
-            // Load the GeoJSON file
-            map.data.loadGeoJson('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson', null, (features) => {
-                map.data.setStyle(feature => {
-                    return {
-                        fillColor: 'green',
-                        fillOpacity: 1,
-                        strokeColor: 'black',
-                        strokeWeight: 1
-                    };
-                });
+            // Add click event to show info window
+            const infoWindow = new google.maps.InfoWindow();
 
-                // Add click event to show info window
-                const infoWindow = new google.maps.InfoWindow();
-
-                map.data.addListener('click', event => {
-                    const feature = event.feature;
-                    const content = `<div><strong>Building ID:</strong> ${feature.getProperty('name')}</div>`;
-                    infoWindow.setContent(content);
-                    infoWindow.setPosition(event.latLng);
-                    infoWindow.open(map);
-                });
+            map.data.addListener('click', event => {
+                const feature = event.feature;
+                const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
+                infoWindow.setContent(content);
+                infoWindow.setPosition(event.latLng);
+                infoWindow.open(map);
             });
         }
 
