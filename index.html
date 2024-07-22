@@ -58,12 +58,11 @@
 
             map = new google.maps.Map(document.getElementById('map'), {
                 center: {lat: 29.478324, lng: 47.607149},
-                zoom: 13,
-                mapId: '7241fd4fdf5c0624'
+                zoom: 13
             });
 
             // Load the GeoJSON file from GitHub
-            map.data.loadGeoJson('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson');
+            map.data.loadGeoJson('https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson');
 
             // Style the GeoJSON data
             map.data.setStyle({
