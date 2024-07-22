@@ -1,68 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Microsoft Azure Maps with GeoJSON Data</title>
-    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
-    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlMutlaa</title>
     <style>
-        #map {
-            height: 100%;
-            width: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
+        /* Basic styling for the dropdown menu */
+        .dropdown {
+            position: relative;
+            display: inline-block;
         }
-        html, body {
-            height: 100%;
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+
+        /* Additional styling for the page */
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .settings {
+            margin: 20px;
         }
     </style>
 </head>
 <body>
-    <div id="map"></div>
+    <div class="container">
+        <h1>AlMutlaa</h1>
+        <div id="map"></div>
+        <div class="settings">
+            <div class="dropdown">
+                <button class="dropbtn">Settings</button>
+                <div class="dropdown-content">
+                    <a href="work_packages.html">Work Packages</a>
+                    <a href="package_components.html">Package Components</a>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
-        const subscriptionKey = '2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC';
-        const map = new atlas.Map('map', {
-            center: [47.607149, 29.478324],
-            zoom: 12,
-            authOptions: {
-                authType: 'subscriptionKey',
-                subscriptionKey: subscriptionKey
-            }
-        });
-
-        map.events.add('ready', function () {
-            // Create a data source and add it to the map.
-            const dataSource = new atlas.source.DataSource();
-            map.sources.add(dataSource);
-
-            // Add a polygon layer to render the polygons.
-            const polygonLayer = new atlas.layer.PolygonLayer(dataSource, null, {
-                fillColor: 'green',
-                fillOpacity: 0.8,
-                strokeColor: 'black',
-                strokeWidth: 2
-            });
-            map.layers.add(polygonLayer);
-
-            // Load GeoJSON data from a URL.
-            fetch('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson')
-                .then(response => response.json())
-                .then(data => {
-                    // Add data to the data source.
-                    dataSource.add(data);
-                })
-                .catch(error => console.error('Error loading GeoJSON data:', error));
-
-            // Add a click event to display properties of the clicked building.
-            map.events.add('click', polygonLayer, function (e) {
-                if (e.shapes && e.shapes.length > 0) {
-                    const properties = e.shapes[0].getProperties();
-                    alert('Building Properties:\n' + JSON.stringify(properties, null, 2));
-                }
-            });
-        });
+        // Your existing map code here
     </script>
 </body>
 </html>
