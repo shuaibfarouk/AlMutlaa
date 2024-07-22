@@ -1,39 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Maps with Data-Driven Styling</title>
-    <!-- Google Tag Manager -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NMVLNX9NYH"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-NMVLNX9NYH');
-    </script>
-    <!-- Load the Maps JavaScript API with v=weekly -->
-    <script>
-        (g => {
-            var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
-            b = b[c] || (b[c] = {});
-            var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => {
-                await (a = m.createElement("script"));
-                e.set("libraries", [...r] + "");
-                for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
-                e.set("callback", c + ".maps." + q);
-                a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
-                d[q] = f;
-                a.onerror = () => h = n(Error(p + " could not load."));
-                a.nonce = m.querySelector("script[nonce]")?.nonce || "";
-                m.head.append(a);
-            }));
-            d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n));
-        })({
-            key: "AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY",
-            v: "weekly",
-        });
-    </script>
+    <title>Microsoft Azure Maps with GeoJSON Data</title>
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css">
     <style>
-        /* Make the map full screen */
         #map {
             height: 100%;
             width: 100%;
@@ -51,50 +22,35 @@
 <body>
     <div id="map"></div>
     <script>
-        let map;
-
-        async function initMap() {
-            try {
-                await google.maps.importLibrary("maps");
-
-                map = new google.maps.Map(document.getElementById('map'), {
-                    center: {lat: 29.478324, lng: 47.607149},
-                    zoom: 13
-                });
-
-                // Load the GeoJSON file from GitHub
-                map.data.loadGeoJson('https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson', null, function(features) {
-                    if (features.length === 0) {
-                        console.error('No features loaded from GeoJSON');
-                    } else {
-                        console.log('Features loaded:', features);
-                    }
-                });
-
-                // Style the GeoJSON data
-                map.data.setStyle({
-                    fillColor: 'green',
-                    fillOpacity: 1,
-                    strokeColor: 'black',
-                    strokeWeight: 1
-                });
-
-                // Add click event to show info window
-                const infoWindow = new google.maps.InfoWindow();
-
-                map.data.addListener('click', event => {
-                    const feature = event.feature;
-                    const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id') || 'N/A'}</div>`;
-                    infoWindow.setContent(content);
-                    infoWindow.setPosition(event.latLng);
-                    infoWindow.open(map);
-                });
-            } catch (error) {
-                console.error('Error initializing map:', error);
+        const subscriptionKey = '2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC';
+        const map = new atlas.Map('map', {
+            center: [47.607149, 29.478324],
+            zoom: 13,
+            authOptions: {
+                authType: 'subscriptionKey',
+                subscriptionKey: subscriptionKey
             }
-        }
+        });
 
-        initMap();
+        map.events.add('ready', function () {
+            map.sources.add(new atlas.source.DataSource('geojsonSource', {
+                cluster: false
+            }));
+            map.layers.add(new atlas.layer.PolygonLayer({
+                source: 'geojsonSource',
+                fillColor: 'green',
+                fillOpacity: 0.8,
+                strokeColor: 'black',
+                strokeWidth: 2
+            }));
+
+            fetch('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    map.sources.getById('geojsonSource').add(data);
+                })
+                .catch(error => console.error('Error loading GeoJSON data:', error));
+        });
     </script>
 </body>
 </html>
