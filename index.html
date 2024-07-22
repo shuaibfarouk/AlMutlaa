@@ -50,6 +50,7 @@
             fetch('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson')
                 .then(response => response.json())
                 .then(data => {
+                    // Add data to the data source.
                     dataSource.add(data);
                 })
                 .catch(error => console.error('Error loading GeoJSON data:', error));
