@@ -52,7 +52,15 @@
         .settings {
             margin: 20px;
         }
+
+        /* Styling for the map */
+        #map {
+            width: 100%;
+            height: 600px;
+        }
     </style>
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" />
 </head>
 <body>
     <div class="container">
@@ -69,7 +77,35 @@
         </div>
     </div>
     <script>
-        // Your existing map code here
+        var map = new atlas.Map('map', {
+            center: [47.592419593561615, 29.432387246178934],
+            zoom: 15,
+            view: 'Auto',
+            authOptions: {
+                authType: 'subscriptionKey',
+                subscriptionKey: '2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC'
+            }
+        });
+
+        map.events.add('ready', function () {
+            map.sources.add(new atlas.source.DataSource('dataSource', {
+                cluster: false
+            }));
+
+            map.layers.add(new atlas.layer.PolygonLayer({
+                source: 'dataSource',
+                fillColor: 'green',
+                fillOpacity: 0.5,
+                strokeColor: 'white',
+                strokeWidth: 2
+            }));
+
+            fetch('entities.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    map.sources.getById('dataSource').add(data);
+                });
+        });
     </script>
 </body>
 </html>
