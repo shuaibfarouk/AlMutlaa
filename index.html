@@ -33,21 +33,24 @@
         });
 
         map.events.add('ready', function () {
-            map.sources.add(new atlas.source.DataSource('geojsonSource', {
-                cluster: false
-            }));
-            map.layers.add(new atlas.layer.PolygonLayer({
-                source: 'geojsonSource',
+            // Create a data source and add it to the map.
+            const dataSource = new atlas.source.DataSource();
+            map.sources.add(dataSource);
+
+            // Add a polygon layer to render the polygons.
+            const polygonLayer = new atlas.layer.PolygonLayer(dataSource, null, {
                 fillColor: 'green',
                 fillOpacity: 0.8,
                 strokeColor: 'black',
                 strokeWidth: 2
-            }));
+            });
+            map.layers.add(polygonLayer);
 
+            // Load GeoJSON data from a URL.
             fetch('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson')
                 .then(response => response.json())
                 .then(data => {
-                    map.sources.getById('geojsonSource').add(data);
+                    dataSource.add(data);
                 })
                 .catch(error => console.error('Error loading GeoJSON data:', error));
         });
