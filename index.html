@@ -1,7 +1,8 @@
-<!DOCTYPE html>
-<html>
 <head>
     <title>Google Maps with Data-Driven Styling</title>
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://maps.googleapis.com https://www.googletagmanager.com; img-src 'self' https://maps.gstatic.com; style-src 'self' 'unsafe-inline';">
+
     <!-- Google Tag Manager -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-NMVLNX9NYH"></script>
     <script>
@@ -10,9 +11,6 @@
         gtag('js', new Date());
         gtag('config', 'G-NMVLNX9NYH');
     </script>
-    <!-- Content Security Policy Meta Tag -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline';">
-
     <!-- Load the Maps JavaScript API with v=weekly -->
     <script>
         (g => {
@@ -51,44 +49,3 @@
         }
     </style>
 </head>
-<body>
-    <div id="map"></div>
-    <script>
-        let map;
-
-        async function initMap() {
-            await google.maps.importLibrary("maps");
-
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: {lat: 29.478324, lng: 47.607149},
-                zoom: 13,
-                mapId: '7241fd4fdf5c0624'
-            });
-
-            // Load the GeoJSON file from GitHub
-            map.data.loadGeoJson('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson');
-
-            // Style the GeoJSON data
-            map.data.setStyle({
-                fillColor: 'green',
-                fillOpacity: 1,
-                strokeColor: 'black',
-                strokeWeight: 1
-            });
-
-            // Add click event to show info window
-            const infoWindow = new google.maps.InfoWindow();
-
-            map.data.addListener('click', event => {
-                const feature = event.feature;
-                const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
-                infoWindow.setContent(content);
-                infoWindow.setPosition(event.latLng);
-                infoWindow.open(map);
-            });
-        }
-
-        initMap();
-    </script>
-</body>
-</html>
