@@ -66,6 +66,8 @@
                 map.data.loadGeoJson('https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson', null, function(features) {
                     if (features.length === 0) {
                         console.error('No features loaded from GeoJSON');
+                    } else {
+                        console.log('Features loaded:', features);
                     }
                 });
 
