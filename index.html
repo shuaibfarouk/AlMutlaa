@@ -17,9 +17,51 @@
             margin: 0;
             padding: 0;
         }
+        .settings-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+        .settings-button {
+            background: url('https://image.shutterstock.com/image-vector/gear-icon-vector-260nw-600132851.jpg') no-repeat center;
+            background-size: cover;
+            width: 40px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <div class="settings-container">
+        <div class="dropdown">
+            <button class="settings-button"></button>
+            <div class="dropdown-content">
+                <a href="work_packages.html">Work Packages</a>
+                <a href="package_components.html">Package Components</a>
+            </div>
+        </div>
+    </div>
     <div id="map"></div>
     <script>
         const subscriptionKey = '2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC';
