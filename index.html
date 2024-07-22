@@ -54,34 +54,42 @@
         let map;
 
         async function initMap() {
-            await google.maps.importLibrary("maps");
+            try {
+                await google.maps.importLibrary("maps");
 
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: {lat: 29.478324, lng: 47.607149},
-                zoom: 13
-            });
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: 29.478324, lng: 47.607149},
+                    zoom: 13
+                });
 
-            // Load the GeoJSON file from GitHub
-            map.data.loadGeoJson('https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson');
+                // Load the GeoJSON file from GitHub
+                map.data.loadGeoJson('https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson', null, function(features) {
+                    if (features.length === 0) {
+                        console.error('No features loaded from GeoJSON');
+                    }
+                });
 
-            // Style the GeoJSON data
-            map.data.setStyle({
-                fillColor: 'green',
-                fillOpacity: 1,
-                strokeColor: 'black',
-                strokeWeight: 1
-            });
+                // Style the GeoJSON data
+                map.data.setStyle({
+                    fillColor: 'green',
+                    fillOpacity: 1,
+                    strokeColor: 'black',
+                    strokeWeight: 1
+                });
 
-            // Add click event to show info window
-            const infoWindow = new google.maps.InfoWindow();
+                // Add click event to show info window
+                const infoWindow = new google.maps.InfoWindow();
 
-            map.data.addListener('click', event => {
-                const feature = event.feature;
-                const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id')}</div>`;
-                infoWindow.setContent(content);
-                infoWindow.setPosition(event.latLng);
-                infoWindow.open(map);
-            });
+                map.data.addListener('click', event => {
+                    const feature = event.feature;
+                    const content = `<div><strong>Building ID:</strong> ${feature.getProperty('building_id') || 'N/A'}</div>`;
+                    infoWindow.setContent(content);
+                    infoWindow.setPosition(event.latLng);
+                    infoWindow.open(map);
+                });
+            } catch (error) {
+                console.error('Error initializing map:', error);
+            }
         }
 
         initMap();
