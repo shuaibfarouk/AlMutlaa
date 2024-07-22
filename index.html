@@ -54,6 +54,14 @@
                     dataSource.add(data);
                 })
                 .catch(error => console.error('Error loading GeoJSON data:', error));
+
+            // Add a click event to display properties of the clicked building.
+            map.events.add('click', polygonLayer, function (e) {
+                if (e.shapes && e.shapes.length > 0) {
+                    const properties = e.shapes[0].getProperties();
+                    alert('Building Properties:\n' + JSON.stringify(properties, null, 2));
+                }
+            });
         });
     </script>
 </body>
