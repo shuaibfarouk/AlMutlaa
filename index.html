@@ -1,63 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Microsoft Azure Maps Example</title>
+    <title>Azure Maps - Satellite View</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" type="text/css">
     <style>
-        #map {
-            height: 90vh;
+        /* Make the map full screen */
+        html, body, #map {
             width: 100%;
-        }
-        #toggleButton {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            padding: 10px;
-            background-color: white;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            z-index: 1000;
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
     </style>
-    <link href="https://atlas.microsoft.com/sdk/css/atlas.min.css?api-version=2.0" rel="stylesheet">
-    <script src="https://atlas.microsoft.com/sdk/js/atlas.min.js?api-version=2.0&subscription-key=2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC"></script>
-</head>
-<body>
-    <div id="map"></div>
     <script>
-        var map;
-        var azureMapKey = "2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC";
-        var geojsonUrl = "https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson";
-
-        function initAzureMap() {
-            map = new atlas.Map('map', {
+        function GetMap() {
+            var map = new atlas.Map('map', {
                 center: [47.607149, 29.478324],
-                zoom: 12,
+                zoom: 13,
+                style: 'satellite',
                 authOptions: {
                     authType: 'subscriptionKey',
-                    subscriptionKey: azureMapKey
+                    subscriptionKey: '2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC'
                 }
             });
 
             map.events.add('ready', function () {
-                var datasource = new atlas.source.DataSource();
-                map.sources.add(datasource);
+                // Add your data loading and layer creation here
+                map.sources.add(new atlas.source.DataSource('myDataSource', {
+                    cluster: false
+                }));
 
-                datasource.importDataFromUrl(geojsonUrl).then(function () {
-                    map.layers.add(new atlas.layer.PolygonLayer(datasource, null, {
-                        fillColor: 'green',
-                        fillOpacity: 0.5,
-                        strokeColor: 'black',
-                        strokeWidth: 1
-                    }));
-                }).catch(function (error) {
-                    console.error('Error loading GeoJSON data:', error);
-                });
+                map.layers.add(new atlas.layer.PolygonLayer(map.sources.getById('myDataSource'), null, {
+                    fillColor: 'green',
+                    fillOpacity: 0.5,
+                    strokeColor: 'black',
+                    strokeWidth: 1
+                }));
+
+                // Load your GeoJSON file
+                fetch('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson')
+                    .then(response => response.json())
+                    .then(data => {
+                        map.sources.getById('myDataSource').add(data);
+                    });
             });
         }
-
-        window.onload = function () {
-            initAzureMap();
-        };
     </script>
+</head>
+<body onload="GetMap()">
+    <div id="map"></div>
 </body>
 </html>
