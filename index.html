@@ -35,7 +35,7 @@
         function initGoogleMap() {
             googleMap = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 29.478324, lng: 47.607149 },
-                zoom: 13,
+                zoom: 12,
                 mapTypeId: 'roadmap'
             });
 
@@ -47,6 +47,8 @@
                 strokeColor: 'black',
                 strokeWeight: 1
             });
+
+            document.getElementById('toggleButton').innerText = 'Switch to Microsoft Azure Maps';
         }
 
         function initAzureMap() {
@@ -78,14 +80,15 @@
                         azureMap.sources.getById('myDataSource').add(data);
                     });
             });
+
+            document.getElementById('toggleButton').innerText = 'Switch to Google Maps';
         }
 
         function toggleMap() {
+            document.getElementById('map').innerHTML = '';
             if (isGoogleMap) {
-                document.getElementById('map').innerHTML = '';
                 initAzureMap();
             } else {
-                document.getElementById('map').innerHTML = '';
                 initGoogleMap();
             }
             isGoogleMap = !isGoogleMap;
@@ -98,6 +101,6 @@
 </head>
 <body>
     <div id="map"></div>
-    <div class="toggle-button" onclick="toggleMap()">Toggle Map</div>
+    <div id="toggleButton" class="toggle-button" onclick="toggleMap()">Switch to Microsoft Azure Maps</div>
 </body>
 </html>
