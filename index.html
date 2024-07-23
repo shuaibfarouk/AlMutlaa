@@ -18,7 +18,7 @@
             z-index: 1000;
         }
     </style>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" rel="stylesheet">
+    <link href="https://atlas.microsoft.com/sdk/css/atlas.min.css?api-version=2.0" rel="stylesheet">
     <script src="https://atlas.microsoft.com/sdk/js/atlas.min.js?api-version=2.0&subscription-key=2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC"></script>
 </head>
 <body>
@@ -42,14 +42,16 @@
                 var datasource = new atlas.source.DataSource();
                 map.sources.add(datasource);
 
-                datasource.importDataFromUrl(geojsonUrl);
-
-                map.layers.add(new atlas.layer.PolygonLayer(datasource, null, {
-                    fillColor: 'green',
-                    fillOpacity: 0.5,
-                    strokeColor: 'black',
-                    strokeWidth: 1
-                }));
+                datasource.importDataFromUrl(geojsonUrl).then(function () {
+                    map.layers.add(new atlas.layer.PolygonLayer(datasource, null, {
+                        fillColor: 'green',
+                        fillOpacity: 0.5,
+                        strokeColor: 'black',
+                        strokeWidth: 1
+                    }));
+                }).catch(function (error) {
+                    console.error('Error loading GeoJSON data:', error);
+                });
             });
         }
 
