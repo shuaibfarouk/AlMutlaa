@@ -26,6 +26,7 @@
     <script src="https://atlas.microsoft.com/sdk/js/atlas.min.js?api-version=2.0&subscription-key=2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC"></script>
     <script>
         let map, googleMap, azureMap, isGoogleMap = true;
+        const geoJsonUrl = 'https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson';
 
         function initGoogleMap() {
             googleMap = new google.maps.Map(document.getElementById('map'), {
@@ -34,7 +35,7 @@
             });
 
             // Load GeoJSON data and style it
-            googleMap.data.loadGeoJson('path_to_your_geojson_file');
+            googleMap.data.loadGeoJson(geoJsonUrl);
             googleMap.data.setStyle({
                 fillColor: 'green',
                 strokeColor: 'black',
@@ -55,7 +56,7 @@
             // Load GeoJSON data and style it
             azureMap.events.add('ready', function () {
                 azureMap.sources.add(new atlas.source.DataSource('geoJsonSource', {
-                    url: 'path_to_your_geojson_file'
+                    url: geoJsonUrl
                 }));
 
                 azureMap.layers.add(new atlas.layer.PolygonLayer('geoJsonSource', null, {
