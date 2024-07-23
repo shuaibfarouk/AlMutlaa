@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY"></script>
     <!-- Azure Maps SDK -->
     <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
     <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" type="text/css">
@@ -82,17 +82,17 @@
 
         function toggleMap() {
             if (isGoogleMap) {
-                googleMapDiv.style.display = 'none';
+                document.getElementById('googleMap').style.display = 'none';
                 initAzureMap();
             } else {
                 azureMap.remove();
-                googleMapDiv.style.display = 'block';
+                document.getElementById('googleMap').style.display = 'block';
             }
             isGoogleMap = !isGoogleMap;
         }
 
         window.onload = function () {
-            googleMapDiv = document.createElement('div');
+            const googleMapDiv = document.createElement('div');
             googleMapDiv.id = 'googleMap';
             googleMapDiv.style.width = '100%';
             googleMapDiv.style.height = '100%';
