@@ -47,23 +47,33 @@
 
             map.events.add('ready', function () {
                 // Add your data loading and layer creation here
-                map.sources.add(new atlas.source.DataSource('myDataSource', {
+                const dataSource = new atlas.source.DataSource('myDataSource', {
                     cluster: false
-                }));
+                });
+                map.sources.add(dataSource);
 
-                map.layers.add(new atlas.layer.PolygonLayer(map.sources.getById('myDataSource'), null, {
+                const polygonLayer = new atlas.layer.PolygonLayer(dataSource, null, {
                     fillColor: 'green',
                     fillOpacity: 0.5,
                     strokeColor: 'black',
                     strokeWidth: 1
-                }));
+                });
+                map.layers.add(polygonLayer);
 
                 // Load your GeoJSON file
                 fetch('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson')
                     .then(response => response.json())
                     .then(data => {
-                        map.sources.getById('myDataSource').add(data);
+                        dataSource.add(data);
                     });
+
+                // Add click event to display building information
+                map.events.add('click', polygonLayer, function (e) {
+                    if (e.shapes && e.shapes.length > 0) {
+                        const properties = e.shapes[0].getProperties();
+                        alert('Building Information: ' + JSON.stringify(properties));
+                    }
+                });
             });
         }
 
