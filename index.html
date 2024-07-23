@@ -1,47 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Maps Toggle Example</title>
+    <title>Map Toggle Example</title>
     <style>
         #map {
-            height: 100%;
+            height: 90vh;
             width: 100%;
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
         }
-        .switch-button {
+        #toggleButton {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 5;
-            background: white;
+            bottom: 10px;
+            right: 10px;
             padding: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
             cursor: pointer;
+            z-index: 1000;
         }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1j9o45kG1T-nQU9uzR9qoQaqvFiY" async defer></script>
     <script src="https://atlas.microsoft.com/sdk/js/atlas.min.js?api-version=2.0&subscription-key=2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY"></script>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="toggleButton" onclick="toggleMap()">Switch to Google Maps</div>
     <script>
-        let map, googleMap, azureMap, isGoogleMap = true;
-        const geoJsonUrl = 'https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson';
-
-        function initGoogleMap() {
-            googleMap = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 29.478324, lng: 47.607149 },
-                zoom: 12
-            });
-
-            // Load GeoJSON data and style it
-            googleMap.data.loadGeoJson(geoJsonUrl);
-            googleMap.data.setStyle({
-                fillColor: 'green',
-                strokeColor: 'black',
-                strokeWeight: 1
-            });
-        }
+        var isAzureMap = true;
+        var map;
+        var azureMap, googleMap;
+        var azureMapKey = "2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC";
+        var googleMapKey = "AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY";
+        var geojsonUrl = "https://raw.githubusercontent.com/shuaibfarouk/AlMutlaa/main/entities.geojson";
 
         function initAzureMap() {
             azureMap = new atlas.Map('map', {
@@ -49,45 +38,63 @@
                 zoom: 12,
                 authOptions: {
                     authType: 'subscriptionKey',
-                    subscriptionKey: '2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC'
+                    subscriptionKey: azureMapKey
                 }
             });
 
-            // Load GeoJSON data and style it
             azureMap.events.add('ready', function () {
-                azureMap.sources.add(new atlas.source.DataSource('geoJsonSource', {
-                    url: geoJsonUrl
-                }));
-
-                azureMap.layers.add(new atlas.layer.PolygonLayer('geoJsonSource', null, {
+                azureMap.sources.add(new atlas.source.DataSource());
+                azureMap.layers.add(new atlas.layer.PolygonLayer({
+                    source: new atlas.source.DataSource({
+                        url: geojsonUrl,
+                        cluster: false
+                    }),
                     fillColor: 'green',
-                    fillOpacity: 0.6,
+                    fillOpacity: 0.5,
                     strokeColor: 'black',
-                    strokeWidth: 2
+                    strokeWidth: 1
                 }));
             });
         }
 
+        function initGoogleMap() {
+            googleMap = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 29.478324, lng: 47.607149 },
+                zoom: 12,
+                mapTypeId: 'roadmap'
+            });
+
+            var geojsonLayer = new google.maps.Data();
+            geojsonLayer.loadGeoJson(geojsonUrl);
+            geojsonLayer.setStyle({
+                fillColor: 'green',
+                fillOpacity: 0.5,
+                strokeColor: 'black',
+                strokeWeight: 1
+            });
+            geojsonLayer.setMap(googleMap);
+        }
+
         function toggleMap() {
-            if (isGoogleMap) {
-                initAzureMap();
-                document.querySelector('.switch-button').innerText = 'Switch to Google Maps';
-                isGoogleMap = false;
-            } else {
+            if (isAzureMap) {
+                if (googleMap) {
+                    googleMap = null;
+                }
                 initGoogleMap();
-                document.querySelector('.switch-button').innerText = 'Switch to Microsoft Azure Maps';
-                isGoogleMap = true;
+                document.getElementById('toggleButton').innerText = 'Switch to Microsoft Azure Maps';
+            } else {
+                if (azureMap) {
+                    azureMap = null;
+                }
+                initAzureMap();
+                document.getElementById('toggleButton').innerText = 'Switch to Google Maps';
             }
+            isAzureMap = !isAzureMap;
         }
 
         window.onload = function () {
-            initGoogleMap();
-            document.querySelector('.switch-button').innerText = 'Switch to Microsoft Azure Maps';
-        }
+            initAzureMap();
+        };
     </script>
-</head>
-<body>
-    <div id="map"></div>
-    <div class="switch-button" onclick="toggleMap()">Switch to Microsoft Azure Maps</div>
 </body>
 </html>
