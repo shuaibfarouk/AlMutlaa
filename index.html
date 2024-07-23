@@ -33,7 +33,7 @@
         let isGoogleMap = true;
 
         function initGoogleMap() {
-            googleMap = new google.maps.Map(document.getElementById('googleMap'), {
+            googleMap = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 29.478324, lng: 47.607149 },
                 zoom: 12,
                 mapTypeId: 'roadmap'
@@ -82,21 +82,16 @@
 
         function toggleMap() {
             if (isGoogleMap) {
-                document.getElementById('googleMap').style.display = 'none';
+                document.getElementById('map').innerHTML = '';
                 initAzureMap();
             } else {
-                azureMap.remove();
-                document.getElementById('googleMap').style.display = 'block';
+                document.getElementById('map').innerHTML = '';
+                initGoogleMap();
             }
             isGoogleMap = !isGoogleMap;
         }
 
         window.onload = function () {
-            const googleMapDiv = document.createElement('div');
-            googleMapDiv.id = 'googleMap';
-            googleMapDiv.style.width = '100%';
-            googleMapDiv.style.height = '100%';
-            document.getElementById('map').appendChild(googleMapDiv);
             initGoogleMap();
         }
     </script>
