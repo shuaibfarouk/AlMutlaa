@@ -29,11 +29,16 @@
     <script>
         let map, currentStyle = 'road';
 
-        function GetMap() {
+        function GetMap(style) {
+            // Remove existing map instance if it exists
+            if (map) {
+                map.dispose();
+            }
+
             map = new atlas.Map('map', {
                 center: [47.607149, 29.478324],
                 zoom: 13,
-                style: 'road',
+                style: style,
                 authOptions: {
                     authType: 'subscriptionKey',
                     subscriptionKey: '2qX95bTO0yf9my4HNg1tEFw1dJvOscI2mBQrVpJK3PbiNAyqQiVaJQQJ99AGACYeBjFo2Vo2AAAgAZMP0VyC'
@@ -65,17 +70,17 @@
         function toggleMapStyle() {
             if (currentStyle === 'road') {
                 currentStyle = 'satellite';
-                map.setStyle('satellite');
+                GetMap('satellite');
                 document.getElementById('toggleButton').innerText = 'Switch to Road View';
             } else {
                 currentStyle = 'road';
-                map.setStyle('road');
+                GetMap('road');
                 document.getElementById('toggleButton').innerText = 'Switch to Satellite View';
             }
         }
     </script>
 </head>
-<body onload="GetMap()">
+<body onload="GetMap('road')">
     <div id="map"></div>
     <div id="toggleButton" class="toggle-button" onclick="toggleMapStyle()">Switch to Satellite View</div>
 </body>
