@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Azure Maps - Toggle View</title>
+    <title>Toggle between Google Maps and Azure Maps</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+    <!-- Azure Maps SDK -->
     <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
     <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" type="text/css">
     <style>
-        /* Make the map full screen */
         html, body, #map {
             width: 100%;
             height: 100%;
@@ -26,11 +28,29 @@
         }
     </style>
     <script>
-        let map;
-        let isSatelliteView = false;
+        let googleMap;
+        let azureMap;
+        let isGoogleMap = true;
 
-        function GetMap() {
-            map = new atlas.Map('map', {
+        function initGoogleMap() {
+            googleMap = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 29.478324, lng: 47.607149 },
+                zoom: 12,
+                mapTypeId: 'roadmap'
+            });
+
+            // Load GeoJSON data
+            googleMap.data.loadGeoJson('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson');
+            googleMap.data.setStyle({
+                fillColor: 'green',
+                fillOpacity: 0.5,
+                strokeColor: 'black',
+                strokeWeight: 1
+            });
+        }
+
+        function initAzureMap() {
+            azureMap = new atlas.Map('map', {
                 center: [47.607149, 29.478324],
                 zoom: 12,
                 style: 'road',
@@ -40,36 +60,49 @@
                 }
             });
 
-            map.events.add('ready', function () {
-                // Add your data loading and layer creation here
-                map.sources.add(new atlas.source.DataSource('myDataSource', {
+            azureMap.events.add('ready', function () {
+                azureMap.sources.add(new atlas.source.DataSource('myDataSource', {
                     cluster: false
                 }));
 
-                map.layers.add(new atlas.layer.PolygonLayer(map.sources.getById('myDataSource'), null, {
+                azureMap.layers.add(new atlas.layer.PolygonLayer(azureMap.sources.getById('myDataSource'), null, {
                     fillColor: 'green',
                     fillOpacity: 0.5,
                     strokeColor: 'black',
                     strokeWidth: 1
                 }));
 
-                // Load your GeoJSON file
                 fetch('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson')
                     .then(response => response.json())
                     .then(data => {
-                        map.sources.getById('myDataSource').add(data);
+                        azureMap.sources.getById('myDataSource').add(data);
                     });
             });
         }
 
-        function toggleMapStyle() {
-            isSatelliteView = !isSatelliteView;
-            map.setStyle(isSatelliteView ? 'satellite' : 'road');
+        function toggleMap() {
+            if (isGoogleMap) {
+                googleMapDiv.style.display = 'none';
+                initAzureMap();
+            } else {
+                azureMap.remove();
+                googleMapDiv.style.display = 'block';
+            }
+            isGoogleMap = !isGoogleMap;
+        }
+
+        window.onload = function () {
+            googleMapDiv = document.createElement('div');
+            googleMapDiv.id = 'googleMap';
+            googleMapDiv.style.width = '100%';
+            googleMapDiv.style.height = '100%';
+            document.getElementById('map').appendChild(googleMapDiv);
+            initGoogleMap();
         }
     </script>
 </head>
-<body onload="GetMap()">
+<body>
     <div id="map"></div>
-    <div class="toggle-button" onclick="toggleMapStyle()">Toggle View</div>
+    <div class="toggle-button" onclick="toggleMap()">Toggle Map</div>
 </body>
 </html>
