@@ -33,14 +33,14 @@
             left: 10px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
-            width: 50px;
-            height: 50px;
+            width: 40px; /* Reduced size by 20% */
+            height: 40px; /* Reduced size by 20% */
             cursor: pointer;
         }
 
         .menu {
             position: absolute;
-            top: 70px;
+            top: 60px; /* Adjusted for smaller settings button */
             left: 10px;
             display: none;
             background: white;
@@ -50,7 +50,15 @@
 
         .menu a {
             display: block;
-            padding: 5px 0;
+            padding: 5px;
+            border: 1px solid #ccc; /* Added border to each link */
+            margin-bottom: 5px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .menu a:last-child {
+            margin-bottom: 0;
         }
 
         .settings-button:hover, .menu:hover {
@@ -87,7 +95,7 @@
                     fillColor: 'green',
                     fillOpacity: 0.5,
                     strokeColor: 'black',
-                    strokeWidth: 5 // Increased border thickness
+                    strokeWidth: 3 // Adjusted border thickness
                 });
                 map.layers.add(polygonLayer);
 
