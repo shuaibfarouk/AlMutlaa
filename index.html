@@ -18,7 +18,7 @@
         /* Style for the toggle button */
         .toggle-button {
             position: absolute;
-            bottom: 40px; /* Adjusted to move it up */
+            bottom: 60px; /* Adjusted to move it up */
             right: 10px;
             background: white;
             border: 1px solid #ccc;
@@ -95,7 +95,7 @@
                     fillColor: 'green',
                     fillOpacity: 0.5,
                     strokeColor: 'black',
-                    strokeWidth: 10 // Adjusted border thickness
+                    strokeWidth: 3 // Adjusted border thickness
                 });
                 map.layers.add(polygonLayer);
 
@@ -110,7 +110,16 @@
                 map.events.add('click', polygonLayer, function (e) {
                     if (e.shapes && e.shapes.length > 0) {
                         const properties = e.shapes[0].getProperties();
-                        alert('Building Information: ' + JSON.stringify(properties));
+                        const coordinates = e.shapes[0].getCoordinates();
+                        let coordinatesString = '';
+
+                        if (coordinates && coordinates[0]) {
+                            coordinatesString = coordinates[0].map((coord, index) => {
+                                return `${index + 1}. [${coord[1]}, ${coord[0]}]`;
+                            }).join(',\n');
+                        }
+
+                        alert('Building Information: ' + JSON.stringify(properties) + '\nCoordinates:\n' + coordinatesString);
                     }
                 });
             });
