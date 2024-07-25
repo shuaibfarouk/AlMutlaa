@@ -57,6 +57,10 @@
             padding: 5px;
             cursor: pointer;
         }
+
+        .settings-container:hover .settings-menu {
+            display: block;
+        }
     </style>
     <script>
         let map, currentStyle = 'road';
@@ -121,11 +125,6 @@
             }
         }
 
-        function toggleSettingsMenu() {
-            const menu = document.getElementById('settingsMenu');
-            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        }
-
         function navigateTo(page) {
             window.location.href = page;
         }
@@ -134,10 +133,12 @@
 <body onload="GetMap('road')">
     <div id="map"></div>
     <div id="toggleButton" class="toggle-button" onclick="toggleMapStyle()">Switch to Satellite View</div>
-    <div class="settings-button" onclick="toggleSettingsMenu()"></div>
-    <div id="settingsMenu" class="settings-menu">
-        <button onclick="navigateTo('package_components.html')">Package Components</button>
-        <button onclick="navigateTo('work_packages.html')">Work Packages</button>
+    <div class="settings-container">
+        <div class="settings-button"></div>
+        <div id="settingsMenu" class="settings-menu">
+            <button onclick="navigateTo('package_components.html')">Package Components</button>
+            <button onclick="navigateTo('work_packages.html')">Work Packages</button>
+        </div>
     </div>
 </body>
 </html>
