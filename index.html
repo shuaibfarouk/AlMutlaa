@@ -38,6 +38,10 @@
             cursor: pointer;
         }
 
+        .settings-button:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
         /* Style for the settings menu */
         .settings-menu {
             position: absolute;
@@ -56,10 +60,6 @@
             margin: 5px 0;
             padding: 5px;
             cursor: pointer;
-        }
-
-        .settings-container:hover .settings-menu {
-            display: block;
         }
     </style>
     <script>
@@ -125,16 +125,32 @@
             }
         }
 
+        function toggleSettingsMenu() {
+            const settingsMenu = document.getElementById('settingsMenu');
+            settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function closeSettingsMenu(event) {
+            const settingsMenu = document.getElementById('settingsMenu');
+            const settingsButton = document.querySelector('.settings-button');
+
+            if (!settingsMenu.contains(event.target) && !settingsButton.contains(event.target)) {
+                settingsMenu.style.display = 'none';
+            }
+        }
+
         function navigateTo(page) {
             window.location.href = page;
         }
+
+        document.addEventListener('click', closeSettingsMenu);
     </script>
 </head>
 <body onload="GetMap('road')">
     <div id="map"></div>
     <div id="toggleButton" class="toggle-button" onclick="toggleMapStyle()">Switch to Satellite View</div>
     <div class="settings-container">
-        <div class="settings-button"></div>
+        <div class="settings-button" onclick="toggleSettingsMenu()"></div>
         <div id="settingsMenu" class="settings-menu">
             <button onclick="navigateTo('package_components.html')">Package Components</button>
             <button onclick="navigateTo('work_packages.html')">Work Packages</button>
