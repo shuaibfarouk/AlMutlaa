@@ -113,7 +113,7 @@
                         const coordinates = e.shapes[0].getCoordinates();
                         let coordinatesString = '';
 
-                        if (coordinates && coordinates[0]) {
+                        if (coordinates && coordinates.length > 0) {
                             coordinatesString = coordinates[0].map((coord, index) => {
                                 return `${index + 1}. [${coord[1]}, ${coord[0]}]`;
                             }).join(',\n');
