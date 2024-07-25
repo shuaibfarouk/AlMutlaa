@@ -111,10 +111,11 @@
                     if (e.shapes && e.shapes.length > 0) {
                         const properties = e.shapes[0].getProperties();
                         const coordinates = e.shapes[0].getCoordinates();
+
                         let coordinatesString = '';
 
                         if (coordinates && coordinates.length > 0) {
-                            coordinatesString = coordinates[0].map((coord, index) => {
+                            coordinatesString = coordinates.map((coord, index) => {
                                 return `${index + 1}. [${coord[1]}, ${coord[0]}]`;
                             }).join(',\n');
                         }
