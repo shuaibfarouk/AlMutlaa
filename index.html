@@ -66,7 +66,7 @@
         }
     </style>
     <script>
-        let map, currentStyle = 'road';
+        let map, currentStyle = 'road', dataSource;
 
         function GetMap(style) {
             // Remove existing map instance if it exists
@@ -86,7 +86,7 @@
 
             map.events.add('ready', function () {
                 // Add your data loading and layer creation here
-                const dataSource = new atlas.source.DataSource('myDataSource', {
+                dataSource = new atlas.source.DataSource('myDataSource', {
                     cluster: false
                 });
                 map.sources.add(dataSource);
@@ -151,6 +151,25 @@
                 }
             }
         }
+
+        function findBuilding() {
+            const handle = document.getElementById('entityHandle').value;
+            const shapes = dataSource.getShapes();
+
+            for (let shape of shapes) {
+                const properties = shape.getProperties();
+                if (properties.EntityHandle === handle) {
+                    const coordinates = shape.getCoordinates();
+                    map.setCamera({
+                        center: coordinates[0],
+                        zoom: 18
+                    });
+                    alert('Found Building: ' + JSON.stringify(properties));
+                    return;
+                }
+            }
+            alert('No building found with EntityHandle: ' + handle);
+        }
     </script>
 </head>
 <body onload="GetMap('road')">
@@ -160,6 +179,11 @@
     <div id="menu" class="menu">
         <a href="package_components.html">Package Components</a>
         <a href="work_packages.html">Work Packages</a>
+        <div>
+            <label for="entityHandle">Find:</label>
+            <input type="text" id="entityHandle" placeholder="Enter EntityHandle">
+            <button onclick="findBuilding()">Search</button>
+        </div>
     </div>
 </body>
 </html>
