@@ -25,6 +25,38 @@
             padding: 10px;
             cursor: pointer;
         }
+
+        /* Style for the settings button */
+        .settings-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 30px;
+            height: 30px;
+            background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
+            background-size: contain;
+            cursor: pointer;
+        }
+
+        /* Style for the settings menu */
+        .settings-menu {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .settings-menu button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 5px;
+            cursor: pointer;
+        }
     </style>
     <script>
         let map, currentStyle = 'road';
@@ -88,10 +120,24 @@
                 document.getElementById('toggleButton').innerText = 'Switch to Satellite View';
             }
         }
+
+        function toggleSettingsMenu() {
+            const menu = document.getElementById('settingsMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
     </script>
 </head>
 <body onload="GetMap('road')">
     <div id="map"></div>
     <div id="toggleButton" class="toggle-button" onclick="toggleMapStyle()">Switch to Satellite View</div>
+    <div class="settings-button" onclick="toggleSettingsMenu()"></div>
+    <div id="settingsMenu" class="settings-menu">
+        <button onclick="navigateTo('package_components.html')">Package Components</button>
+        <button onclick="navigateTo('work_packages.html')">Work Packages</button>
+    </div>
 </body>
 </html>
