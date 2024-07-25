@@ -18,7 +18,7 @@
         /* Style for the toggle button */
         .toggle-button {
             position: absolute;
-            bottom: 30px;
+            bottom: 30px; /* Adjust this value to move the button up or down */
             right: 10px;
             background: white;
             border: 1px solid #ccc;
@@ -90,9 +90,9 @@
 
                 const polygonLayer = new atlas.layer.PolygonLayer(dataSource, null, {
                     fillColor: 'green',
-                    fillOpacity: 0.9,
+                    fillOpacity: 0.5,
                     strokeColor: 'black',
-                    strokeWidth: 1
+                    strokeWidth: 2  // Adjust the stroke width if needed
                 });
                 map.layers.add(polygonLayer);
 
