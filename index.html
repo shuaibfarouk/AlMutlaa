@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Maps - Toggle View</title>
+    <title>Google Maps - Building Viewer</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY"></script>
@@ -11,15 +11,6 @@
             height: 100%;
             margin: 0;
             padding: 0;
-        }
-        .toggle-button {
-            position: absolute;
-            bottom: 60px;
-            right: 10px;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            cursor: pointer;
         }
         .settings-button {
             position: absolute;
@@ -59,9 +50,8 @@
         }
     </style>
 </head>
-<body onload="initMap('roadmap')">
+<body onload="initMap()">
     <div id="map"></div>
-    <div id="toggleButton" class="toggle-button" onclick="toggleMapStyle()">Switch to Satellite View</div>
     <div class="settings-button" onclick="toggleMenu()"></div>
     <div id="menu" class="menu">
         <a href="package_components.html">Package Components</a>
@@ -74,14 +64,14 @@
     </div>
 
     <script>
-        let map, currentStyle = 'roadmap';
+        let map;
         let jsonData = {};
 
-        function initMap(style) {
+        function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 29.478324, lng: 47.607149 },
                 zoom: 15,
-                mapTypeId: style
+                mapTypeId: 'roadmap'
             });
 
             loadJSONData();
@@ -103,7 +93,12 @@
                 url: 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml',
                 map: map,
                 preserveViewport: true,
-                suppressInfoWindows: true 
+                suppressInfoWindows: true,
+                options: {
+                    fillColor: '#AADDFF',
+                    fillOpacity: 0.7,
+                    strokeWeight: 1
+                }
             });
 
             kmlLayer.addListener('click', function(event) {
@@ -111,17 +106,15 @@
 
                 let componentId;
 
-                // Extract Component ID from the KML data
-                if (event.featureData && event.featureData.extendedData) {
-                    const extendedData = event.featureData.extendedData;
-                    console.log('ExtendedData:', extendedData);
+                // Try to extract Component ID from various sources
+                if (event.featureData.extendedData) {
+                    const extendedData = JSON.parse(event.featureData.extendedData);
+                    console.log('Parsed ExtendedData:', extendedData);
 
-                    if (extendedData.SchemaData && extendedData.SchemaData.SimpleData) {
-                        for (let data of extendedData.SchemaData.SimpleData) {
-                            if (data.name === "Component ID") {
-                                componentId = data.value;
-                                break;
-                            }
+                    if (extendedData.SchemaData && Array.isArray(extendedData.SchemaData.SimpleData)) {
+                        const componentIdData = extendedData.SchemaData.SimpleData.find(data => data.name === "Component ID");
+                        if (componentIdData) {
+                            componentId = componentIdData.value;
                         }
                     }
                 }
@@ -167,18 +160,6 @@
                     alert('Unable to identify this building. Please try another.');
                 }
             });
-        }
-
-        function toggleMapStyle() {
-            if (currentStyle === 'roadmap') {
-                currentStyle = 'satellite';
-                map.setMapTypeId('satellite');
-                document.getElementById('toggleButton').innerText = 'Switch to Road View';
-            } else {
-                currentStyle = 'roadmap';
-                map.setMapTypeId('roadmap');
-                document.getElementById('toggleButton').innerText = 'Switch to Satellite View';
-            }
         }
 
         function toggleMenu() {
