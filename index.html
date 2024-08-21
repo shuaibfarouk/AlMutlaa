@@ -85,21 +85,19 @@
             });
 
             map.events.add('ready', function () {
-                // Add your data loading and layer creation here
                 dataSource = new atlas.source.DataSource('myDataSource', {
                     cluster: false
                 });
                 map.sources.add(dataSource);
 
                 const polygonLayer = new atlas.layer.PolygonLayer(dataSource, null, {
-                    fillColor: 'black',
-                    fillOpacity: 0.5,
+                    fillColor: 'rgba(0, 128, 0, 0.5)', // Green fill with opacity
                     strokeColor: 'black',
-                    strokeWidth: 3 // Adjusted border thickness
+                    strokeWidth: 2, // Adjusted border thickness
                 });
                 map.layers.add(polygonLayer);
 
-                // Load your GeoJSON file
+                // Load your updated GeoJSON file
                 fetch('https://shuaibfarouk.github.io/AlMutlaa/entities.geojson')
                     .then(response => response.json())
                     .then(data => {
@@ -123,6 +121,21 @@
                         alert('Building Information: ' + JSON.stringify(properties) + '\nCoordinates:\n' + coordinatesString);
                     }
                 });
+
+                // Apply hatching only inside the buildings
+                const hatchPatternLayer = new atlas.layer.ImageLayer({
+                    image: 'https://example.com/hatch-pattern.png', // Replace with your hatch pattern image URL
+                    bounds: map.getCamera().bounds,
+                    opacity: 0.5 // Adjust the opacity as needed
+                }, 'background');
+
+                // Create a MaskedLayer that applies the hatch pattern only inside the buildings
+                const maskedHatchLayer = new atlas.layer.MaskedLayer({
+                    source: dataSource,
+                    imageLayer: hatchPatternLayer
+                });
+
+                map.layers.add(maskedHatchLayer);
             });
         }
 
