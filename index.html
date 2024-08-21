@@ -79,7 +79,11 @@
             // Add click event to display building information
             map.data.addListener('click', function(event) {
                 const properties = event.feature.getProperty('properties');
-                alert('Building Information: ' + JSON.stringify(properties));
+                if (properties) {
+                    alert('Building Information: ' + JSON.stringify(properties));
+                } else {
+                    alert('Building Information: No data available');
+                }
             });
         }
 
@@ -114,6 +118,7 @@
                 // Style the buildings with light green color and black border
                 map.data.setStyle({
                     fillColor: '#90ee90', // Light green color
+                    fillOpacity: 0.5, // Ensure the fill is visible
                     strokeColor: 'black',
                     strokeWeight: 2
                 });
