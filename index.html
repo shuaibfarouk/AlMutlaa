@@ -102,21 +102,31 @@
 
                 let componentId;
 
-                // Check if extendedData and SchemaData exist before accessing them
-                if (event.featureData && event.featureData.extendedData && event.featureData.extendedData.SchemaData) {
-                    const schemaData = event.featureData.extendedData.SchemaData;
+                // Access ExtendedData directly to check its structure
+                const extendedData = event.featureData.extendedData;
+                console.log('ExtendedData:', extendedData);
+
+                if (extendedData && extendedData.SchemaData) {
+                    const schemaData = extendedData.SchemaData;
+                    console.log('SchemaData:', schemaData);
+
                     if (Array.isArray(schemaData)) {
-                        for (let i = 0; i < schemaData.length; i++) {
-                            const simpleData = schemaData[i].SimpleData;
-                            if (Array.isArray(simpleData)) {
-                                for (let j = 0; j < simpleData.length; j++) {
-                                    if (simpleData[j].name === "Component ID") {
-                                        componentId = simpleData[j].value;
-                                        break;
+                        schemaData.forEach(item => {
+                            if (item.SimpleData) {
+                                item.SimpleData.forEach(data => {
+                                    if (data.name === "Component ID") {
+                                        componentId = data.value;
                                     }
-                                }
+                                });
                             }
-                        }
+                        });
+                    } else if (schemaData.SimpleData) {
+                        // In case SchemaData is not an array
+                        schemaData.SimpleData.forEach(data => {
+                            if (data.name === "Component ID") {
+                                componentId = data.value;
+                            }
+                        });
                     }
                 }
 
