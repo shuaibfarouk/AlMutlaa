@@ -98,13 +98,16 @@
             });
 
             kmlLayer.addListener('click', function(event) {
-                const componentId = event.featureData.name; // Assuming "Component ID" is stored in the name attribute
+                // Extract the "Component ID" from the KML file's ExtendedData
+                const componentId = event.featureData.name; // Replace "name" with the correct field if necessary
                 console.log('Clicked Component ID:', componentId); // Debugging: Log the Component ID
+
+                // Find the corresponding data in the JSON
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
                     console.log('Matching Data Found:', matchingData); // Debugging: Log the matching data
-                    alert(`Building Information:\nComponent ID: ${matchingData["Component ID"]}\nOther Info: ${matchingData["Other Field"]}`); // Customize this line to display more info
+                    alert(`Building Information:\nComponent ID: ${matchingData["Component ID"]}\nBuilding Type: ${matchingData["Building Type"]}\nOther Info: ${matchingData["Other Field"]}`); // Customize this line to display more info
                 } else {
                     console.error('No matching data found for this Component ID:', componentId);
                     alert('No matching data found for this Component ID.');
