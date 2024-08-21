@@ -104,7 +104,7 @@
         <div id="selectedBuildings"></div>
         <button onclick="searchBuildings()">Search</button>
     </div>
-    <div id="revision">Rev.5</div>
+    <div id="revision">Rev.8</div>
 
     <script>
         let map;
@@ -277,17 +277,24 @@
                 const componentId = polygon.componentId;
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
-                if (matchingData && selectedBuildings.includes(matchingData["Building Type"])) {
-                    polygon.setOptions({
-                        fillColor: '#FF0000',
-                        fillOpacity: 0.7
-                    });
-                    foundMatch = true;
-                } else {
-                    polygon.setOptions({
-                        fillColor: '#AADDFF',
-                        fillOpacity: 0.35
-                    });
+                if (matchingData) {
+                    const buildingType = matchingData["Building Type"].toLowerCase();
+                    const isMatch = selectedBuildings.some(selected => 
+                        buildingType.includes(selected.toLowerCase())
+                    );
+
+                    if (isMatch) {
+                        polygon.setOptions({
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.7
+                        });
+                        foundMatch = true;
+                    } else {
+                        polygon.setOptions({
+                            fillColor: '#AADDFF',
+                            fillOpacity: 0.35
+                        });
+                    }
                 }
             });
 
@@ -308,10 +315,12 @@
                 a.setAttribute("class", "autocomplete-items");
                 this.parentNode.appendChild(a);
                 for (i = 0; i < arr.length; i++) {
-                    if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                    if (arr[i].toLowerCase().includes(val.toLowerCase())) {
                         b = document.createElement("DIV");
-                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                        b.innerHTML += arr[i].substr(val.length);
+                        var index = arr[i].toLowerCase().indexOf(val.toLowerCase());
+                        b.innerHTML = arr[i].substr(0, index);
+                        b.innerHTML += "<strong>" + arr[i].substr(index, val.length) + "</strong>";
+                        b.innerHTML += arr[i].substr(index + val.length);
                         b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
                         b.addEventListener("click", function(e) {
                             inp.value = this.getElementsByTagName("input")[0].value;
@@ -358,18 +367,20 @@
                 }
             }
             document.addEventListener("click", function (e) {
-                closeAllLists(e.target);
+                if (!e.target.closest('.menu')) {
+                    closeAllLists(e.target);
+                }
             });
         }
 
-        window.onclick = function(event) {
-            if (!event.target.matches('.settings-button') && !event.target.closest('.menu')) {
-                const menu = document.getElementById('menu');
-                if (menu.style.display === 'block') {
-                    menu.style.display = 'none';
-                }
+        document.addEventListener("click", function(event) {
+            const menu = document.getElementById('menu');
+            const settingsButton = document.querySelector('.settings-button');
+            
+            if (!menu.contains(event.target) && !settingsButton.contains(event.target)) {
+                menu.style.display = 'none';
             }
-        }
+        });
     </script>
 </body>
 </html>
