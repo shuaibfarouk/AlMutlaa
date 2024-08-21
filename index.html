@@ -6,15 +6,12 @@
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY"></script>
     <style>
-        /* Make the map full screen */
         html, body, #map {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
         }
-
-        /* Style for the toggle button */
         .toggle-button {
             position: absolute;
             bottom: 60px;
@@ -24,8 +21,6 @@
             padding: 10px;
             cursor: pointer;
         }
-
-        /* Style for the settings button */
         .settings-button {
             position: absolute;
             top: 50px;
@@ -36,7 +31,6 @@
             height: 40px;
             cursor: pointer;
         }
-
         .menu {
             position: absolute;
             top: 100px;
@@ -46,7 +40,6 @@
             border: 1px solid #ccc;
             padding: 10px;
         }
-
         .menu a {
             display: block;
             padding: 5px;
@@ -55,15 +48,31 @@
             text-decoration: none;
             color: black;
         }
-
         .menu a:last-child {
             margin-bottom: 0;
         }
-
         .settings-button:hover, .menu:hover {
             border: 2px solid #000;
         }
+        .info-window {
+            max-width: 300px;
+        }
     </style>
+</head>
+<body onload="initMap('roadmap')">
+    <div id="map"></div>
+    <div id="toggleButton" class="toggle-button" onclick="toggleMapStyle()">Switch to Satellite View</div>
+    <div class="settings-button" onclick="toggleMenu()"></div>
+    <div id="menu" class="menu">
+        <a href="package_components.html">Package Components</a>
+        <a href="work_packages.html">Work Packages</a>
+        <div>
+            <label for="entityHandle">Find:</label>
+            <input type="text" id="entityHandle" placeholder="Enter EntityHandle">
+            <button onclick="findBuilding()">Search</button>
+        </div>
+    </div>
+
     <script>
         let map, currentStyle = 'roadmap';
         let jsonData = {};
@@ -102,7 +111,6 @@
 
                 let componentId;
 
-                // Access ExtendedData directly to check its structure
                 const extendedData = event.featureData.extendedData;
                 console.log('ExtendedData:', extendedData);
 
@@ -110,23 +118,14 @@
                     const schemaData = extendedData.SchemaData;
                     console.log('SchemaData:', schemaData);
 
-                    if (Array.isArray(schemaData)) {
-                        schemaData.forEach(item => {
-                            if (item.SimpleData) {
-                                item.SimpleData.forEach(data => {
-                                    if (data.name === "Component ID") {
-                                        componentId = data.value;
-                                    }
-                                });
-                            }
-                        });
-                    } else if (schemaData.SimpleData) {
-                        // In case SchemaData is not an array
+                    if (Array.isArray(schemaData.SimpleData)) {
                         schemaData.SimpleData.forEach(data => {
                             if (data.name === "Component ID") {
                                 componentId = data.value;
                             }
                         });
+                    } else if (schemaData.SimpleData && schemaData.SimpleData.name === "Component ID") {
+                        componentId = schemaData.SimpleData.value;
                     }
                 }
 
@@ -139,36 +138,28 @@
                         console.log('Matching Data Found:', matchingData);
 
                         const content = `
-                            Building Information:
-                            Component ID: ${matchingData["Component ID"]}
-                            Stakeholder: ${matchingData["Stakeholder "]}
-                            Neighborhood: ${matchingData["Neighborhood"]}
-                            Detailed Location: ${matchingData["Detailed Location"]}
-                            Block: ${matchingData["Block"]}
-                            Building Model: ${matchingData["Building model"]}
-                            End User: ${matchingData["End User"]}
-                            Building Type: ${matchingData["Building Type"]}
-                            Plot Area (m²): ${matchingData["Plot Area m2"]}
-                            Package No.: ${matchingData["Package No."]}
-                            Contract No.: ${matchingData["Contract No."]}
-                            Tender No.: ${matchingData["Tender No."]}
-                            Package % Completion: ${matchingData["Package % Completion"]}
-                            Status Building: ${matchingData["Status Building"]}
-                            Status Package: ${matchingData["Status Package"]}
-                            Fiscal Year (Tender): ${matchingData["Fiscal Year Based on Tender"]}
-                            Fiscal Year (Construction): ${matchingData["Fiscal Year Based on Construction"]}
-                            Tender Start Date: ${matchingData["Tender Start Date"]}
-                            Construction Start Date: ${matchingData["Construction Start Date"]}
-                            Construction End Date: ${matchingData["Construction End Date"]}
-                            Handing Over to PAHW Date: ${matchingData["Handing Over to PAHW Date"]}
-                            Electrical Connection Date: ${matchingData["Electrical Connection Date"]}
-                            Handing Over to End User Date: ${matchingData["Handing over to End User - Date"]}
-                            Building Operational Status: ${matchingData["Building Operational Status"]}
-                            Budgeted Cost: ${matchingData["Budgeted Cost"]}
-                            Pkg-Ten-Con: ${matchingData["Pkg-Ten-Con"]}
+                            <div class="info-window">
+                                <h3>Building Information:</h3>
+                                <p><strong>Component ID:</strong> ${matchingData["Component ID"]}</p>
+                                <p><strong>Stakeholder:</strong> ${matchingData["Stakeholder "]}</p>
+                                <p><strong>Neighborhood:</strong> ${matchingData["Neighborhood"]}</p>
+                                <p><strong>Block:</strong> ${matchingData["Block"]}</p>
+                                <p><strong>Building Type:</strong> ${matchingData["Building Type"]}</p>
+                                <p><strong>End User:</strong> ${matchingData["End User"]}</p>
+                                <p><strong>Plot Area (m²):</strong> ${matchingData["Plot Area m2"]}</p>
+                                <p><strong>Package No.:</strong> ${matchingData["Package No."]}</p>
+                                <p><strong>Status Building:</strong> ${matchingData["Status Building"]}</p>
+                                <p><strong>Fiscal Year (Tender):</strong> ${matchingData["Fiscal Year Based on Tender"]}</p>
+                                <p><strong>Fiscal Year (Construction):</strong> ${matchingData["Fiscal Year Based on Construction"]}</p>
+                            </div>
                         `;
 
-                        alert(content);
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: content,
+                            position: event.latLng
+                        });
+
+                        infoWindow.open(map);
 
                     } else {
                         console.error('No matching data found for this Component ID:', componentId);
@@ -205,20 +196,11 @@
                 }
             }
         }
+
+        function findBuilding() {
+            // This function is not implemented yet
+            alert('Find building functionality is not implemented yet.');
+        }
     </script>
-</head>
-<body onload="initMap('roadmap')">
-    <div id="map"></div>
-    <div id="toggleButton" class="toggle-button" onclick="toggleMapStyle()">Switch to Satellite View</div>
-    <div class="settings-button" onclick="toggleMenu()"></div>
-    <div id="menu" class="menu">
-        <a href="package_components.html">Package Components</a>
-        <a href="work_packages.html">Work Packages</a>
-        <div>
-            <label for="entityHandle">Find:</label>
-            <input type="text" id="entityHandle" placeholder="Enter EntityHandle">
-            <button onclick="findBuilding()">Search</button>
-        </div>
-    </div>
 </body>
 </html>
