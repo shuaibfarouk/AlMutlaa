@@ -66,6 +66,7 @@
     </style>
     <script>
         let map, currentStyle = 'roadmap';
+        let jsonData = {};
 
         function initMap(style) {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -74,14 +75,8 @@
                 mapTypeId: style
             });
 
+            loadJSONData();
             loadKML();
-
-            // Add click event to display building information
-            google.maps.event.addListener(map.data, 'click', function(event) {
-                const name = event.feature.getProperty('name');
-                const description = event.feature.getProperty('description');
-                alert('Building Information:\nName: ' + name + '\nDescription: ' + description);
-            });
         }
 
         function toggleMapStyle() {
@@ -110,18 +105,32 @@
             }
         }
 
+        function loadJSONData() {
+            fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
+                .then(response => response.json())
+                .then(data => {
+                    jsonData = data;
+                })
+                .catch(error => console.error('Error loading JSON data:', error));
+        }
+
         function loadKML() {
             const kmlLayer = new google.maps.KmlLayer({
-                url: 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml',  // Ensure this URL is correct
+                url: 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml',
                 map: map,
                 preserveViewport: true,
                 suppressInfoWindows: true  // To manage the info window manually
             });
 
             kmlLayer.addListener('click', function(event) {
-                const content = event.featureData.description;
-                const name = event.featureData.name;
-                alert('Building Information:\nName: ' + name + '\nDetails: ' + content);
+                const componentId = event.featureData.name; // Assuming "Component ID" is stored in the name attribute
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData) {
+                    alert(`Building Information:\nComponent ID: ${matchingData["Component ID"]}\nOther Info: ${matchingData["Other Field"]}`); // Customize this line to display more info
+                } else {
+                    alert('No matching data found for this Component ID.');
+                }
             });
         }
     </script>
