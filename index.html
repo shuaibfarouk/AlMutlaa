@@ -48,6 +48,13 @@
         .info-window {
             max-width: 300px;
         }
+        #revision {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body onload="initMap()">
@@ -62,6 +69,7 @@
             <button onclick="findBuilding()">Search</button>
         </div>
     </div>
+    <div id="revision">Rev.1</div>
 
     <script>
         let map;
