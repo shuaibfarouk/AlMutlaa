@@ -4,7 +4,7 @@
     <title>Google Maps - Building Viewer</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
     <style>
         html, body, #map {
             width: 100%;
@@ -89,77 +89,93 @@
         }
 
         function loadKML() {
-            const kmlLayer = new google.maps.KmlLayer({
-                url: 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml',
-                map: map,
-                preserveViewport: true,
-                suppressInfoWindows: true,
-                options: {
-                    fillColor: '#AADDFF',
-                    fillOpacity: 0.7,
-                    strokeWeight: 1
-                }
-            });
+            const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
+            
+            fetch(kmlUrl)
+                .then(response => response.text())
+                .then(kmlData => {
+                    const parser = new DOMParser();
+                    const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
+                    const placemarks = kmlDoc.getElementsByTagName('Placemark');
 
-            kmlLayer.addListener('click', function(event) {
-                console.log('Full KML Feature Data:', event.featureData);
-
-                let componentId;
-
-                // Try to extract Component ID from various sources
-                if (event.featureData.extendedData) {
-                    const extendedData = JSON.parse(event.featureData.extendedData);
-                    console.log('Parsed ExtendedData:', extendedData);
-
-                    if (extendedData.SchemaData && Array.isArray(extendedData.SchemaData.SimpleData)) {
-                        const componentIdData = extendedData.SchemaData.SimpleData.find(data => data.name === "Component ID");
-                        if (componentIdData) {
-                            componentId = componentIdData.value;
-                        }
-                    }
-                }
-
-                console.log('Extracted Component ID:', componentId);
-
-                if (componentId) {
-                    const matchingData = jsonData.find(item => item["Component ID"] == componentId);
-
-                    if (matchingData) {
-                        console.log('Matching Data Found:', matchingData);
-
-                        const content = `
-                            <div class="info-window">
-                                <h3>Building Information:</h3>
-                                <p><strong>Component ID:</strong> ${matchingData["Component ID"]}</p>
-                                <p><strong>Stakeholder:</strong> ${matchingData["Stakeholder "]}</p>
-                                <p><strong>Neighborhood:</strong> ${matchingData["Neighborhood"]}</p>
-                                <p><strong>Block:</strong> ${matchingData["Block"]}</p>
-                                <p><strong>Building Type:</strong> ${matchingData["Building Type"]}</p>
-                                <p><strong>End User:</strong> ${matchingData["End User"]}</p>
-                                <p><strong>Plot Area (m²):</strong> ${matchingData["Plot Area m2"]}</p>
-                                <p><strong>Package No.:</strong> ${matchingData["Package No."]}</p>
-                                <p><strong>Status Building:</strong> ${matchingData["Status Building"]}</p>
-                                <p><strong>Fiscal Year (Tender):</strong> ${matchingData["Fiscal Year Based on Tender"]}</p>
-                                <p><strong>Fiscal Year (Construction):</strong> ${matchingData["Fiscal Year Based on Construction"]}</p>
-                            </div>
-                        `;
-
-                        const infoWindow = new google.maps.InfoWindow({
-                            content: content,
-                            position: event.latLng
+                    for (let placemark of placemarks) {
+                        const coordinates = placemark.getElementsByTagName('coordinates')[0].textContent.trim().split(' ');
+                        const path = coordinates.map(coord => {
+                            const [lng, lat] = coord.split(',');
+                            return {lat: parseFloat(lat), lng: parseFloat(lng)};
                         });
 
-                        infoWindow.open(map);
+                        const polygon = new google.maps.Polygon({
+                            paths: path,
+                            strokeColor: '#FF0000',
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2,
+                            fillColor: '#AADDFF',
+                            fillOpacity: 0.35,
+                            map: map
+                        });
 
-                    } else {
-                        console.error('No matching data found for this Component ID:', componentId);
-                        alert('No matching data found for this Component ID.');
+                        const componentId = getComponentId(placemark);
+                        
+                        polygon.addListener('click', function(event) {
+                            handlePolygonClick(event, componentId);
+                        });
                     }
-                } else {
-                    console.error('Component ID could not be extracted from the KML data');
-                    alert('Unable to identify this building. Please try another.');
+                })
+                .catch(error => console.error('Error loading KML:', error));
+        }
+
+        function getComponentId(placemark) {
+            const simpleDataElements = placemark.getElementsByTagName('SimpleData');
+            for (let element of simpleDataElements) {
+                if (element.getAttribute('name') === 'Component ID') {
+                    return element.textContent;
                 }
-            });
+            }
+            return null;
+        }
+
+        function handlePolygonClick(event, componentId) {
+            console.log('Clicked polygon with Component ID:', componentId);
+
+            if (componentId) {
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData) {
+                    console.log('Matching Data Found:', matchingData);
+
+                    const content = `
+                        <div class="info-window">
+                            <h3>Building Information:</h3>
+                            <p><strong>Component ID:</strong> ${matchingData["Component ID"]}</p>
+                            <p><strong>Stakeholder:</strong> ${matchingData["Stakeholder "]}</p>
+                            <p><strong>Neighborhood:</strong> ${matchingData["Neighborhood"]}</p>
+                            <p><strong>Block:</strong> ${matchingData["Block"]}</p>
+                            <p><strong>Building Type:</strong> ${matchingData["Building Type"]}</p>
+                            <p><strong>End User:</strong> ${matchingData["End User"]}</p>
+                            <p><strong>Plot Area (m²):</strong> ${matchingData["Plot Area m2"]}</p>
+                            <p><strong>Package No.:</strong> ${matchingData["Package No."]}</p>
+                            <p><strong>Status Building:</strong> ${matchingData["Status Building"]}</p>
+                            <p><strong>Fiscal Year (Tender):</strong> ${matchingData["Fiscal Year Based on Tender"]}</p>
+                            <p><strong>Fiscal Year (Construction):</strong> ${matchingData["Fiscal Year Based on Construction"]}</p>
+                        </div>
+                    `;
+
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: content,
+                        position: event.latLng
+                    });
+
+                    infoWindow.open(map);
+
+                } else {
+                    console.error('No matching data found for this Component ID:', componentId);
+                    alert('No matching data found for this Component ID.');
+                }
+            } else {
+                console.error('Component ID is null for this polygon');
+                alert('Unable to identify this building. Please try another.');
+            }
         }
 
         function toggleMenu() {
