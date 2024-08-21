@@ -111,16 +111,18 @@
 
                 let componentId;
 
-                // Try to extract Component ID from various sources
-                if (event.featureData.id) {
-                    componentId = event.featureData.id;
-                } else if (event.featureData.name) {
-                    componentId = event.featureData.name;
-                } else if (event.featureData.description) {
-                    // If the Component ID is in the description, you might need to parse it
-                    const match = event.featureData.description.match(/Component ID:\s*(\d+)/);
-                    if (match) {
-                        componentId = match[1];
+                // Extract Component ID from the KML data
+                if (event.featureData && event.featureData.extendedData) {
+                    const extendedData = event.featureData.extendedData;
+                    console.log('ExtendedData:', extendedData);
+
+                    if (extendedData.SchemaData && extendedData.SchemaData.SimpleData) {
+                        for (let data of extendedData.SchemaData.SimpleData) {
+                            if (data.name === "Component ID") {
+                                componentId = data.value;
+                                break;
+                            }
+                        }
                     }
                 }
 
