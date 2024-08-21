@@ -100,9 +100,23 @@
             kmlLayer.addListener('click', function(event) {
                 console.log('Full KML Feature Data:', event.featureData);
 
-                // Extract the "Component ID" directly from the KML feature data
-                const extendedData = event.featureData.infoWindowHtml;
-                const componentId = extractComponentIdFromExtendedData(extendedData);
+                // Attempt to access the extended data and find the Component ID
+                const extendedData = event.featureData;
+                let componentId;
+
+                if (extendedData && extendedData.extendedData) {
+                    const schemaData = extendedData.extendedData.SchemaData;
+                    if (schemaData && schemaData.SimpleData) {
+                        for (let i = 0; i < schemaData.SimpleData.length; i++) {
+                            const simpleData = schemaData.SimpleData[i];
+                            if (simpleData.name === 'Component ID') {
+                                componentId = simpleData.value;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 console.log('Clicked Component ID:', componentId);
 
                 if (componentId) {
@@ -111,7 +125,6 @@
                     if (matchingData) {
                         console.log('Matching Data Found:', matchingData);
 
-                        // Prepare the content to display in the alert
                         const content = `
                             Building Information:
                             Component ID: ${matchingData["Component ID"]}
@@ -152,11 +165,6 @@
                     alert('Component ID is undefined for this feature.');
                 }
             });
-        }
-
-        function extractComponentIdFromExtendedData(htmlContent) {
-            const match = htmlContent.match(/Component ID<\/b><td>(.*?)<\/td>/);
-            return match ? match[1].trim() : undefined;
         }
 
         function toggleMapStyle() {
