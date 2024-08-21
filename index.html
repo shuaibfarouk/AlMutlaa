@@ -98,11 +98,11 @@
             });
 
             kmlLayer.addListener('click', function(event) {
-                console.log('Full KML Feature Data:', event.featureData); // Log the full feature data
+                console.log('Full KML Feature Data:', event.featureData);
 
-                // Extract the "Component ID" from the KML file's ExtendedData
-                const extendedData = event.featureData.infoWindowHtml.match(/Component ID<\/b><td>(.*?)<\/td>/);
-                const componentId = extendedData ? extendedData[1].trim() : undefined;
+                // Extract the "Component ID" directly from the KML feature data
+                const extendedData = event.featureData.infoWindowHtml;
+                const componentId = extractComponentIdFromExtendedData(extendedData);
                 console.log('Clicked Component ID:', componentId);
 
                 if (componentId) {
@@ -152,6 +152,11 @@
                     alert('Component ID is undefined for this feature.');
                 }
             });
+        }
+
+        function extractComponentIdFromExtendedData(htmlContent) {
+            const match = htmlContent.match(/Component ID<\/b><td>(.*?)<\/td>/);
+            return match ? match[1].trim() : undefined;
         }
 
         function toggleMapStyle() {
