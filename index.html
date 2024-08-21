@@ -100,18 +100,23 @@
             kmlLayer.addListener('click', function(event) {
                 console.log('Full KML Feature Data:', event.featureData);
 
-                // Attempt to access the extended data and find the Component ID
+                // Extract the "Component ID" from the KML file's ExtendedData
                 const extendedData = event.featureData;
                 let componentId;
 
-                if (extendedData && extendedData.extendedData) {
+                if (extendedData) {
+                    // Iterate through the SchemaData to find the Component ID
                     const schemaData = extendedData.extendedData.SchemaData;
-                    if (schemaData && schemaData.SimpleData) {
-                        for (let i = 0; i < schemaData.SimpleData.length; i++) {
-                            const simpleData = schemaData.SimpleData[i];
-                            if (simpleData.name === 'Component ID') {
-                                componentId = simpleData.value;
-                                break;
+                    if (schemaData && schemaData.length) {
+                        for (let i = 0; i < schemaData.length; i++) {
+                            const simpleData = schemaData[i].SimpleData;
+                            if (simpleData) {
+                                for (let j = 0; j < simpleData.length; j++) {
+                                    if (simpleData[j].name === "Component ID") {
+                                        componentId = simpleData[j].value;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
