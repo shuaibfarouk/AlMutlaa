@@ -111,25 +111,20 @@
 
                 let componentId;
 
-                const extendedData = event.featureData.extendedData;
-                console.log('ExtendedData:', extendedData);
-
-                if (extendedData && extendedData.SchemaData) {
-                    const schemaData = extendedData.SchemaData;
-                    console.log('SchemaData:', schemaData);
-
-                    if (Array.isArray(schemaData.SimpleData)) {
-                        schemaData.SimpleData.forEach(data => {
-                            if (data.name === "Component ID") {
-                                componentId = data.value;
-                            }
-                        });
-                    } else if (schemaData.SimpleData && schemaData.SimpleData.name === "Component ID") {
-                        componentId = schemaData.SimpleData.value;
+                // Try to extract Component ID from various sources
+                if (event.featureData.id) {
+                    componentId = event.featureData.id;
+                } else if (event.featureData.name) {
+                    componentId = event.featureData.name;
+                } else if (event.featureData.description) {
+                    // If the Component ID is in the description, you might need to parse it
+                    const match = event.featureData.description.match(/Component ID:\s*(\d+)/);
+                    if (match) {
+                        componentId = match[1];
                     }
                 }
 
-                console.log('Clicked Component ID:', componentId);
+                console.log('Extracted Component ID:', componentId);
 
                 if (componentId) {
                     const matchingData = jsonData.find(item => item["Component ID"] == componentId);
@@ -166,7 +161,8 @@
                         alert('No matching data found for this Component ID.');
                     }
                 } else {
-                    alert('Component ID is undefined for this feature.');
+                    console.error('Component ID could not be extracted from the KML data');
+                    alert('Unable to identify this building. Please try another.');
                 }
             });
         }
