@@ -158,14 +158,14 @@
                         });
 
                         const polygon = new google.maps.Polygon({
-                            paths: path,
-                            strokeColor: '#FF0000',
-                            strokeOpacity: 0.8,
-                            strokeWeight: 2,
-                            fillColor: '#AADDFF',
-                            fillOpacity: 0.35,
-                            map: map
-                        });
+    paths: path,
+    strokeColor: '#00008B', // Dark blue
+    strokeOpacity: 1,
+    strokeWeight: 2,
+    fillColor: '#AADDFF',
+    fillOpacity: 0.35,
+    map: map
+});
 
                         const componentId = getComponentId(placemark);
                         polygon.componentId = componentId;
@@ -283,18 +283,18 @@
                         buildingType.includes(selected.toLowerCase())
                     );
 
-                    if (isMatch) {
-                        polygon.setOptions({
-                            fillColor: '#FF0000',
-                            fillOpacity: 0.7
-                        });
-                        foundMatch = true;
-                    } else {
-                        polygon.setOptions({
-                            fillColor: '#AADDFF',
-                            fillOpacity: 0.35
-                        });
-                    }
+                   if (isMatch) {
+    polygon.setOptions({
+        fillColor: '#FF0000',
+        fillOpacity: 0.7
+    });
+    foundMatch = true;
+} else {
+    polygon.setOptions({
+        fillColor: '#AADDFF',
+        fillOpacity: 0.35
+    });
+}
                 }
             });
 
