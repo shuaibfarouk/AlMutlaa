@@ -98,16 +98,47 @@
             });
 
             kmlLayer.addListener('click', function(event) {
-                // Extract the "Component ID" from the KML file's ExtendedData
-                const componentId = event.featureData.name; // Replace "name" with the correct field if necessary
+                const componentId = event.featureData.name; // Assuming "Component ID" is stored in the name attribute
                 console.log('Clicked Component ID:', componentId); // Debugging: Log the Component ID
 
-                // Find the corresponding data in the JSON
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
                     console.log('Matching Data Found:', matchingData); // Debugging: Log the matching data
-                    alert(`Building Information:\nComponent ID: ${matchingData["Component ID"]}\nBuilding Type: ${matchingData["Building Type"]}\nOther Info: ${matchingData["Other Field"]}`); // Customize this line to display more info
+
+                    // Prepare the content to display in the alert
+                    const content = `
+                        Building Information:
+                        Component ID: ${matchingData["Component ID"]}
+                        Stakeholder: ${matchingData["Stakeholder "]}
+                        Neighborhood: ${matchingData["Neighborhood"]}
+                        Detailed Location: ${matchingData["Detailed Location"]}
+                        Block: ${matchingData["Block"]}
+                        Building Model: ${matchingData["Building model"]}
+                        End User: ${matchingData["End User"]}
+                        Building Type: ${matchingData["Building Type"]}
+                        Plot Area (m²): ${matchingData["Plot Area m2"]}
+                        Package No.: ${matchingData["Package No."]}
+                        Contract No.: ${matchingData["Contract No."]}
+                        Tender No.: ${matchingData["Tender No."]}
+                        Package % Completion: ${matchingData["Package % Completion"]}
+                        Status Building: ${matchingData["Status Building"]}
+                        Status Package: ${matchingData["Status Package"]}
+                        Fiscal Year (Tender): ${matchingData["Fiscal Year Based on Tender"]}
+                        Fiscal Year (Construction): ${matchingData["Fiscal Year Based on Construction"]}
+                        Tender Start Date: ${matchingData["Tender Start Date"]}
+                        Construction Start Date: ${matchingData["Construction Start Date"]}
+                        Construction End Date: ${matchingData["Construction End Date"]}
+                        Handing Over to PAHW Date: ${matchingData["Handing Over to PAHW Date"]}
+                        Electrical Connection Date: ${matchingData["Electrical Connection Date"]}
+                        Handing Over to End User Date: ${matchingData["Handing over to End User - Date"]}
+                        Building Operational Status: ${matchingData["Building Operational Status"]}
+                        Budgeted Cost: ${matchingData["Budgeted Cost"]}
+                        Pkg-Ten-Con: ${matchingData["Pkg-Ten-Con"]}
+                    `;
+
+                    alert(content);
+
                 } else {
                     console.error('No matching data found for this Component ID:', componentId);
                     alert('No matching data found for this Component ID.');
