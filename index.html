@@ -74,15 +74,20 @@
                 mapTypeId: style
             });
 
-            loadKML();
+function loadKML() {
+    const kmlLayer = new google.maps.KmlLayer({
+        url: 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml',  // Ensure this URL is correct
+        map: map,
+        preserveViewport: true,
+        suppressInfoWindows: true  // To manage the info window manually
+    });
 
-            // Add click event to display building information
-            google.maps.event.addListener(map.data, 'click', function(event) {
-                const name = event.feature.getProperty('name');
-                const description = event.feature.getProperty('description');
-                alert('Building Information:\nName: ' + name + '\nDescription: ' + description);
-            });
-        }
+    kmlLayer.addListener('click', function(event) {
+        const content = event.featureData.description;
+        const name = event.featureData.name;
+        alert('Building Information:\nName: ' + name + '\nDetails: ' + content);
+    });
+}
 
         function toggleMapStyle() {
             if (currentStyle === 'roadmap') {
