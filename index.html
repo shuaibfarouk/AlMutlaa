@@ -79,6 +79,39 @@
             loadKML();
         }
 
+        function loadJSONData() {
+            fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
+                .then(response => response.json())
+                .then(data => {
+                    jsonData = data;
+                    console.log('Loaded JSON Data:', jsonData); // Debugging: Log the JSON data
+                })
+                .catch(error => console.error('Error loading JSON data:', error));
+        }
+
+        function loadKML() {
+            const kmlLayer = new google.maps.KmlLayer({
+                url: 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml',
+                map: map,
+                preserveViewport: true,
+                suppressInfoWindows: true  // To manage the info window manually
+            });
+
+            kmlLayer.addListener('click', function(event) {
+                const componentId = event.featureData.name; // Assuming "Component ID" is stored in the name attribute
+                console.log('Clicked Component ID:', componentId); // Debugging: Log the Component ID
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData) {
+                    console.log('Matching Data Found:', matchingData); // Debugging: Log the matching data
+                    alert(`Building Information:\nComponent ID: ${matchingData["Component ID"]}\nOther Info: ${matchingData["Other Field"]}`); // Customize this line to display more info
+                } else {
+                    console.error('No matching data found for this Component ID:', componentId);
+                    alert('No matching data found for this Component ID.');
+                }
+            });
+        }
+
         function toggleMapStyle() {
             if (currentStyle === 'roadmap') {
                 currentStyle = 'satellite';
@@ -103,35 +136,6 @@
                     menu.style.display = 'none';
                 }
             }
-        }
-
-        function loadJSONData() {
-            fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
-                .then(response => response.json())
-                .then(data => {
-                    jsonData = data;
-                })
-                .catch(error => console.error('Error loading JSON data:', error));
-        }
-
-        function loadKML() {
-            const kmlLayer = new google.maps.KmlLayer({
-                url: 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml',
-                map: map,
-                preserveViewport: true,
-                suppressInfoWindows: true  // To manage the info window manually
-            });
-
-            kmlLayer.addListener('click', function(event) {
-                const componentId = event.featureData.name; // Assuming "Component ID" is stored in the name attribute
-                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
-
-                if (matchingData) {
-                    alert(`Building Information:\nComponent ID: ${matchingData["Component ID"]}\nOther Info: ${matchingData["Other Field"]}`); // Customize this line to display more info
-                } else {
-                    alert('No matching data found for this Component ID.');
-                }
-            });
         }
     </script>
 </head>
