@@ -14,8 +14,8 @@
         }
         .settings-button {
             position: absolute;
-            top: 50px;
-            left: 10px;
+            top: 10px;
+            right: 10px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
             width: 40px;
@@ -24,23 +24,20 @@
         }
         .menu {
             position: absolute;
-            top: 100px;
-            left: 10px;
+            top: 60px;
+            right: 10px;
             display: none;
             background: white;
             border: 1px solid #ccc;
             padding: 10px;
+            z-index: 1000;
         }
-        .menu a {
-            display: block;
-            padding: 5px;
-            border: 1px solid #ccc;
+        .menu input[type="text"] {
+            width: 200px;
             margin-bottom: 5px;
-            text-decoration: none;
-            color: black;
         }
-        .menu a:last-child {
-            margin-bottom: 0;
+        .menu button {
+            width: 100%;
         }
         .settings-button:hover, .menu:hover {
             border: 2px solid #000;
@@ -61,24 +58,20 @@
     <div id="map"></div>
     <div class="settings-button" onclick="toggleMenu()"></div>
     <div id="menu" class="menu">
-        <a href="package_components.html">Package Components</a>
-        <a href="work_packages.html">Work Packages</a>
-        <div>
-            <label for="entityHandle">Find:</label>
-            <input type="text" id="entityHandle" placeholder="Enter EntityHandle">
-            <button onclick="findBuilding()">Search</button>
-        </div>
+        <input type="text" id="buildingSearch" placeholder="Enter Building Type">
+        <button onclick="searchBuildings()">Search</button>
     </div>
-    <div id="revision">Rev.1</div>
+    <div id="revision">Rev.2</div>
 
     <script>
         let map;
         let jsonData = {};
+        let polygons = [];
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 29.478324, lng: 47.607149 },
-                zoom: 13,
+                zoom: 15,
                 mapTypeId: 'roadmap'
             });
 
@@ -124,6 +117,8 @@
                         });
 
                         const componentId = getComponentId(placemark);
+                        polygon.componentId = componentId;
+                        polygons.push(polygon);
                         
                         polygon.addListener('click', function(event) {
                             handlePolygonClick(event, componentId);
@@ -191,6 +186,33 @@
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         }
 
+        function searchBuildings() {
+            const searchTerm = document.getElementById('buildingSearch').value.toLowerCase();
+            let foundMatch = false;
+
+            polygons.forEach(polygon => {
+                const componentId = polygon.componentId;
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData && matchingData["Building Type"].toLowerCase().includes(searchTerm)) {
+                    polygon.setOptions({
+                        fillColor: '#FF0000',
+                        fillOpacity: 0.7
+                    });
+                    foundMatch = true;
+                } else {
+                    polygon.setOptions({
+                        fillColor: '#AADDFF',
+                        fillOpacity: 0.35
+                    });
+                }
+            });
+
+            if (!foundMatch) {
+                alert('No buildings found matching the search term.');
+            }
+        }
+
         window.onclick = function(event) {
             if (!event.target.matches('.settings-button') && !event.target.closest('.menu')) {
                 const menu = document.getElementById('menu');
@@ -198,11 +220,6 @@
                     menu.style.display = 'none';
                 }
             }
-        }
-
-        function findBuilding() {
-            // This function is not implemented yet
-            alert('Find building functionality is not implemented yet.');
         }
     </script>
 </body>
