@@ -359,13 +359,13 @@
                 }
             }
             function closeAllLists(elmnt) {
-                var x = document.getElementsByClassName("autocomplete-items");
-                for (var i = 0; i < x.length; i++) {
-                    if (elmnt != x[i] && elmnt != inp) {
-                        x[i].parentNode.removeChild(x[i]);
-                    }
-                }
-            }
+    var x = document.getElementsByClassName("autocomplete-items");
+    for (var i = 0; i < x.length; i++) {
+        if (elmnt != x[i] && elmnt != inp && !x[i].contains(elmnt)) {
+            x[i].parentNode.removeChild(x[i]);
+        }
+    }
+}
             document.addEventListener("click", function (e) {
                 if (!e.target.closest('.menu')) {
                     closeAllLists(e.target);
@@ -374,13 +374,14 @@
         }
 
         document.addEventListener("click", function(event) {
-            const menu = document.getElementById('menu');
-            const settingsButton = document.querySelector('.settings-button');
-            
-            if (!menu.contains(event.target) && !settingsButton.contains(event.target)) {
-                menu.style.display = 'none';
-            }
-        });
+    const menu = document.getElementById('menu');
+    const settingsButton = document.querySelector('.settings-button');
+    const autocompleteList = document.querySelector('.autocomplete-items');
+    
+    if (!menu.contains(event.target) && !settingsButton.contains(event.target) && !autocompleteList) {
+        menu.style.display = 'none';
+    }
+});
     </script>
 </body>
 </html>
