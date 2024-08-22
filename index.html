@@ -71,11 +71,15 @@
         }
         .info-window th, .info-window td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 4px 8px; /* Reduced padding */
             text-align: left;
+            font-size: 12px; /* Reduced font size */
         }
         .info-window th {
             background-color: #f2f2f2;
+        }
+        .info-window th[colspan="4"] {
+            text-align: center; /* Centered Package-Tender-Contract */
         }
         #revision {
             position: absolute;
@@ -223,51 +227,51 @@
                                     <th>${matchingData["Block"] || 'N/A'}</th>
                                 </tr>
                                 <tr>
-                                    <th colspan="4">${matchingData["Pkg-Ten-Con"] || 'N/A'}</th>
+                                    <th colspan="4">${matchingData["Package-Tender-Contract"] || 'N/A'}</th>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Tender:</td>
-                                    <td colspan="2">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
+                                    <td>Tender / Contract Status</td>
+                                    <td colspan="3">${matchingData["Status Package"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Tender Date</td>
-                                    <td colspan="2">${matchingData["Tender Start Date"] || 'N/A'}</td>
+                                    <td>Building Status</td>
+                                    <td colspan="3">${matchingData["Status Building"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Construction:</td>
-                                    <td colspan="2">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
+                                    <td>Tender:</td>
+                                    <td>${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
+                                    <td>Tender Date:</td>
+                                    <td>${matchingData["Tender Announcement Date"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Start Date</td>
-                                    <td colspan="2">${matchingData["Construction Start Date"] || 'N/A'}</td>
+                                    <td>Construction:</td>
+                                    <td>${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
+                                    <td>Start Date:</td>
+                                    <td>${matchingData["Construction Start Date"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">End Date</td>
-                                    <td colspan="2">${matchingData["Construction End Date"] || 'N/A'}</td>
+                                    <td>End Date:</td>
+                                    <td>${matchingData["Construction End Date"] || 'N/A'}</td>
+                                    <td>Progress %:</td>
+                                    <td>${matchingData["Package Completion %"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Progress %</td>
-                                    <td colspan="2">${matchingData["Package % Completion"] || 'N/A'}</td>
+                                    <td>Building Energized:</td>
+                                    <td>${matchingData["Electrical Connection Date"] || 'N/A'}</td>
+                                    <td>Handed Over to End User:</td>
+                                    <td>${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Building Energized</td>
-                                    <td colspan="2">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
+                                    <td>Operational:</td>
+                                    <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Handed Over to End User</td>
-                                    <td colspan="2">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
+                                    <td>Stakeholder:</td>
+                                    <td colspan="3">${matchingData["Stakeholder"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2">Operational</td>
-                                    <td colspan="2">${matchingData["Building Operational Status"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Stakeholder</td>
-                                    <td colspan="2">${matchingData["Stakeholder "] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">End User</td>
-                                    <td colspan="2">${matchingData["End User"] || 'N/A'}</td>
+                                    <td>End User:</td>
+                                    <td colspan="3">${matchingData["End User"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
                                     <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
