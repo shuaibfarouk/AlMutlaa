@@ -221,93 +221,93 @@
             return null;
         }
 
-        function handlePolygonClick(event, componentId) {
-            console.log('Clicked polygon with Component ID:', componentId);
+function handlePolygonClick(event, componentId) {
+    console.log('Clicked polygon with Component ID:', componentId);
 
-            if (componentId) {
-                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+    if (componentId) {
+        const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
-                if (matchingData) {
-                    console.log('Matching Data Found:', matchingData);
+        if (matchingData) {
+            console.log('Matching Data Found:', matchingData);
 
-                    const content = `
-                        <div class="info-window">
-                            <table>
-                                <tr>
-                                    <th colspan="2">${matchingData["Building Type"] || 'N/A'}</th>
-                                    <th>${matchingData["Neighborhood"] || 'N/A'}</th>
-                                    <th>${matchingData["Block"] || 'N/A'}</th>
-                                </tr>
-                                <tr>
-                                    <th colspan="4">${matchingData["Pkg-Ten-Con"] || 'N/A'}</th>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Tender:</td>
-                                    <td colspan="2">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Tender Date</td>
-                                    <td colspan="2">${matchingData["Tender Start Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Construction:</td>
-                                    <td colspan="2">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Start Date</td>
-                                    <td colspan="2">${matchingData["Construction Start Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">End Date</td>
-                                    <td colspan="2">${matchingData["Construction End Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Progress %</td>
-                                    <td colspan="2">${matchingData["Package % Completion"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Building Energized</td>
-                                    <td colspan="2">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Handed Over to End User</td>
-                                    <td colspan="2">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Operational</td>
-                                    <td colspan="2">${matchingData["Building Operational Status"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">Stakeholder</td>
-                                    <td colspan="2">${matchingData["Stakeholder "] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">End User</td>
-                                    <td colspan="2">${matchingData["End User"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    `;
+            const content = `
+                <div class="info-window">
+                    <table>
+                        <tr>
+                            <th colspan="2">${matchingData["Building Type"] || 'N/A'}</th>
+                            <th>${matchingData["Neighborhood"] || 'N/A'}</th>
+                            <th>${matchingData["Block"] || 'N/A'}</th>
+                        </tr>
+                        <tr>
+                            <th colspan="4">${matchingData["Package-Tender-Contract"] || 'N/A'}</th>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Tender:</td>
+                            <td colspan="2">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Tender Date</td>
+                            <td colspan="2">${matchingData["Tender Announcement Date"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Construction:</td>
+                            <td colspan="2">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Start Date</td>
+                            <td colspan="2">${matchingData["Construction Start Date"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">End Date</td>
+                            <td colspan="2">${matchingData["Construction End Date"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Progress %</td>
+                            <td colspan="2">${matchingData["Package Completion %"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Building Energized</td>
+                            <td colspan="2">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Handed Over to End User</td>
+                            <td colspan="2">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Operational</td>
+                            <td colspan="2">${matchingData["Building Operational Status"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Stakeholder</td>
+                            <td colspan="2">${matchingData["Stakeholder"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">End User</td>
+                            <td colspan="2">${matchingData["End User"] || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
 
-                    const infoWindow = new google.maps.InfoWindow({
-                        content: content,
-                        position: event.latLng
-                    });
+            const infoWindow = new google.maps.InfoWindow({
+                content: content,
+                position: event.latLng
+            });
 
-                    infoWindow.open(map);
+            infoWindow.open(map);
 
-                } else {
-                    console.error('No matching data found for this Component ID:', componentId);
-                    alert('No matching data found for this Component ID.');
-                }
-            } else {
-                console.error('Component ID is null for this polygon');
-                alert('Unable to identify this building. Please try another.');
-            }
+        } else {
+            console.error('No matching data found for this Component ID:', componentId);
+            alert('No matching data found for this Component ID.');
         }
+    } else {
+        console.error('Component ID is null for this polygon');
+        alert('Unable to identify this building. Please try another.');
+    }
+}
 
         function toggleMenu() {
             const menu = document.getElementById('menu');
