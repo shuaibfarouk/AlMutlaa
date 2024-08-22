@@ -18,8 +18,8 @@
             right: 10px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
-            width: 20px; /* Reduced size to 50% */
-            height: 20px;
+            width: 40px; /* Restored original size */
+            height: 40px;
             cursor: pointer;
         }
         .menu {
@@ -87,6 +87,10 @@
         .info-window td[colspan="3"] {
             text-align: left;
             white-space: nowrap; /* Prevent line break */
+        }
+        .gm-ui-hover-effect { /* Styling for the close button in info window */
+            width: 20px; /* Reduced size */
+            height: 20px;
         }
         #revision {
             position: absolute;
@@ -160,13 +164,20 @@
                 .then(response => response.json())
                 .then(data => {
                     jsonData = data;
+
+                    // Extract unique package/tender/contract values
+                    const pkgTenConSet = new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean));
+
+                    // Convert set back to array for autocomplete
+                    const pkgTenConArray = Array.from(pkgTenConSet);
+
                     jsonData.forEach(item => {
                         if (item["Building Type"]) {
                             buildingTypes.add(item["Building Type"]);
                         }
                     });
                     autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
-                    autocomplete(document.getElementById("pkgTenConSearch"), jsonData.map(item => item["Package-Tender-Contract"]));
+                    autocomplete(document.getElementById("pkgTenConSearch"), pkgTenConArray);
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
         }
