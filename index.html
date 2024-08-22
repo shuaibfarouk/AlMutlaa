@@ -131,7 +131,7 @@
             <button onclick="searchPkgTenCon()">Search Pkg-Ten-Con</button>
         </div>
     </div>
-    <div id="revision">Rev.12</div>
+    <div id="revision">Rev.13</div>
 
     <script>
         let map;
@@ -141,6 +141,7 @@
         let selectedBuildings = [];
 
         function initMap() {
+            console.log('Initializing map');
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 29.478324, lng: 47.607149 },
                 zoom: 15,
@@ -152,6 +153,7 @@
         }
 
         function loadJSONData() {
+            console.log('Loading JSON data');
             fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
                 .then(response => response.json())
                 .then(data => {
@@ -168,6 +170,7 @@
         }
 
         function loadKML() {
+            console.log('Loading KML');
             const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
             
             fetch(kmlUrl)
@@ -176,6 +179,8 @@
                     const parser = new DOMParser();
                     const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
                     const placemarks = kmlDoc.getElementsByTagName('Placemark');
+
+                    console.log('Number of placemarks:', placemarks.length);
 
                     for (let placemark of placemarks) {
                         const coordinates = placemark.getElementsByTagName('coordinates')[0].textContent.trim().split(' ');
@@ -337,43 +342,55 @@
             });
         }
 
-function searchPkgTenCon() {
-    const searchTerm = document.getElementById('pkgTenConSearch').value.toLowerCase();
-    if (!searchTerm) {
-        alert('Please enter a search term for Tender/Contract/Package.');
-        return;
-    }
+        function searchBuildings() {
+            if (selectedBuildings.length === 0) {
+                alert('Please select at least one building type to search.');
+                return;
+            }
 
-    let foundMatch = false;
+            let foundMatch = false;
+            const exactMatch = document.getElementById('exactMatch').checked;
 
-    polygons.forEach(polygon => {
-        const componentId = polygon.componentId;
-        const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+            polygons.forEach(polygon => {
+                const componentId = polygon.componentId;
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
-        if (matchingData && matchingData["Pkg-Ten-Con"]) {
-            const pkgTenCon = matchingData["Pkg-Ten-Con"].toLowerCase();
-            
-            if (pkgTenCon.includes(searchTerm)) {
-                polygon.setOptions({
-                    strokeColor: '#00008B', // Keep the outline dark blue
-                    fillColor: '#FF0000',
-                    fillOpacity: 0.7
-                });
-                foundMatch = true;
-            } else {
-                polygon.setOptions({
-                    strokeColor: '#00008B', // Keep the outline dark blue
-                    fillColor: '#AADDFF',
-                    fillOpacity: 0.35
-                });
+                if (matchingData) {
+                    const buildingType = matchingData["Building Type"];
+                    let isMatch;
+                    
+                    if (exactMatch) {
+                        isMatch = selectedBuildings.some(selected => 
+                            buildingType.toLowerCase() === selected.toLowerCase()
+                        );
+                    } else {
+                        isMatch = selectedBuildings.some(selected => 
+                            buildingType.toLowerCase().includes(selected.toLowerCase())
+                        );
+                    }
+
+                    if (isMatch) {
+                        polygon.setOptions({
+                            strokeColor: '#00008B', // Keep the outline dark blue
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.7
+                        });
+                        foundMatch = true;
+                    } else {
+                        polygon.setOptions({
+                            strokeColor: '#00008B', // Keep the outline dark blue
+                            fillColor: '#AADDFF',
+                            fillOpacity: 0.35
+                        });
+                    }
+                }
+            });
+
+            if (!foundMatch) {
+                alert('No buildings found matching the selected types.');
             }
         }
-    });
 
-    if (!foundMatch) {
-        alert('No buildings found matching the Tender/Contract/Package search term.');
-    }
-}
         function searchPkgTenCon() {
             const searchTerm = document.getElementById('pkgTenConSearch').value.toLowerCase();
             if (!searchTerm) {
@@ -388,7 +405,6 @@ function searchPkgTenCon() {
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData && matchingData["Pkg-Ten-Con"]) {
-                    const pkgTenCon = match
 if (matchingData && matchingData["Pkg-Ten-Con"]) {
                     const pkgTenCon = matchingData["Pkg-Ten-Con"].toLowerCase();
                     
