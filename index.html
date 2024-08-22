@@ -44,6 +44,19 @@
         }
         .info-window {
             max-width: 300px;
+            font-family: Arial, sans-serif;
+        }
+        .info-window table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-window th, .info-window td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .info-window th {
+            background-color: #f2f2f2;
         }
         #revision {
             position: absolute;
@@ -91,6 +104,11 @@
             cursor: pointer;
             color: red;
         }
+        .search-section {
+            margin-top: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body onload="initMap()">
@@ -106,9 +124,14 @@
             <input type="checkbox" id="exactMatch" name="exactMatch">
             <label for="exactMatch">Exact match only</label>
         </div>
-        <button onclick="searchBuildings()">Search</button>
+        <button onclick="searchBuildings()">Search Buildings</button>
+        
+        <div class="search-section">
+            <input id="pkgTenConSearch" type="text" placeholder="Search by Tender/Contract/Package">
+            <button onclick="searchPkgTenCon()">Search Pkg-Ten-Con</button>
+        </div>
     </div>
-    <div id="revision">Rev.9</div>
+    <div id="revision">Rev.12</div>
 
     <script>
         let map;
@@ -120,7 +143,7 @@
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 29.478324, lng: 47.607149 },
-                zoom: 12,
+                zoom: 15,
                 mapTypeId: 'roadmap'
             });
 
@@ -204,17 +227,63 @@
 
                     const content = `
                         <div class="info-window">
-                            <h3>Building Information:</h3>
-                            <p><strong>Component ID:</strong> ${matchingData["Component ID"]}</p>
-                            <p><strong>Stakeholder:</strong> ${matchingData["Stakeholder "]}</p>
-                            <p><strong>Neighborhood:</strong> ${matchingData["Neighborhood"]}</p>
-                            <p><strong>Block:</strong> ${matchingData["Block"]}</p>
-                            <p><strong>Building Type:</strong> ${matchingData["Building Type"]}</p>
-                            <p><strong>End User:</strong> ${matchingData["End User"]}</p>
-                            <p><strong>Package No.:</strong> ${matchingData["Package No."]}</p>
-                            <p><strong>Status Building:</strong> ${matchingData["Status Building"]}</p>
-                            <p><strong>Fiscal Year (Tender):</strong> ${matchingData["Fiscal Year Based on Tender"]}</p>
-                            <p><strong>Fiscal Year (Construction):</strong> ${matchingData["Fiscal Year Based on Construction"]}</p>
+                            <table>
+                                <tr>
+                                    <th colspan="2">${matchingData["Building Type"] || 'N/A'}</th>
+                                    <th>${matchingData["Neighborhood"] || 'N/A'}</th>
+                                    <th>${matchingData["Block"] || 'N/A'}</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="4">${matchingData["Pkg-Ten-Con"] || 'N/A'}</th>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Tender:</td>
+                                    <td colspan="2">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Tender Date</td>
+                                    <td colspan="2">${matchingData["Tender Start Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Construction:</td>
+                                    <td colspan="2">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Start Date</td>
+                                    <td colspan="2">${matchingData["Construction Start Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">End Date</td>
+                                    <td colspan="2">${matchingData["Construction End Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Progress %</td>
+                                    <td colspan="2">${matchingData["Package % Completion"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Building Energized</td>
+                                    <td colspan="2">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Handed Over to End User</td>
+                                    <td colspan="2">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Operational</td>
+                                    <td colspan="2">${matchingData["Building Operational Status"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Stakeholder</td>
+                                    <td colspan="2">${matchingData["Stakeholder "] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">End User</td>
+                                    <td colspan="2">${matchingData["End User"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
+                                </tr>
+                            </table>
                         </div>
                     `;
 
@@ -314,6 +383,46 @@
 
             if (!foundMatch) {
                 alert('No buildings found matching the selected types.');
+            }
+        }
+
+        function searchPkgTenCon() {
+            const searchTerm = document.getElementById('pkgTenConSearch').value.toLowerCase();
+            if (!searchTerm) {
+                alert('Please enter a search term for Tender/Contract/Package.');
+                return;
+            }
+
+            let foundMatch = false;
+
+            polygons.forEach(polygon => {
+                const componentId = polygon.componentId;
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData && matchingData["Pkg-Ten-Con"]) {
+                    const pkgTenCon = match
+if (matchingData && matchingData["Pkg-Ten-Con"]) {
+                    const pkgTenCon = matchingData["Pkg-Ten-Con"].toLowerCase();
+                    
+                    if (pkgTenCon.includes(searchTerm)) {
+                        polygon.setOptions({
+                            strokeColor: '#00008B', // Keep the outline dark blue
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.7
+                        });
+                        foundMatch = true;
+                    } else {
+                        polygon.setOptions({
+                            strokeColor: '#00008B', // Keep the outline dark blue
+                            fillColor: '#AADDFF',
+                            fillOpacity: 0.35
+                        });
+                    }
+                }
+            });
+
+            if (!foundMatch) {
+                alert('No buildings found matching the Tender/Contract/Package search term.');
             }
         }
 
