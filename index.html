@@ -29,10 +29,11 @@
             background: #e6f3ff;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            padding: 15px;
             animation: fadeIn 0.3s ease-out;
             z-index: 1000;
-            width: 320px;
+            width: 300px;
+            font-size: 14px;
         }
         
         @keyframes fadeIn {
@@ -42,20 +43,23 @@
         
         .menu input[type="text"], .menu select {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
+            padding: 6px;
+            margin-bottom: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 14px;
         }
         
         .menu button {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-size: 14px;
+            margin-top: 5px;
         }
         
         .menu button:hover {
@@ -63,88 +67,28 @@
         }
         
         .search-section {
-            margin-top: 15px;
+            margin-top: 10px;
             border-top: 1px solid #ccc;
-            padding-top: 15px;
+            padding-top: 10px;
         }
         
-        .menu label {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .autocomplete-items {
-            position: absolute;
-            border: 1px solid #d4d4d4;
-            border-top: none;
-            z-index: 99;
-            top: 100%;
-            left: 0;
-            right: 0;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        .autocomplete-items div {
-            padding: 10px;
-            cursor: pointer;
-            background-color: #fff; 
-            border-bottom: 1px solid #d4d4d4; 
-        }
-        .autocomplete-items div:hover {
-            background-color: #e9e9e9; 
-        }
-        .autocomplete-active {
-            background-color: DodgerBlue !important; 
-            color: #ffffff; 
-        }
-        .info-window {
-            max-width: 320px;
-            font-family: Arial, sans-serif;
-        }
-        .info-window table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .info-window th, .info-window td {
-            border: 1px solid #ddd;
-            padding: 4px 8px;
-            text-align: left;
-            font-size: 12px;
-        }
-        .info-window th {
-            background-color: #f2f2f2;
-        }
-        .info-window th[colspan="4"] {
-            text-align: center;
-        }
-        .info-window td {
-            vertical-align: top;
-        }
-        .info-window td[colspan="3"] {
-            text-align: left;
-            white-space: nowrap;
-        }
-        .gm-ui-hover-effect {
-            width: 20px;
-            height: 20px;
-        }
-        #revision {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            color: red;
-            font-weight: bold;
-        }
-        .selected-building {
+        .selected-item {
             background-color: #f0f0f0;
-            padding: 5px;
+            padding: 4px;
             margin: 2px 0;
             display: flex;
             justify-content: space-between;
+            font-size: 12px;
         }
-        .remove-building {
+        
+        .remove-item {
             cursor: pointer;
             color: red;
+        }
+        
+        #buildingStatusSelect {
+            height: 100px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -152,34 +96,28 @@
     <div id="map"></div>
     <div class="settings-button" onclick="toggleMenu()"></div>
     <div id="menu" class="menu">
-        <div class="autocomplete" style="width:100%; position: relative;">
+        <div class="search-section">
             <input id="buildingSearch" type="text" placeholder="Enter Building Type">
+            <button onclick="addItem('building')">Add Building Type</button>
+            <div id="selectedBuildings"></div>
         </div>
-        <div class="add-section">
-            <button onclick="addBuilding()">Add</button>
-            <label for="exactMatch">
-                <input type="checkbox" id="exactMatch" name="exactMatch">
-                Exact match
-            </label>
-        </div>
-        <div id="selectedBuildings"></div>
         
         <div class="search-section">
-            <div class="autocomplete" style="width:100%; position: relative;">
-                <input id="pkgTenConSearch" type="text" placeholder="Search by Package/Tender/Contract">
-            </div>
+            <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
+            <button onclick="addItem('pkgTenCon')">Add Package/Tender/Contract</button>
+            <div id="selectedPkgTenCon"></div>
         </div>
 
         <div class="search-section">
-            <select id="buildingStatusSelect">
-                <option value="">Select Building Status</option>
+            <select id="buildingStatusSelect" multiple>
+                <!-- Options will be populated dynamically -->
             </select>
         </div>
 
         <button onclick="combinedSearch()">Search</button>
         <button onclick="clearSearch()">Clear Search</button>
     </div>
-    <div id="revision">Rev.14</div>
+    <div id="revision">Rev.15</div>
 
     <script>
         let map;
@@ -188,6 +126,7 @@
         let buildingTypes = new Set();
         let buildingStatuses = new Set();
         let selectedBuildings = [];
+        let selectedPkgTenCon = [];
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -206,20 +145,10 @@
                 .then(data => {
                     jsonData = data;
 
-                    const pkgTenConSet = new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean));
-                    const pkgTenConArray = Array.from(pkgTenConSet);
-
-                    jsonData.forEach(item => {
-                        if (item["Building Type"]) {
-                            buildingTypes.add(item["Building Type"]);
-                        }
-                        if (item["Status Building"]) {
-                            buildingStatuses.add(item["Status Building"]);
-                        }
+                    data.forEach(item => {
+                        if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
+                        if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
                     });
-
-                    autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
-                    autocomplete(document.getElementById("pkgTenConSearch"), pkgTenConArray);
                     populateBuildingStatusSelect();
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
@@ -227,7 +156,6 @@
 
         function populateBuildingStatusSelect() {
             const select = document.getElementById('buildingStatusSelect');
-            select.innerHTML = '<option value="">Select Status</option>';
             buildingStatuses.forEach(status => {
                 const option = document.createElement('option');
                 option.value = status;
@@ -380,47 +308,54 @@
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         }
 
-        function addBuilding() {
-            const buildingType = document.getElementById('buildingSearch').value;
-            if (buildingType && !selectedBuildings.includes(buildingType)) {
-                selectedBuildings.push(buildingType);
-                updateSelectedBuildingsDisplay();
-                document.getElementById('buildingSearch').value = '';
+        function addItem(type) {
+            const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
+            const value = input.value.trim();
+            if (value && !selectedBuildings.includes(value)) {
+                if (type === 'building') {
+                    selectedBuildings.push(value);
+                    updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+                } else {
+                    selectedPkgTenCon.push(value);
+                    updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+                }
+                input.value = '';
             }
         }
 
-        function removeBuilding(buildingType) {
-            selectedBuildings = selectedBuildings.filter(b => b !== buildingType);
-            updateSelectedBuildingsDisplay();
-        }
-
-        function updateSelectedBuildingsDisplay() {
-            const container = document.getElementById('selectedBuildings');
+        function updateSelectedItemsDisplay(containerId, items) {
+            const container = document.getElementById(containerId);
             container.innerHTML = '';
-            selectedBuildings.forEach(building => {
+            items.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'selected-building';
+                div.className = 'selected-item';
                 div.innerHTML = `
-                    ${building}
-                    <span class="remove-building" onclick="removeBuilding('${building}')">&times;</span>
+                    ${item}
+                    <span class="remove-item" onclick="removeItem('${containerId}', '${item}')">&times;</span>
                 `;
                 container.appendChild(div);
             });
         }
 
+        function removeItem(containerId, item) {
+            if (containerId === 'selectedBuildings') {
+                selectedBuildings = selectedBuildings.filter(b => b !== item);
+                updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+            } else {
+                selectedPkgTenCon = selectedPkgTenCon.filter(p => p !== item);
+                updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+            }
+        }
+
         function combinedSearch() {
-            const buildingType = document.getElementById('buildingSearch').value.trim();
-            const pkgTenCon = document.getElementById('pkgTenConSearch').value.trim();
-            const buildingStatus = document.getElementById('buildingStatusSelect').value;
-            const exactMatch = document.getElementById('exactMatch').checked;
+            const selectedStatuses = Array.from(document.getElementById('buildingStatusSelect').selectedOptions).map(option => option.value);
 
-            let foundMatch = false;
-
-            // Check if any search criteria are specified
-            if (!buildingType && !pkgTenCon && !buildingStatus) {
+            if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && selectedStatuses.length === 0) {
                 alert('Please specify at least one search criterion.');
                 return;
             }
+
+            let foundMatch = false;
 
             polygons.forEach(polygon => {
                 const componentId = polygon.componentId;
@@ -429,22 +364,20 @@
                 if (matchingData) {
                     let isMatch = true;
 
-                    if (buildingType) {
-                        const polygonBuildingType = matchingData["Building Type"] || '';
-                        if (exactMatch) {
-                            isMatch = isMatch && (polygonBuildingType.toLowerCase() === buildingType.toLowerCase());
-                        } else {
-                            isMatch = isMatch && polygonBuildingType.toLowerCase().includes(buildingType.toLowerCase());
-                        }
+                    if (selectedBuildings.length > 0) {
+                        isMatch = isMatch && selectedBuildings.some(selected => 
+                            matchingData["Building Type"] && matchingData["Building Type"].toLowerCase().includes(selected.toLowerCase())
+                        );
                     }
 
-                    if (pkgTenCon) {
-                        const polygonPkgTenCon = matchingData["Package-Tender-Contract"] || '';
-                        isMatch = isMatch && polygonPkgTenCon.toLowerCase().includes(pkgTenCon.toLowerCase());
+                    if (selectedPkgTenCon.length > 0) {
+                        isMatch = isMatch && selectedPkgTenCon.some(selected => 
+                            matchingData["Package-Tender-Contract"] && matchingData["Package-Tender-Contract"].toLowerCase().includes(selected.toLowerCase())
+                        );
                     }
 
-                    if (buildingStatus) {
-                        isMatch = isMatch && (matchingData["Status Building"] === buildingStatus);
+                    if (selectedStatuses.length > 0) {
+                        isMatch = isMatch && selectedStatuses.includes(matchingData["Status Building"]);
                     }
 
                     if (isMatch) {
@@ -470,10 +403,13 @@
         }
 
         function clearSearch() {
+            selectedBuildings = [];
+            selectedPkgTenCon = [];
+            updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+            updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
             document.getElementById('buildingSearch').value = '';
             document.getElementById('pkgTenConSearch').value = '';
-            document.getElementById('buildingStatusSelect').value = '';
-            document.getElementById('exactMatch').checked = false;
+            document.getElementById('buildingStatusSelect').selectedIndex = -1;
             
             polygons.forEach(polygon => {
                 polygon.setOptions({
