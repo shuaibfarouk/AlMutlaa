@@ -177,6 +177,8 @@
             </select>
             <button onclick="searchBuildingStatus()">Search Building Status</button>
         </div>
+        
+        <button onclick="clearSearch()">Clear Search</button>
     </div>
     <div id="revision">Rev.13</div>
 
@@ -530,6 +532,21 @@
             if (!foundMatch) {
                 alert('No buildings found with the selected status.');
             }
+        }
+
+        function clearSearch() {
+            document.getElementById('buildingSearch').value = '';
+            document.getElementById('pkgTenConSearch').value = '';
+            document.getElementById('buildingStatusSelect').value = '';
+            selectedBuildings = [];
+            updateSelectedBuildingsDisplay();
+            polygons.forEach(polygon => {
+                polygon.setOptions({
+                    strokeColor: '#00008B',
+                    fillColor: '#AADDFF',
+                    fillOpacity: 0.35
+                });
+            });
         }
 
         function autocomplete(inp, arr) {
