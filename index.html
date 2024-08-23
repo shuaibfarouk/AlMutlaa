@@ -221,9 +221,20 @@
                     });
                     autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
                     autocomplete(document.getElementById("pkgTenConSearch"), pkgTenConArray);
-                    populateBuildingStatusSelect();
+                    populateBuildingStatusSelect(); // Call the function here
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
+        }
+
+        function populateBuildingStatusSelect() {
+            const select = document.getElementById('buildingStatusSelect');
+            select.innerHTML = '<option value="">Select Status</option>'; // Clear existing options
+            buildingStatuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                select.appendChild(option);
+            });
         }
 
         function loadKML() {
