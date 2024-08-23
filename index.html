@@ -4,7 +4,7 @@
     <title>Google Maps - Building Viewer</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=drawing"></script>
     <style>
         html, body, #map {
             width: 100%;
@@ -152,35 +152,34 @@
     <div id="map"></div>
     <div class="settings-button" onclick="toggleMenu()"></div>
     <div id="menu" class="menu">
-        <div class="autocomplete" style="width:100%;">
+        <div class="autocomplete" style="width:100%; position: relative;">
             <input id="buildingSearch" type="text" placeholder="Enter Building Type">
         </div>
-        <button onclick="addBuilding()">Add</button>
-        <div id="selectedBuildings"></div>
-        <div>
-            <input type="checkbox" id="exactMatch" name="exactMatch">
-            <label for="exactMatch">Exact match only</label>
+        <div class="add-section">
+            <button onclick="addBuilding()">Add</button>
+            <label for="exactMatch">
+                <input type="checkbox" id="exactMatch" name="exactMatch">
+                Exact match
+            </label>
         </div>
-        <button onclick="searchBuildings()">Search Buildings</button>
+        <div id="selectedBuildings"></div>
         
         <div class="search-section">
-            <div class="autocomplete" style="width:100%;">
+            <div class="autocomplete" style="width:100%; position: relative;">
                 <input id="pkgTenConSearch" type="text" placeholder="Search by Package/Tender/Contract">
             </div>
-            <button onclick="searchPkgTenCon()">Search Package / Tender / Contract</button>
         </div>
 
         <div class="search-section">
-            <label for="buildingStatusSelect">Building Status:</label>
             <select id="buildingStatusSelect">
-                <option value="">Select Status</option>
+                <option value="">Select Building Status</option>
             </select>
-            <button onclick="searchBuildingStatus()">Search Building Status</button>
         </div>
-        
+
+        <button onclick="combinedSearch()">Search</button>
         <button onclick="clearSearch()">Clear Search</button>
     </div>
-    <div id="revision">Rev.13</div>
+    <div id="revision">Rev.14</div>
 
     <script>
         let map;
@@ -411,31 +410,37 @@
             });
         }
 
-        function searchBuildings() {
-            if (selectedBuildings.length === 0) {
-                alert('Please select at least one building type to search.');
-                return;
-            }
+        function combinedSearch() {
+            const buildingType = document.getElementById('buildingSearch').value;
+            const pkgTenCon = document.getElementById('pkgTenConSearch').value;
+            const buildingStatus = document.getElementById('buildingStatusSelect').value;
+            const exactMatch = document.getElementById('exactMatch').checked;
 
             let foundMatch = false;
-            const exactMatch = document.getElementById('exactMatch').checked;
 
             polygons.forEach(polygon => {
                 const componentId = polygon.componentId;
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
-                    const buildingType = matchingData["Building Type"];
-                    let isMatch;
-                    
-                    if (exactMatch) {
-                        isMatch = selectedBuildings.some(selected => 
-                            buildingType.toLowerCase() === selected.toLowerCase()
-                        );
-                    } else {
-                        isMatch = selectedBuildings.some(selected => 
-                            buildingType.toLowerCase().includes(selected.toLowerCase())
-                        );
+                    let isMatch = true;
+
+                    if (buildingType) {
+                        const polygonBuildingType = matchingData["Building Type"] || '';
+                        if (exactMatch) {
+                            isMatch = isMatch && (polygonBuildingType.toLowerCase() === buildingType.toLowerCase());
+                        } else {
+                            isMatch = isMatch && polygonBuildingType.toLowerCase().includes(buildingType.toLowerCase());
+                        }
+                    }
+
+                    if (pkgTenCon) {
+                        const polygonPkgTenCon = matchingData["Package-Tender-Contract"] || '';
+                        isMatch = isMatch && polygonPkgTenCon.toLowerCase().includes(pkgTenCon.toLowerCase());
+                    }
+
+                    if (buildingStatus) {
+                        isMatch = isMatch && (matchingData["Status Building"] === buildingStatus);
                     }
 
                     if (isMatch) {
@@ -456,81 +461,7 @@
             });
 
             if (!foundMatch) {
-                alert('No buildings found matching the selected types.');
-            }
-        }
-
-        function searchPkgTenCon() {
-            const searchTerm = document.getElementById('pkgTenConSearch').value.toLowerCase();
-            if (!searchTerm) {
-                alert('Please enter a search term for Package/Tender/Contract.');
-                return;
-            }
-
-            let foundMatch = false;
-
-            polygons.forEach(polygon => {
-                const componentId = polygon.componentId;
-                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
-
-                if (matchingData && matchingData["Package-Tender-Contract"]) {
-                    const pkgTenCon = matchingData["Package-Tender-Contract"].toLowerCase();
-                    
-                    if (pkgTenCon.includes(searchTerm)) {
-                        polygon.setOptions({
-                            strokeColor: '#00008B',
-                            fillColor: '#FF0000',
-                            fillOpacity: 0.7
-                        });
-                        foundMatch = true;
-                    } else {
-                        polygon.setOptions({
-                            strokeColor: '#00008B',
-                            fillColor: '#AADDFF',
-                            fillOpacity: 0.35
-                        });
-                    }
-                }
-            });
-
-            if (!foundMatch) {
-                alert('No buildings found matching the Package/Tender/Contract search term.');
-            }
-        }
-
-        function searchBuildingStatus() {
-            const selectedStatus = document.getElementById('buildingStatusSelect').value;
-            if (!selectedStatus) {
-                alert('Please select a building status to search.');
-                return;
-            }
-
-            let foundMatch = false;
-
-            polygons.forEach(polygon => {
-                const componentId = polygon.componentId;
-                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
-
-                if (matchingData && matchingData["Status Building"]) {
-                    if (matchingData["Status Building"] === selectedStatus) {
-                        polygon.setOptions({
-                            strokeColor: '#00008B',
-                            fillColor: '#FF0000',
-                            fillOpacity: 0.7
-                        });
-                        foundMatch = true;
-                    } else {
-                        polygon.setOptions({
-                            strokeColor: '#00008B',
-                            fillColor: '#AADDFF',
-                            fillOpacity: 0.35
-                        });
-                    }
-                }
-            });
-
-            if (!foundMatch) {
-                alert('No buildings found with the selected status.');
+                alert('No buildings found matching the selected criteria.');
             }
         }
 
@@ -538,8 +469,8 @@
             document.getElementById('buildingSearch').value = '';
             document.getElementById('pkgTenConSearch').value = '';
             document.getElementById('buildingStatusSelect').value = '';
-            selectedBuildings = [];
-            updateSelectedBuildingsDisplay();
+            document.getElementById('exactMatch').checked = false;
+            
             polygons.forEach(polygon => {
                 polygon.setOptions({
                     strokeColor: '#00008B',
