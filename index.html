@@ -206,10 +206,7 @@
                 .then(data => {
                     jsonData = data;
 
-                    // Extract unique package/tender/contract values
                     const pkgTenConSet = new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean));
-
-                    // Convert set back to array for autocomplete
                     const pkgTenConArray = Array.from(pkgTenConSet);
 
                     jsonData.forEach(item => {
@@ -220,16 +217,17 @@
                             buildingStatuses.add(item["Status Building"]);
                         }
                     });
+
                     autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
                     autocomplete(document.getElementById("pkgTenConSearch"), pkgTenConArray);
-                    populateBuildingStatusSelect(); // Call the function here
+                    populateBuildingStatusSelect();
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
         }
 
         function populateBuildingStatusSelect() {
             const select = document.getElementById('buildingStatusSelect');
-            select.innerHTML = '<option value="">Select Status</option>'; // Clear existing options
+            select.innerHTML = '<option value="">Select Status</option>';
             buildingStatuses.forEach(status => {
                 const option = document.createElement('option');
                 option.value = status;
@@ -411,12 +409,18 @@
         }
 
         function combinedSearch() {
-            const buildingType = document.getElementById('buildingSearch').value;
-            const pkgTenCon = document.getElementById('pkgTenConSearch').value;
+            const buildingType = document.getElementById('buildingSearch').value.trim();
+            const pkgTenCon = document.getElementById('pkgTenConSearch').value.trim();
             const buildingStatus = document.getElementById('buildingStatusSelect').value;
             const exactMatch = document.getElementById('exactMatch').checked;
 
             let foundMatch = false;
+
+            // Check if any search criteria are specified
+            if (!buildingType && !pkgTenCon && !buildingStatus) {
+                alert('Please specify at least one search criterion.');
+                return;
+            }
 
             polygons.forEach(polygon => {
                 const componentId = polygon.componentId;
