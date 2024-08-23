@@ -18,7 +18,7 @@
             right: 10px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
-            width: 40px; /* Restored original size */
+            width: 40px;
             height: 40px;
             cursor: pointer;
         }
@@ -26,17 +26,53 @@
             position: absolute;
             top: 60px;
             right: 10px;
-            display: none;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 15px;
+            background: #e6f3ff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            animation: fadeIn 0.3s ease-out;
             z-index: 1000;
-            width: 320px; /* Increased width */
+            width: 320px;
         }
-        .menu input[type="text"] {
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .menu input[type="text"], .menu select {
             width: 100%;
+            padding: 8px;
             margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
+        
+        .menu button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .menu button:hover {
+            background-color: #45a049;
+        }
+        
+        .search-section {
+            margin-top: 15px;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+        }
+        
+        .menu label {
+            font-weight: bold;
+            color: #333;
+        }
+
         .autocomplete-items {
             position: absolute;
             border: 1px solid #d4d4d4;
@@ -62,7 +98,7 @@
             color: #ffffff; 
         }
         .info-window {
-            max-width: 320px; /* Increased width */
+            max-width: 320px;
             font-family: Arial, sans-serif;
         }
         .info-window table {
@@ -86,10 +122,10 @@
         }
         .info-window td[colspan="3"] {
             text-align: left;
-            white-space: nowrap; /* Prevent line break */
+            white-space: nowrap;
         }
-        .gm-ui-hover-effect { /* Styling for the close button in info window */
-            width: 20px; /* Reduced size */
+        .gm-ui-hover-effect {
+            width: 20px;
             height: 20px;
         }
         #revision {
@@ -109,11 +145,6 @@
         .remove-building {
             cursor: pointer;
             color: red;
-        }
-        .search-section {
-            margin-top: 10px;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
         }
     </style>
 </head>
@@ -138,6 +169,14 @@
             </div>
             <button onclick="searchPkgTenCon()">Search Package / Tender / Contract</button>
         </div>
+
+        <div class="search-section">
+            <label for="buildingStatusSelect">Building Status:</label>
+            <select id="buildingStatusSelect">
+                <option value="">Select Status</option>
+            </select>
+            <button onclick="searchBuildingStatus()">Search Building Status</button>
+        </div>
     </div>
     <div id="revision">Rev.13</div>
 
@@ -146,6 +185,7 @@
         let jsonData = {};
         let polygons = [];
         let buildingTypes = new Set();
+        let buildingStatuses = new Set();
         let selectedBuildings = [];
 
         function initMap() {
@@ -175,9 +215,13 @@
                         if (item["Building Type"]) {
                             buildingTypes.add(item["Building Type"]);
                         }
+                        if (item["Status Building"]) {
+                            buildingStatuses.add(item["Status Building"]);
+                        }
                     });
                     autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
                     autocomplete(document.getElementById("pkgTenConSearch"), pkgTenConArray);
+                    populateBuildingStatusSelect();
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
         }
@@ -438,6 +482,42 @@
 
             if (!foundMatch) {
                 alert('No buildings found matching the Package/Tender/Contract search term.');
+            }
+        }
+
+        function searchBuildingStatus() {
+            const selectedStatus = document.getElementById('buildingStatusSelect').value;
+            if (!selectedStatus) {
+                alert('Please select a building status to search.');
+                return;
+            }
+
+            let foundMatch = false;
+
+            polygons.forEach(polygon => {
+                const componentId = polygon.componentId;
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData && matchingData["Status Building"]) {
+                    if (matchingData["Status Building"] === selectedStatus) {
+                        polygon.setOptions({
+                            strokeColor: '#00008B',
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.7
+                        });
+                        foundMatch = true;
+                    } else {
+                        polygon.setOptions({
+                            strokeColor: '#00008B',
+                            fillColor: '#AADDFF',
+                            fillOpacity: 0.35
+                        });
+                    }
+                }
+            });
+
+            if (!foundMatch) {
+                alert('No buildings found with the selected status.');
             }
         }
 
