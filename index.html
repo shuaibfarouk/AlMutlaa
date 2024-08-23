@@ -14,7 +14,7 @@
         }
         .settings-button {
             position: absolute;
-            top: 10px;
+            top: 5px;
             right: 10px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
@@ -24,7 +24,7 @@
         }
         .menu {
             position: absolute;
-            top: 60px;
+            top: 50px;
             right: 10px;
             background: #e6f3ff;
             border-radius: 10px;
@@ -36,12 +36,10 @@
             font-size: 14px;
             display: none;
         }
-        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
         .menu input[type="text"], .menu select {
             width: 100%;
             padding: 6px;
@@ -50,7 +48,6 @@
             border-radius: 4px;
             font-size: 14px;
         }
-        
         .menu button {
             background-color: #4CAF50;
             color: white;
@@ -62,23 +59,19 @@
             font-size: 14px;
             margin-top: 5px;
         }
-        
         .menu button:hover {
             background-color: #45a049;
         }
-        
         .search-section {
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
         }
-
         .autocomplete {
             position: relative;
             display: inline-block;
             width: 100%;
         }
-
         .autocomplete-items {
             position: absolute;
             border: 1px solid #d4d4d4;
@@ -91,23 +84,19 @@
             overflow-y: auto;
             background-color: #fff;
         }
-
         .autocomplete-items div {
             padding: 10px;
             cursor: pointer;
             background-color: #fff; 
             border-bottom: 1px solid #d4d4d4; 
         }
-
         .autocomplete-items div:hover {
             background-color: #e9e9e9; 
         }
-
         .autocomplete-active {
             background-color: DodgerBlue !important; 
             color: #ffffff; 
         }
-
         .selected-item {
             background-color: #f0f0f0;
             padding: 4px;
@@ -116,56 +105,45 @@
             justify-content: space-between;
             font-size: 12px;
         }
-
         .remove-item {
             cursor: pointer;
             color: red;
         }
-
-        #buildingStatusSelect {
+        #buildingStatusSelect, #buildingOperationalStatusSelect {
             width: 100%;
             margin-bottom: 10px;
         }
-
         .info-window {
             max-width: 320px;
             font-family: Arial, sans-serif;
         }
-
         .info-window table {
             width: 100%;
             border-collapse: collapse;
         }
-
         .info-window th, .info-window td {
             border: 1px solid #ddd;
             padding: 4px 8px;
             text-align: left;
             font-size: 12px;
         }
-
         .info-window th {
             background-color: #f2f2f2;
         }
-
         .info-window th[colspan="4"] {
             text-align: center;
         }
-
         .info-window td {
             vertical-align: top;
         }
-
         .info-window td[colspan="3"] {
             text-align: left;
             white-space: nowrap;
         }
-
         .gm-ui-hover-effect {
             width: 20px;
             height: 20px;
         }
-
         #revision {
             position: absolute;
             bottom: 10px;
@@ -180,7 +158,7 @@
     <div class="settings-button" onclick="toggleMenu()"></div>
     <div id="menu" class="menu">
         <div class="search-section">
-            <div class="autocomplete" style="width:100%;">
+            <div class="autocomplete">
                 <input id="buildingSearch" type="text" placeholder="Enter Building Type">
             </div>
             <button onclick="addItem('building')">Add Building Type</button>
@@ -188,7 +166,7 @@
         </div>
         
         <div class="search-section">
-            <div class="autocomplete" style="width:100%;">
+            <div class="autocomplete">
                 <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
             </div>
             <button onclick="addItem('pkgTenCon')">Add Package/Tender/Contract</button>
@@ -203,10 +181,18 @@
             <div id="selectedBuildingStatuses"></div>
         </div>
 
+        <div class="search-section">
+            <select id="buildingOperationalStatusSelect">
+                <option value="">Select Building Operational Status</option>
+            </select>
+            <button onclick="addBuildingOperationalStatus()">Add Building Operational Status</button>
+            <div id="selectedBuildingOperationalStatuses"></div>
+        </div>
+
         <button onclick="combinedSearch()">Search</button>
         <button onclick="clearSearch()">Clear Search</button>
     </div>
-    <div id="revision">Rev.16</div>
+    <div id="revision">Rev.17</div>
 
     <script>
         let map;
@@ -214,9 +200,11 @@
         let polygons = [];
         let buildingTypes = new Set();
         let buildingStatuses = new Set();
+        let buildingOperationalStatuses = new Set();
         let selectedBuildings = [];
         let selectedPkgTenCon = [];
         let selectedBuildingStatuses = [];
+        let selectedBuildingOperationalStatuses = [];
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -237,10 +225,12 @@
                     data.forEach(item => {
                         if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
                         if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
+                        if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
                     });
                     autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
                     autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
                     populateBuildingStatusSelect();
+                    populateBuildingOperationalStatusSelect();
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
         }
@@ -317,6 +307,10 @@
                                 <tr>
                                     <td>Building Status</td>
                                     <td colspan="3">${matchingData["Status Building"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Building Operational Status</td>
+                                    <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
                                 </tr>
                                 <tr>
                                     <td>Tender:</td>
@@ -399,6 +393,16 @@
             });
         }
 
+        function populateBuildingOperationalStatusSelect() {
+            const select = document.getElementById('buildingOperationalStatusSelect');
+            buildingOperationalStatuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                select.appendChild(option);
+            });
+        }
+
         function addItem(type) {
             const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
             const value = input.value.trim();
@@ -420,6 +424,16 @@
             if (value && !selectedBuildingStatuses.includes(value)) {
                 selectedBuildingStatuses.push(value);
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+                select.selectedIndex = 0;
+            }
+        }
+
+        function addBuildingOperationalStatus() {
+            const select = document.getElementById('buildingOperationalStatusSelect');
+            const value = select.value;
+            if (value && !selectedBuildingOperationalStatuses.includes(value)) {
+                selectedBuildingOperationalStatuses.push(value);
+                updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
                 select.selectedIndex = 0;
             }
         }
@@ -448,11 +462,15 @@
             } else if (containerId === 'selectedBuildingStatuses') {
                 selectedBuildingStatuses = selectedBuildingStatuses.filter(s => s !== item);
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+            } else if (containerId === 'selectedBuildingOperationalStatuses') {
+                selectedBuildingOperationalStatuses = selectedBuildingOperationalStatuses.filter(s => s !== item);
+                updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
             }
         }
 
         function combinedSearch() {
-            if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && selectedBuildingStatuses.length === 0) {
+            if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
+                selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0) {
                 alert('Please specify at least one search criterion.');
                 return;
             }
@@ -482,6 +500,10 @@
                         isMatch = isMatch && selectedBuildingStatuses.includes(matchingData["Status Building"]);
                     }
 
+                    if (selectedBuildingOperationalStatuses.length > 0) {
+                        isMatch = isMatch && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"]);
+                    }
+
                     if (isMatch) {
                         polygon.setOptions({
                             strokeColor: '#00008B',
@@ -508,12 +530,15 @@
             selectedBuildings = [];
             selectedPkgTenCon = [];
             selectedBuildingStatuses = [];
+            selectedBuildingOperationalStatuses = [];
             updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
             updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
             updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+            updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
             document.getElementById('buildingSearch').value = '';
             document.getElementById('pkgTenConSearch').value = '';
             document.getElementById('buildingStatusSelect').selectedIndex = 0;
+            document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
             
             polygons.forEach(polygon => {
                 polygon.setOptions({
