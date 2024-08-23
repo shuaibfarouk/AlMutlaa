@@ -36,10 +36,12 @@
             font-size: 14px;
             display: none;
         }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
         .menu input[type="text"], .menu select {
             width: 100%;
             padding: 6px;
@@ -48,6 +50,7 @@
             border-radius: 4px;
             font-size: 14px;
         }
+        
         .menu button {
             background-color: #4CAF50;
             color: white;
@@ -59,14 +62,23 @@
             font-size: 14px;
             margin-top: 5px;
         }
+        
         .menu button:hover {
             background-color: #45a049;
         }
+        
         .search-section {
             margin-top: 10px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
         }
+
+        .autocomplete {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
         .autocomplete-items {
             position: absolute;
             border: 1px solid #d4d4d4;
@@ -77,20 +89,25 @@
             right: 0;
             max-height: 150px;
             overflow-y: auto;
+            background-color: #fff;
         }
+
         .autocomplete-items div {
             padding: 10px;
             cursor: pointer;
             background-color: #fff; 
             border-bottom: 1px solid #d4d4d4; 
         }
+
         .autocomplete-items div:hover {
             background-color: #e9e9e9; 
         }
+
         .autocomplete-active {
             background-color: DodgerBlue !important; 
             color: #ffffff; 
         }
+
         .selected-item {
             background-color: #f0f0f0;
             padding: 4px;
@@ -99,45 +116,56 @@
             justify-content: space-between;
             font-size: 12px;
         }
+
         .remove-item {
             cursor: pointer;
             color: red;
         }
+
         #buildingStatusSelect {
             width: 100%;
             margin-bottom: 10px;
         }
+
         .info-window {
             max-width: 320px;
             font-family: Arial, sans-serif;
         }
+
         .info-window table {
             width: 100%;
             border-collapse: collapse;
         }
+
         .info-window th, .info-window td {
             border: 1px solid #ddd;
             padding: 4px 8px;
             text-align: left;
             font-size: 12px;
         }
+
         .info-window th {
             background-color: #f2f2f2;
         }
+
         .info-window th[colspan="4"] {
             text-align: center;
         }
+
         .info-window td {
             vertical-align: top;
         }
+
         .info-window td[colspan="3"] {
             text-align: left;
             white-space: nowrap;
         }
+
         .gm-ui-hover-effect {
             width: 20px;
             height: 20px;
         }
+
         #revision {
             position: absolute;
             bottom: 10px;
