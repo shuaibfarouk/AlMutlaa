@@ -154,7 +154,6 @@
 
         /* Styles for the small info window */
         .small-info-window {
-            display: none;
             position: absolute;
             padding: 8px;
             background-color: white;
@@ -554,6 +553,7 @@
             }
 
             let foundMatch = false;
+            clearAllInfoWindows();  // Clear any existing info windows
 
             polygons.forEach(polygon => {
                 const componentId = polygon.componentId;
