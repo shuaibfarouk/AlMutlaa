@@ -15,7 +15,7 @@
         .settings-button {
             position: absolute;
             top: 5px;
-            right: 10px;
+            right: 5px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
             width: 40px;
@@ -29,7 +29,7 @@
             background: #e6f3ff;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 15px;
+            padding: 5px;
             animation: fadeIn 0.3s ease-out;
             z-index: 1000;
             width: 300px;
@@ -151,25 +151,6 @@
             color: red;
             font-weight: bold;
         }
-
-        /* Styles for the small info window */
-        #smallInfoWindow {
-            display: none;
-            position: absolute;
-            padding: 10px;
-            background-color: white;
-            border: 1px solid #ccc;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            cursor: move;
-            z-index: 10000;
-        }
-        #showSmallInfoCheckbox {
-            margin-left: 10px;
-        }
-        .trailing-line {
-            stroke: #FF0000;
-            stroke-width: 2;
-        }
     </style>
 </head>
 <body onload="initMap()">
@@ -208,21 +189,18 @@
             <div id="selectedBuildingOperationalStatuses"></div>
         </div>
 
+        <div class="search-section">
+            <select id="fiscalYearTenderSelect">
+                <option value="">Select Fiscal Year Tender</option>
+            </select>
+            <button onclick="addFiscalYearTender()">Add Fiscal Year Tender</button>
+            <div id="selectedFiscalYearTenders"></div>
+        </div>
+
         <button onclick="combinedSearch()">Search</button>
-        <input type="checkbox" id="showSmallInfoCheckbox" onchange="toggleSmallInfoWindow()">
-        <label for="showSmallInfoCheckbox">Show Small Info Window</label>
         <button onclick="clearSearch()">Clear Search</button>
     </div>
-    <div id="revision">Rev.17</div>
-
-    <!-- Small info window -->
-    <div id="smallInfoWindow">
-        <div id="smallInfoWindowContent"></div>
-    </div>
-
-    <svg id="trailingLineContainer" style="position: absolute; pointer-events: none;" width="100%" height="100%">
-        <line id="trailingLine" class="trailing-line" x1="0" y1="0" x2="0" y2="0" />
-    </svg>
+    <div id="revision">Rev.18</div>
 
     <script>
         let map;
@@ -231,11 +209,12 @@
         let buildingTypes = new Set();
         let buildingStatuses = new Set();
         let buildingOperationalStatuses = new Set();
+        let fiscalYearTenders = new Set();
         let selectedBuildings = [];
         let selectedPkgTenCon = [];
         let selectedBuildingStatuses = [];
         let selectedBuildingOperationalStatuses = [];
-        let smallInfoWindowBuilding = null;
+        let selectedFiscalYearTenders = [];
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -246,7 +225,6 @@
 
             loadJSONData();
             loadKML();
-            makeSmallInfoWindowDraggable();
         }
 
         function loadJSONData() {
@@ -258,11 +236,13 @@
                         if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
                         if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
                         if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
+                        if (item["Fiscal Year Based on Tender"]) fiscalYearTenders.add(item["Fiscal Year Based on Tender"]);
                     });
                     autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
                     autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
                     populateBuildingStatusSelect();
                     populateBuildingOperationalStatusSelect();
+                    populateFiscalYearTenderSelect();
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
         }
@@ -321,11 +301,6 @@
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
-                    if (document.getElementById('showSmallInfoCheckbox').checked) {
-                        smallInfoWindowBuilding = event.latLng;
-                        showSmallInfoWindow(matchingData, event.latLng);
-                    }
-
                     const content = `
                         <div class="info-window">
                             <table>
@@ -440,6 +415,16 @@
             });
         }
 
+        function populateFiscalYearTenderSelect() {
+            const select = document.getElementById('fiscalYearTenderSelect');
+            fiscalYearTenders.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                select.appendChild(option);
+            });
+        }
+
         function addItem(type) {
             const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
             const value = input.value.trim();
@@ -475,6 +460,16 @@
             }
         }
 
+        function addFiscalYearTender() {
+            const select = document.getElementById('fiscalYearTenderSelect');
+            const value = select.value;
+            if (value && !selectedFiscalYearTenders.includes(value)) {
+                selectedFiscalYearTenders.push(value);
+                updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
+                select.selectedIndex = 0;
+            }
+        }
+
         function updateSelectedItemsDisplay(containerId, items) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -502,12 +497,16 @@
             } else if (containerId === 'selectedBuildingOperationalStatuses') {
                 selectedBuildingOperationalStatuses = selectedBuildingOperationalStatuses.filter(s => s !== item);
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+            } else if (containerId === 'selectedFiscalYearTenders') {
+                selectedFiscalYearTenders = selectedFiscalYearTenders.filter(f => f !== item);
+                updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
             }
         }
 
         function combinedSearch() {
             if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
-                selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0) {
+                selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0 && 
+                selectedFiscalYearTenders.length === 0) {
                 alert('Please specify at least one search criterion.');
                 return;
             }
@@ -541,6 +540,10 @@
                         isMatch = isMatch && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"]);
                     }
 
+                    if (selectedFiscalYearTenders.length > 0) {
+                        isMatch = isMatch && selectedFiscalYearTenders.includes(matchingData["Fiscal Year Based on Tender"]);
+                    }
+
                     if (isMatch) {
                         polygon.setOptions({
                             strokeColor: '#00008B',
@@ -568,14 +571,17 @@
             selectedPkgTenCon = [];
             selectedBuildingStatuses = [];
             selectedBuildingOperationalStatuses = [];
+            selectedFiscalYearTenders = [];
             updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
             updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
             updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
             updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+            updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
             document.getElementById('buildingSearch').value = '';
             document.getElementById('pkgTenConSearch').value = '';
             document.getElementById('buildingStatusSelect').selectedIndex = 0;
             document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
+            document.getElementById('fiscalYearTenderSelect').selectedIndex = 0;
             
             polygons.forEach(polygon => {
                 polygon.setOptions({
@@ -583,93 +589,6 @@
                     fillColor: '#AADDFF',
                     fillOpacity: 0.35
                 });
-            });
-
-            hideSmallInfoWindow();
-        }
-
-        function toggleSmallInfoWindow() {
-            if (!document.getElementById('showSmallInfoCheckbox').checked) {
-                hideSmallInfoWindow();
-            }
-        }
-
-        function showSmallInfoWindow(data, latLng) {
-            const smallInfoWindow = document.getElementById('smallInfoWindow');
-            const content = `
-                <p><strong>Building Name:</strong> ${data["Building Type"] || 'N/A'}</p>
-                <p><strong>Building Status:</strong> ${data["Status Building"] || 'N/A'}</p>
-                <p><strong>Tender Fiscal Year:</strong> ${data["Fiscal Year Based on Tender"] || 'N/A'}</p>
-                <p><strong>Tender Date:</strong> ${data["Tender Announcement Date"] || 'N/A'}</p>
-            `;
-            document.getElementById('smallInfoWindowContent').innerHTML = content;
-
-            smallInfoWindow.style.left = `${latLng.x}px`;
-            smallInfoWindow.style.top = `${latLng.y}px`;
-            smallInfoWindow.style.display = 'block';
-
-            drawTrailingLine(latLng);
-        }
-
-        function hideSmallInfoWindow() {
-            const smallInfoWindow = document.getElementById('smallInfoWindow');
-            smallInfoWindow.style.display = 'none';
-
-            clearTrailingLine();
-        }
-
-        function drawTrailingLine(latLng) {
-            const trailingLine = document.getElementById('trailingLine');
-            const mapContainer = document.getElementById('map');
-
-            const mapRect = mapContainer.getBoundingClientRect();
-            const x1 = latLng.x - mapRect.left;
-            const y1 = latLng.y - mapRect.top;
-
-            const smallInfoWindow = document.getElementById('smallInfoWindow');
-            const smallInfoWindowRect = smallInfoWindow.getBoundingClientRect();
-            const x2 = smallInfoWindowRect.left + smallInfoWindowRect.width / 2 - mapRect.left;
-            const y2 = smallInfoWindowRect.top + smallInfoWindowRect.height / 2 - mapRect.top;
-
-            trailingLine.setAttribute('x1', x1);
-            trailingLine.setAttribute('y1', y1);
-            trailingLine.setAttribute('x2', x2);
-            trailingLine.setAttribute('y2', y2);
-            trailingLine.style.display = 'block';
-        }
-
-        function clearTrailingLine() {
-            const trailingLine = document.getElementById('trailingLine');
-            trailingLine.style.display = 'none';
-        }
-
-        function makeSmallInfoWindowDraggable() {
-            const smallInfoWindow = document.getElementById('smallInfoWindow');
-
-            smallInfoWindow.addEventListener('mousedown', function (event) {
-                event.preventDefault();
-
-                const startX = event.clientX;
-                const startY = event.clientY;
-                const startLeft = parseInt(window.getComputedStyle(smallInfoWindow).left, 10);
-                const startTop = parseInt(window.getComputedStyle(smallInfoWindow).top, 10);
-
-                function mouseMoveHandler(e) {
-                    smallInfoWindow.style.left = `${startLeft + e.clientX - startX}px`;
-                    smallInfoWindow.style.top = `${startTop + e.clientY - startY}px`;
-
-                    if (smallInfoWindowBuilding) {
-                        drawTrailingLine(smallInfoWindowBuilding);
-                    }
-                }
-
-                function mouseUpHandler() {
-                    document.removeEventListener('mousemove', mouseMoveHandler);
-                    document.removeEventListener('mouseup', mouseUpHandler);
-                }
-
-                document.addEventListener('mousemove', mouseMoveHandler);
-                document.addEventListener('mouseup', mouseUpHandler);
             });
         }
 
