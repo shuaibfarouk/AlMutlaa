@@ -5,11 +5,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     
-    <!-- Load the Google Maps API with drawing library -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
     
     <style>
-        /* Set the size of the HTML and body elements to occupy the full screen */
         html, body, #map {
             width: 100%;
             height: 100%;
@@ -17,202 +15,175 @@
             padding: 0;
         }
 
-        /* Style for the settings button in the top-right corner */
         .settings-button {
             position: absolute;
-            top: 15px;
+            top: 40px; /* Adjust this value to move the button down */
             right: 5px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
-            width: 30px;
-            height: 30px;
+            width: 30px; /* Assuming you've reduced the size as requested earlier */
+            height: 30px; /* Assuming you've reduced the size as requested earlier */
             cursor: pointer;
         }
 
-        /* Style for the dropdown menu that appears when the settings button is clicked */
         .menu {
             position: absolute;
             top: 50px;
             right: 10px;
-            background: #e6f3ff; /* Light blue background color */
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
-            padding: 4px; /* Internal padding */
-            animation: fadeIn 0.3s ease-out; /* Fade-in effect when the menu appears */
-            z-index: 1000; /* Ensure the menu appears on top of other elements */
-            width: 225px; /* Fixed width for the menu */
-            font-size: 13px; /* Standard font size */
-            display: none; /* Initially hidden */
+            background: #e6f3ff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 4px; /* Reduced from 5px to 4px */
+            animation: fadeIn 0.3s ease-out;
+            z-index: 1000;
+            width: 225px; /* Reduced from 300px to 225px */
+            font-size: 14px;
+            display: none;
         }
 
-        /* Define the fade-in animation for the menu */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); } /* Start invisible and move upwards */
-            to { opacity: 1; transform: translateY(0); } /* End fully visible and in position */
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Style for text inputs and select dropdowns within the menu */
         .menu input[type="text"], .menu select {
-            width: 95%; /* Full width */
-            padding: 6px; /* Internal padding */
-            margin-bottom: 8px; /* Space below each input */
-            border: 1px solid #ccc; /* Light grey border */
-            border-radius: 4px; /* Slight rounding on corners */
-            font-size: 14px; /* Consistent font size */
+            width: 95%;
+            padding: 6px;
+            margin-bottom: 4px; /* Reduced from 8px to 4px */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
         }
 
-        /* Style for buttons within the menu */
         .menu button {
-            background-color: #4CAF50; /* Green background */
-            color: white; /* White text */
-            padding: 8px 12px; /* Internal padding */
-            border: none; /* Remove default border */
-            border-radius: 4px; /* Rounded corners */
-            cursor: pointer; /* Pointer cursor on hover */
-            transition: background-color 0.3s; /* Smooth color transition on hover */
-            font-size: 14px; /* Consistent font size */
+            background-color: #4CAF50;
+            color: white;
+            padding: 2px 12px; /* Reduced from 8px to 2px for top & bottom, left & right stays the same */
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
             margin-top: 5px; /* Space above the button */
         }
 
-        /* Change the background color of buttons when hovered over */
         .menu button:hover {
-            background-color: #45a049; /* Darker green on hover */
+            background-color: #45a049;
         }
 
-        /* Style for the search sections within the menu */
         .search-section {
-            margin-top: 10px; /* Space above the section */
-            border-top: 1px solid #ccc; /* Light grey top border */
-            padding-top: 10px; /* Space above the contents */
+            margin-top: 5px; /* Reduced from 10px to 5px */
+            border-top: 1px solid #ccc;
+            padding-top: 5px; /* Reduced from 10px to 5px */
         }
 
-        /* Style for autocomplete containers */
         .autocomplete {
             position: relative;
             display: inline-block;
-            width: 100%; /* Full width */
+            width: 100%;
         }
 
-        /* Style for the autocomplete dropdown items */
         .autocomplete-items {
             position: absolute;
-            border: 1px solid #d4d4d4; /* Light grey border */
-            border-top: none; /* Remove top border to join with input */
-            z-index: 99; /* Ensure items appear above other content */
-            top: 100%; /* Position directly below the input */
+            border: 1px solid #d4d4d4;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
             left: 0;
             right: 0;
-            max-height: 150px; /* Limit the height with scrolling */
-            overflow-y: auto; /* Enable vertical scrolling */
-            background-color: #fff; /* White background */
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: #fff;
         }
 
-        /* Style for each item within the autocomplete dropdown */
         .autocomplete-items div {
-            padding: 10px; /* Internal padding */
-            cursor: pointer; /* Pointer cursor */
-            background-color: #fff; /* White background */
-            border-bottom: 1px solid #d4d4d4; /* Light grey bottom border */
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
         }
 
-        /* Change the background color of autocomplete items on hover */
         .autocomplete-items div:hover {
-            background-color: #e9e9e9; /* Light grey on hover */
+            background-color: #e9e9e9;
         }
 
-        /* Style for the active (selected) autocomplete item */
         .autocomplete-active {
-            background-color: DodgerBlue !important; /* Blue background for active item */
-            color: #ffffff; /* White text */
+            background-color: DodgerBlue !important;
+            color: #ffffff;
         }
 
-        /* Style for selected items within the menu */
         .selected-item {
-            background-color: #f0f0f0; /* Light grey background */
-            padding: 4px; /* Internal padding */
-            margin: 2px 0; /* Vertical margin */
-            display: flex; /* Flexbox layout */
-            justify-content: space-between; /* Space between item text and remove icon */
-            font-size: 12px; /* Smaller font size */
+            background-color: #f0f0f0;
+            padding: 4px;
+            margin: 2px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
         }
 
-        /* Style for the remove (close) icon next to selected items */
         .remove-item {
-            cursor: pointer; /* Pointer cursor */
-            color: red; /* Red color for remove icon */
+            cursor: pointer;
+            color: red;
         }
 
-        /* Style for specific dropdowns within the menu */
         #buildingStatusSelect, #buildingOperationalStatusSelect {
-            width: 100%; /* Full width */
-            margin-bottom: 10px; /* Space below the select box */
+            width: 100%;
+            margin-bottom: 10px;
         }
 
-        /* Style for the info window displayed on the map */
         .info-window {
-            max-width: 320px; /* Limit the width of the window */
-            font-family: Arial, sans-serif; /* Use Arial or fallback to sans-serif */
+            max-width: 320px;
+            font-family: Arial, sans-serif;
         }
 
-        /* Style for tables within the info window */
         .info-window table {
-            width: 100%; /* Full width */
-            border-collapse: collapse; /* Remove space between table cells */
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        /* Style for table headers and cells */
         .info-window th, .info-window td {
-            border: 1px solid #ddd; /* Light grey border for cells */
-            padding: 4px 8px; /* Internal padding */
-            text-align: left; /* Align text to the left */
-            font-size: 12px; /* Smaller font size */
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            text-align: left;
+            font-size: 12px;
         }
 
-        /* Style for table headers */
         .info-window th {
-            background-color: #f2f2f2; /* Light grey background for headers */
+            background-color: #f2f2f2;
         }
 
-        /* Center-align specific table headers */
         .info-window th[colspan="4"] {
             text-align: center;
         }
 
-        /* Align table cells vertically at the top */
         .info-window td {
             vertical-align: top;
         }
 
-        /* Specific style for cells that span multiple columns */
         .info-window td[colspan="3"] {
             text-align: left;
-            white-space: nowrap; /* Prevent text from wrapping */
+            white-space: nowrap;
         }
 
-        /* Style the close (X) button in the Google Maps UI */
         .gm-ui-hover-effect {
-            width: 20px; /* Size of the button */
+            width: 20px;
             height: 20px;
         }
 
-        /* Style for the revision text at the bottom-left of the map */
         #revision {
             position: absolute;
             bottom: 10px;
             left: 10px;
-            color: red; /* Red text color */
-            font-weight: bold; /* Bold text */
+            color: red;
+            font-weight: bold;
         }
     </style>
 </head>
 <body onload="initMap()">
-    <!-- Container for Google Map -->
     <div id="map"></div>
 
-    <!-- Settings button in the top-right corner -->
     <div class="settings-button" onclick="toggleMenu()"></div>
 
-    <!-- Menu that appears when the settings button is clicked -->
     <div id="menu" class="menu">
         <div class="search-section">
             <div class="autocomplete">
