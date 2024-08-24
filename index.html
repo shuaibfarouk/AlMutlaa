@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Google Maps - Building Viewer</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Interface</title>
     <style>
         html, body, #map {
             width: 100%;
@@ -18,131 +17,32 @@
             right: 10px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
-            width: 30px; /* Reduced by 25% */
-            height: 30px; /* Reduced by 25% */
+            width: 30px;
+            height: 30px;
             cursor: pointer;
         }
         .menu {
+            display: none;
             position: absolute;
             top: 50px;
             right: 10px;
             background: #e6f3ff;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 12px; /* Reduced by 25% */
-            animation: fadeIn 0.3s ease-out;
+            padding: 12px;
             z-index: 1000;
-            width: 225px; /* Reduced by 25% */
-            font-size: 11px; /* Reduced by 25% */
-            display: none;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .menu input[type="text"], .menu select {
-            width: 100%;
-            padding: 4px; /* Reduced by 25% */
-            margin-bottom: 6px; /* Reduced by 25% */
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 11px; /* Reduced by 25% */
-        }
-        .menu button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 6px 9px; /* Reduced by 25% */
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-size: 11px; /* Reduced by 25% */
-            margin-top: 4px; /* Reduced by 25% */
-        }
-        .menu button:hover {
-            background-color: #45a049;
+            width: 225px;
+            font-size: 11px;
         }
         .search-section {
-            margin-top: 8px; /* Reduced by 25% */
+            margin-top: 8px;
             border-top: 1px solid #ccc;
-            padding-top: 8px; /* Reduced by 25% */
+            padding-top: 8px;
         }
         .autocomplete {
             position: relative;
             display: inline-block;
             width: 100%;
-        }
-        .autocomplete-items {
-            position: absolute;
-            border: 1px solid #d4d4d4;
-            border-top: none;
-            z-index: 99;
-            top: 100%;
-            left: 0;
-            right: 0;
-            max-height: 150px;
-            overflow-y: auto;
-            background-color: #fff;
-        }
-        .autocomplete-items div {
-            padding: 8px; /* Reduced by 25% */
-            cursor: pointer;
-            background-color: #fff; 
-            border-bottom: 1px solid #d4d4d4; 
-        }
-        .autocomplete-items div:hover {
-            background-color: #e9e9e9; 
-        }
-        .autocomplete-active {
-            background-color: DodgerBlue !important; 
-            color: #ffffff; 
-        }
-        .selected-item {
-            background-color: #f0f0f0;
-            padding: 4px;
-            margin: 2px 0;
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px; /* Reduced by 25% */
-        }
-        .remove-item {
-            cursor: pointer;
-            color: red;
-        }
-        #buildingStatusSelect, #buildingOperationalStatusSelect, #fiscalYearSelect {
-            width: 100%;
-            margin-bottom: 8px; /* Reduced by 25% */
-        }
-        .info-window {
-            max-width: 240px; /* Reduced by 25% */
-            font-family: Arial, sans-serif;
-        }
-        .info-window table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .info-window th, .info-window td {
-            border: 1px solid #ddd;
-            padding: 4px 8px; /* Reduced by 25% */
-            text-align: left;
-            font-size: 11px; /* Reduced by 25% */
-        }
-        .info-window th {
-            background-color: #f2f2f2;
-        }
-        .info-window th[colspan="4"] {
-            text-align: center;
-        }
-        .info-window td {
-            vertical-align: top;
-        }
-        .info-window td[colspan="3"] {
-            text-align: left;
-            white-space: nowrap;
-        }
-        .gm-ui-hover-effect {
-            width: 20px;
-            height: 20px;
         }
         #revision {
             position: absolute;
@@ -151,8 +51,6 @@
             color: red;
             font-weight: bold;
         }
-
-        /* Styles for the small info window */
         .small-info-window {
             position: absolute;
             padding: 8px;
@@ -161,8 +59,8 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             cursor: move;
             z-index: 10000;
-            width: 180px; /* Reduced by 25% */
-            font-size: 11px; /* Reduced by 25% */
+            width: 180px;
+            font-size: 11px;
         }
         .info-pointer {
             width: 10px;
@@ -188,607 +86,610 @@
     </style>
 </head>
 <body onload="initMap()">
-    <div id="map"></div>
-    <div class="settings-button" onclick="toggleMenu()"></div>
-    <div id="menu" class="menu">
-        <div class="search-section">
-            <div class="autocomplete">
-                <input id="buildingSearch" type="text" placeholder="Enter Building Type">
-            </div>
-            <button onclick="addItem('building')">Add Building Type</button>
-            <div id="selectedBuildings"></div>
-        </div>
-        
-        <div class="search-section">
-            <div class="autocomplete">
-                <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
-            </div>
-            <button onclick="addItem('pkgTenCon')">Add Package/Tender/Contract</button>
-            <div id="selectedPkgTenCon"></div>
-        </div>
 
-        <div class="search-section">
-            <select id="buildingStatusSelect">
-                <option value="">Select Building Status</option>
-            </select>
-            <button onclick="addBuildingStatus()">Add Building Status</button>
-            <div id="selectedBuildingStatuses"></div>
-        </div>
+<div id="map"></div>
 
-        <div class="search-section">
-            <select id="buildingOperationalStatusSelect">
-                <option value="">Select Building Operational Status</option>
-            </select>
-            <button onclick="addBuildingOperationalStatus()">Add Building Operational Status</button>
-            <div id="selectedBuildingOperationalStatuses"></div>
-        </div>
+<div class="settings-button" onclick="toggleMenu()">&#9881;</div>
 
-        <!-- Added Tender Fiscal Year -->
-        <div class="search-section">
-            <select id="fiscalYearSelect">
-                <option value="">Select Tender Fiscal Year</option>
-            </select>
-            <button onclick="addFiscalYear()">Add Tender Fiscal Year</button>
-            <div id="selectedFiscalYears"></div>
+<div id="menu" class="menu">
+    <div class="search-section">
+        <div class="autocomplete">
+            <input id="buildingSearch" type="text" placeholder="Enter Building Type">
         </div>
+        <button onclick="addItem('building')">Add Building Type</button>
+        <div id="selectedBuildings"></div>
+    </div>
 
-        <button onclick="combinedSearch()">Search</button>
+    <div class="search-section">
+        <div class="autocomplete">
+            <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
+        </div>
+        <button onclick="addItem('pkgTenCon')">Add Package/Tender/Contract</button>
+        <div id="selectedPkgTenCon"></div>
+    </div>
+
+    <div class="search-section">
+        <label for="buildingStatusSelect">Select Building Status</label>
+        <select id="buildingStatusSelect"></select>
+        <button onclick="addBuildingStatus()">Add Building Status</button>
+        <div id="selectedBuildingStatuses"></div>
+    </div>
+
+    <div class="search-section">
+        <label for="buildingOperationalStatusSelect">Select Building Operational Status</label>
+        <select id="buildingOperationalStatusSelect"></select>
+        <button onclick="addBuildingOperationalStatus()">Add Building Operational Status</button>
+        <div id="selectedBuildingOperationalStatuses"></div>
+    </div>
+
+    <div class="search-section">
+        <label for="fiscalYearSelect">Select Tender Fiscal Year</label>
+        <select id="fiscalYearSelect"></select>
+        <button onclick="addFiscalYear()">Add Tender Fiscal Year</button>
+        <div id="selectedFiscalYears"></div>
+    </div>
+
+    <button onclick="combinedSearch()">Search</button>
+
+    <div>
         <input type="checkbox" id="showSmallInfoCheckbox" onchange="toggleSmallInfoWindow()">
         <label for="showSmallInfoCheckbox">Show Small Info Window</label>
-        <button onclick="clearSearch()">Clear Search</button>
     </div>
-    <div id="revision">Rev.17</div>
 
-    <script>
-        let map;
-        let jsonData = {};
-        let polygons = [];
-        let buildingTypes = new Set();
-        let buildingStatuses = new Set();
-        let buildingOperationalStatuses = new Set();
-        let fiscalYears = new Set();
-        let selectedBuildings = [];
-        let selectedPkgTenCon = [];
-        let selectedBuildingStatuses = [];
-        let selectedBuildingOperationalStatuses = [];
-        let selectedFiscalYears = [];
-        let infoWindows = [];
+    <button onclick="clearSearch()">Clear Search</button>
+</div>
 
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 29.478324, lng: 47.607149 },
-                zoom: 12,
-                mapTypeId: 'roadmap'
-            });
+<div id="revision">Rev.18</div>
 
-            loadJSONData();
-            loadKML();
-        }
+<script>
+    let map;
+    let jsonData = {};
+    let polygons = [];
+    let buildingTypes = new Set();
+    let buildingStatuses = new Set();
+    let buildingOperationalStatuses = new Set();
+    let fiscalYears = new Set();
+    let selectedBuildings = [];
+    let selectedPkgTenCon = [];
+    let selectedBuildingStatuses = [];
+    let selectedBuildingOperationalStatuses = [];
+    let selectedFiscalYears = [];
+    let infoWindows = [];
 
-        function loadJSONData() {
-            fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
-                .then(response => response.json())
-                .then(data => {
-                    jsonData = data;
-                    data.forEach(item => {
-                        if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
-                        if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
-                        if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
-                        if (item["Fiscal Year Based on Tender"]) fiscalYears.add(item["Fiscal Year Based on Tender"]);
-                    });
-                    autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
-                    autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
-                    populateBuildingStatusSelect();
-                    populateBuildingOperationalStatusSelect();
-                    populateFiscalYearSelect();
-                })
-                .catch(error => console.error('Error loading JSON data:', error));
-        }
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 29.478324, lng: 47.607149 },
+            zoom: 12,
+            mapTypeId: 'roadmap'
+        });
 
-        function loadKML() {
-            const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
-            
-            fetch(kmlUrl)
-                .then(response => response.text())
-                .then(kmlData => {
-                    const parser = new DOMParser();
-                    const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
-                    const placemarks = kmlDoc.getElementsByTagName('Placemark');
+        loadJSONData();
+        loadKML();
+    }
 
-                    for (let placemark of placemarks) {
-                        const coordinates = placemark.getElementsByTagName('coordinates')[0].textContent.trim().split(' ');
-                        const path = coordinates.map(coord => {
-                            const [lng, lat] = coord.split(',');
-                            return {lat: parseFloat(lat), lng: parseFloat(lng)};
-                        });
-
-                        const polygon = new google.maps.Polygon({
-                            paths: path,
-                            strokeColor: '#00008B',
-                            strokeOpacity: 1,
-                            strokeWeight: 2,
-                            fillColor: '#AADDFF',
-                            fillOpacity: 0.35,
-                            map: map
-                        });
-
-                        const componentId = getComponentId(placemark);
-                        polygon.componentId = componentId;
-                        polygons.push(polygon);
-                        
-                        polygon.addListener('click', function(event) {
-                            handlePolygonClick(event, componentId);
-                        });
-                    }
-                })
-                .catch(error => console.error('Error loading KML:', error));
-        }
-
-        function getComponentId(placemark) {
-            const simpleDataElements = placemark.getElementsByTagName('SimpleData');
-            for (let element of simpleDataElements) {
-                if (element.getAttribute('name') === 'Component ID') {
-                    return element.textContent;
-                }
-            }
-            return null;
-        }
-
-        function handlePolygonClick(event, componentId) {
-            if (componentId) {
-                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
-
-                if (matchingData) {
-                    if (document.getElementById('showSmallInfoCheckbox').checked) {
-                        showSmallInfoWindow(matchingData, event.latLng);
-                    }
-
-                    const content = `
-                        <div class="info-window">
-                            <table>
-                                <tr>
-                                    <th colspan="2">${matchingData["Building Type"] || 'N/A'}</th>
-                                    <th>${matchingData["Neighborhood"] || 'N/A'}</th>
-                                    <th>Block ${matchingData["Block"] || 'N/A'}</th>
-                                </tr>
-                                <tr>
-                                    <th colspan="4">${matchingData["Package-Tender-Contract"] || 'N/A'}</th>
-                                </tr>
-                                <tr>
-                                    <td>Tender / Contract Status</td>
-                                    <td colspan="3">${matchingData["Status Package"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Building Status</td>
-                                    <td colspan="3">${matchingData["Status Building"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Building Operational Status</td>
-                                    <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Tender:</td>
-                                    <td colspan="3">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Tender Date:</td>
-                                    <td colspan="3">${matchingData["Tender Announcement Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Construction:</td>
-                                    <td colspan="3">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Start Date:</td>
-                                    <td colspan="3">${matchingData["Construction Start Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>End Date:</td>
-                                    <td colspan="3">${matchingData["Construction End Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Progress %:</td>
-                                    <td colspan="3">${matchingData["Package Completion %"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Building Energized:</td>
-                                    <td colspan="3">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Handed Over to End User:</td>
-                                    <td colspan="3">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Operational:</td>
-                                    <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>Stakeholder:</td>
-                                    <td colspan="3">${matchingData["Stakeholder"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td>End User:</td>
-                                    <td colspan="3">${matchingData["End User"] || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    `;
-
-                    const infoWindow = new google.maps.InfoWindow({
-                        content: content,
-                        position: event.latLng
-                    });
-
-                    infoWindow.open(map);
-
-                } else {
-                    alert('No matching data found for this Component ID.');
-                }
-            } else {
-                alert('Unable to identify this building. Please try another.');
-            }
-        }
-
-        function toggleMenu() {
-            const menu = document.getElementById('menu');
-            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function populateBuildingStatusSelect() {
-            const select = document.getElementById('buildingStatusSelect');
-            buildingStatuses.forEach(status => {
-                const option = document.createElement('option');
-                option.value = status;
-                option.textContent = status;
-                select.appendChild(option);
-            });
-        }
-
-        function populateBuildingOperationalStatusSelect() {
-            const select = document.getElementById('buildingOperationalStatusSelect');
-            buildingOperationalStatuses.forEach(status => {
-                const option = document.createElement('option');
-                option.value = status;
-                option.textContent = status;
-                select.appendChild(option);
-            });
-        }
-
-        function populateFiscalYearSelect() {
-            const select = document.getElementById('fiscalYearSelect');
-            fiscalYears.forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                select.appendChild(option);
-            });
-        }
-
-        function addItem(type) {
-            const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
-            const value = input.value.trim();
-            if (value) {
-                if (type === 'building' && !selectedBuildings.includes(value)) {
-                    selectedBuildings.push(value);
-                    updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-                } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
-                    selectedPkgTenCon.push(value);
-                    updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
-                }
-                input.value = '';
-            }
-        }
-
-        function addBuildingStatus() {
-            const select = document.getElementById('buildingStatusSelect');
-            const value = select.value;
-            if (value && !selectedBuildingStatuses.includes(value)) {
-                selectedBuildingStatuses.push(value);
-                updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
-                select.selectedIndex = 0;
-            }
-        }
-
-        function addBuildingOperationalStatus() {
-            const select = document.getElementById('buildingOperationalStatusSelect');
-            const value = select.value;
-            if (value && !selectedBuildingOperationalStatuses.includes(value)) {
-                selectedBuildingOperationalStatuses.push(value);
-                updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
-                select.selectedIndex = 0;
-            }
-        }
-
-        function addFiscalYear() {
-            const select = document.getElementById('fiscalYearSelect');
-            const value = select.value;
-            if (value && !selectedFiscalYears.includes(value)) {
-                selectedFiscalYears.push(value);
-                updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
-                select.selectedIndex = 0;
-            }
-        }
-
-        function updateSelectedItemsDisplay(containerId, items) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'selected-item';
-                div.innerHTML = `
-                    ${item}
-                    <span class="remove-item" onclick="removeItem('${containerId}', '${item}')">&times;</span>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function removeItem(containerId, item) {
-            if (containerId === 'selectedBuildings') {
-                selectedBuildings = selectedBuildings.filter(b => b !== item);
-                updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-            } else if (containerId === 'selectedPkgTenCon') {
-                selectedPkgTenCon = selectedPkgTenCon.filter(p => p !== item);
-                updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
-            } else if (containerId === 'selectedBuildingStatuses') {
-                selectedBuildingStatuses = selectedBuildingStatuses.filter(s => s !== item);
-                updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
-            } else if (containerId === 'selectedBuildingOperationalStatuses') {
-                selectedBuildingOperationalStatuses = selectedBuildingOperationalStatuses.filter(s => s !== item);
-                updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
-            } else if (containerId === 'selectedFiscalYears') {
-                selectedFiscalYears = selectedFiscalYears.filter(y => y !== item);
-                updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
-            }
-        }
-
-        function combinedSearch() {
-            if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
-                selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0 && selectedFiscalYears.length === 0) {
-                alert('Please specify at least one search criterion.');
-                return;
-            }
-
-            let foundMatch = false;
-            clearAllInfoWindows();  // Clear any existing info windows
-
-            polygons.forEach(polygon => {
-                const componentId = polygon.componentId;
-                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
-
-                if (matchingData) {
-                    let isMatch = true;
-
-                    if (selectedBuildings.length > 0) {
-                        isMatch = isMatch && selectedBuildings.some(selected => 
-                            matchingData["Building Type"] && matchingData["Building Type"].toLowerCase().includes(selected.toLowerCase())
-                        );
-                    }
-
-                    if (selectedPkgTenCon.length > 0) {
-                        isMatch = isMatch && selectedPkgTenCon.some(selected => 
-                            matchingData["Package-Tender-Contract"] && matchingData["Package-Tender-Contract"].toLowerCase().includes(selected.toLowerCase())
-                        );
-                    }
-
-                    if (selectedBuildingStatuses.length > 0) {
-                        isMatch = isMatch && selectedBuildingStatuses.includes(matchingData["Status Building"]);
-                    }
-
-                    if (selectedBuildingOperationalStatuses.length > 0) {
-                        isMatch = isMatch && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"]);
-                    }
-
-                    if (selectedFiscalYears.length > 0) {
-                        isMatch = isMatch && selectedFiscalYears.includes(matchingData["Fiscal Year Based on Tender"]);
-                    }
-
-                    if (isMatch) {
-                        polygon.setOptions({
-                            strokeColor: '#00008B',
-                            fillColor: '#FF0000',
-                            fillOpacity: 0.7
-                        });
-                        foundMatch = true;
-
-                        // Show small info window if checkbox is checked
-                        if (document.getElementById('showSmallInfoCheckbox').checked) {
-                            const bounds = new google.maps.LatLngBounds();
-                            polygon.getPath().forEach(function(latLng) {
-                                bounds.extend(latLng);
-                            });
-                            const center = bounds.getCenter();
-                            createInfoWindow(matchingData, center);
-                        }
-                    } else {
-                        polygon.setOptions({
-                            strokeColor: '#00008B',
-                            fillColor: '#AADDFF',
-                            fillOpacity: 0.35
-                        });
-                    }
-                }
-            });
-
-            if (!foundMatch) {
-                alert('No buildings found matching the selected criteria.');
-            }
-
-            adjustOverlappingWindows();
-        }
-
-        function clearSearch() {
-            selectedBuildings = [];
-            selectedPkgTenCon = [];
-            selectedBuildingStatuses = [];
-            selectedBuildingOperationalStatuses = [];
-            selectedFiscalYears = [];
-            updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-            updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
-            updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
-            updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
-            updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
-            document.getElementById('buildingSearch').value = '';
-            document.getElementById('pkgTenConSearch').value = '';
-            document.getElementById('buildingStatusSelect').selectedIndex = 0;
-            document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
-            document.getElementById('fiscalYearSelect').selectedIndex = 0;
-            
-            polygons.forEach(polygon => {
-                polygon.setOptions({
-                    strokeColor: '#00008B',
-                    fillColor: '#AADDFF',
-                    fillOpacity: 0.35
+    function loadJSONData() {
+        fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
+            .then(response => response.json())
+            .then(data => {
+                jsonData = data;
+                data.forEach(item => {
+                    if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
+                    if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
+                    if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
+                    if (item["Fiscal Year Based on Tender"]) fiscalYears.add(item["Fiscal Year Based on Tender"]);
                 });
-            });
+                autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
+                autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
+                populateBuildingStatusSelect();
+                populateBuildingOperationalStatusSelect();
+                populateFiscalYearSelect();
+            })
+            .catch(error => console.error('Error loading JSON data:', error));
+    }
 
+    function loadKML() {
+        const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
+        
+        fetch(kmlUrl)
+            .then(response => response.text())
+            .then(kmlData => {
+                const parser = new DOMParser();
+                const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
+                const placemarks = kmlDoc.getElementsByTagName('Placemark');
+
+                for (let placemark of placemarks) {
+                    const coordinates = placemark.getElementsByTagName('coordinates')[0].textContent.trim().split(' ');
+                    const path = coordinates.map(coord => {
+                        const [lng, lat] = coord.split(',');
+                        return {lat: parseFloat(lat), lng: parseFloat(lng)};
+                    });
+
+                    const polygon = new google.maps.Polygon({
+                        paths: path,
+                        strokeColor: '#00008B',
+                        strokeOpacity: 1,
+                        strokeWeight: 2,
+                        fillColor: '#AADDFF',
+                        fillOpacity: 0.35,
+                        map: map
+                    });
+
+                    const componentId = getComponentId(placemark);
+                    polygon.componentId = componentId;
+                    polygons.push(polygon);
+                    
+                    polygon.addListener('click', function(event) {
+                        handlePolygonClick(event, componentId);
+                    });
+                }
+            })
+            .catch(error => console.error('Error loading KML:', error));
+    }
+
+    function getComponentId(placemark) {
+        const simpleDataElements = placemark.getElementsByTagName('SimpleData');
+        for (let element of simpleDataElements) {
+            if (element.getAttribute('name') === 'Component ID') {
+                return element.textContent;
+            }
+        }
+        return null;
+    }
+
+    function handlePolygonClick(event, componentId) {
+        if (componentId) {
+            const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+            if (matchingData) {
+                if (document.getElementById('showSmallInfoCheckbox').checked) {
+                    showSmallInfoWindow(matchingData, event.latLng);
+                }
+
+                const content = `
+                    <div class="info-window">
+                        <table>
+                            <tr>
+                                <th colspan="2">${matchingData["Building Type"] || 'N/A'}</th>
+                                <th>${matchingData["Neighborhood"] || 'N/A'}</th>
+                                <th>Block ${matchingData["Block"] || 'N/A'}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="4">${matchingData["Package-Tender-Contract"] || 'N/A'}</th>
+                            </tr>
+                            <tr>
+                                <td>Tender / Contract Status</td>
+                                <td colspan="3">${matchingData["Status Package"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Building Status</td>
+                                <td colspan="3">${matchingData["Status Building"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Building Operational Status</td>
+                                <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Tender:</td>
+                                <td colspan="3">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Tender Date:</td>
+                                <td colspan="3">${matchingData["Tender Announcement Date"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Construction:</td>
+                                <td colspan="3">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Start Date:</td>
+                                <td colspan="3">${matchingData["Construction Start Date"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>End Date:</td>
+                                <td colspan="3">${matchingData["Construction End Date"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Progress %:</td>
+                                <td colspan="3">${matchingData["Package Completion %"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Building Energized:</td>
+                                <td colspan="3">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Handed Over to End User:</td>
+                                <td colspan="3">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Operational:</td>
+                                <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>Stakeholder:</td>
+                                <td colspan="3">${matchingData["Stakeholder"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td>End User:</td>
+                                <td colspan="3">${matchingData["End User"] || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                `;
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: content,
+                    position: event.latLng
+                });
+
+                infoWindow.open(map);
+
+            } else {
+                alert('No matching data found for this Component ID.');
+            }
+        } else {
+            alert('Unable to identify this building. Please try another.');
+        }
+    }
+
+    function toggleMenu() {
+        const menu = document.getElementById('menu');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function populateBuildingStatusSelect() {
+        const select = document.getElementById('buildingStatusSelect');
+        buildingStatuses.forEach(status => {
+            const option = document.createElement('option');
+            option.value = status;
+            option.textContent = status;
+            select.appendChild(option);
+        });
+    }
+
+    function populateBuildingOperationalStatusSelect() {
+        const select = document.getElementById('buildingOperationalStatusSelect');
+        buildingOperationalStatuses.forEach(status => {
+            const option = document.createElement('option');
+            option.value = status;
+            option.textContent = status;
+            select.appendChild(option);
+        });
+    }
+
+    function populateFiscalYearSelect() {
+        const select = document.getElementById('fiscalYearSelect');
+        fiscalYears.forEach(year => {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            select.appendChild(option);
+        });
+    }
+
+    function addItem(type) {
+        const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
+        const value = input.value.trim();
+        if (value) {
+            if (type === 'building' && !selectedBuildings.includes(value)) {
+                selectedBuildings.push(value);
+                updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+            } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
+                selectedPkgTenCon.push(value);
+                updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+            }
+            input.value = '';
+        }
+    }
+
+    function addBuildingStatus() {
+        const select = document.getElementById('buildingStatusSelect');
+        const value = select.value;
+        if (value && !selectedBuildingStatuses.includes(value)) {
+            selectedBuildingStatuses.push(value);
+            updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+            select.selectedIndex = 0;
+        }
+    }
+
+    function addBuildingOperationalStatus() {
+        const select = document.getElementById('buildingOperationalStatusSelect');
+        const value = select.value;
+        if (value && !selectedBuildingOperationalStatuses.includes(value)) {
+            selectedBuildingOperationalStatuses.push(value);
+            updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+            select.selectedIndex = 0;
+        }
+    }
+
+    function addFiscalYear() {
+        const select = document.getElementById('fiscalYearSelect');
+        const value = select.value;
+        if (value && !selectedFiscalYears.includes(value)) {
+            selectedFiscalYears.push(value);
+            updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
+            select.selectedIndex = 0;
+        }
+    }
+
+    function updateSelectedItemsDisplay(containerId, items) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'selected-item';
+            div.innerHTML = `
+                ${item}
+                <span class="remove-item" onclick="removeItem('${containerId}', '${item}')">&times;</span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function removeItem(containerId, item) {
+        if (containerId === 'selectedBuildings') {
+            selectedBuildings = selectedBuildings.filter(b => b !== item);
+            updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+        } else if (containerId === 'selectedPkgTenCon') {
+            selectedPkgTenCon = selectedPkgTenCon.filter(p => p !== item);
+            updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+        } else if (containerId === 'selectedBuildingStatuses') {
+            selectedBuildingStatuses = selectedBuildingStatuses.filter(s => s !== item);
+            updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+        } else if (containerId === 'selectedBuildingOperationalStatuses') {
+            selectedBuildingOperationalStatuses = selectedBuildingOperationalStatuses.filter(s => s !== item);
+            updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+        } else if (containerId === 'selectedFiscalYears') {
+            selectedFiscalYears = selectedFiscalYears.filter(y => y !== item);
+            updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
+        }
+    }
+
+    function combinedSearch() {
+        if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
+            selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0 && selectedFiscalYears.length === 0) {
+            alert('Please specify at least one search criterion.');
+            return;
+        }
+
+        let foundMatch = false;
+        clearAllInfoWindows();  // Clear any existing info windows
+
+        polygons.forEach(polygon => {
+            const componentId = polygon.componentId;
+            const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+            if (matchingData) {
+                let isMatch = true;
+
+                if (selectedBuildings.length > 0) {
+                    isMatch = isMatch && selectedBuildings.some(selected => 
+                        matchingData["Building Type"] && matchingData["Building Type"].toLowerCase().includes(selected.toLowerCase())
+                    );
+                }
+
+                if (selectedPkgTenCon.length > 0) {
+                    isMatch = isMatch && selectedPkgTenCon.some(selected => 
+                        matchingData["Package-Tender-Contract"] && matchingData["Package-Tender-Contract"].toLowerCase().includes(selected.toLowerCase())
+                    );
+                }
+
+                if (selectedBuildingStatuses.length > 0) {
+                    isMatch = isMatch && selectedBuildingStatuses.includes(matchingData["Status Building"]);
+                }
+
+                if (selectedBuildingOperationalStatuses.length > 0) {
+                    isMatch = isMatch && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"]);
+                }
+
+                if (selectedFiscalYears.length > 0) {
+                    isMatch = isMatch && selectedFiscalYears.includes(matchingData["Fiscal Year Based on Tender"]);
+                }
+
+                if (isMatch) {
+                    polygon.setOptions({
+                        strokeColor: '#00008B',
+                        fillColor: '#FF0000',
+                        fillOpacity: 0.7
+                    });
+                    foundMatch = true;
+
+                    // Show small info window if checkbox is checked
+                    if (document.getElementById('showSmallInfoCheckbox').checked) {
+                        const bounds = new google.maps.LatLngBounds();
+                        polygon.getPath().forEach(function(latLng) {
+                            bounds.extend(latLng);
+                        });
+                        const center = bounds.getCenter();
+                        createInfoWindow(matchingData, center);
+                    }
+                } else {
+                    polygon.setOptions({
+                        strokeColor: '#00008B',
+                        fillColor: '#AADDFF',
+                        fillOpacity: 0.35
+                    });
+                }
+            }
+        });
+
+        if (!foundMatch) {
+            alert('No buildings found matching the selected criteria.');
+        }
+
+        adjustOverlappingWindows();
+    }
+
+    function clearSearch() {
+        selectedBuildings = [];
+        selectedPkgTenCon = [];
+        selectedBuildingStatuses = [];
+        selectedBuildingOperationalStatuses = [];
+        selectedFiscalYears = [];
+        updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+        updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+        updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+        updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+        updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
+        document.getElementById('buildingSearch').value = '';
+        document.getElementById('pkgTenConSearch').value = '';
+        document.getElementById('buildingStatusSelect').selectedIndex = 0;
+        document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
+        document.getElementById('fiscalYearSelect').selectedIndex = 0;
+        
+        polygons.forEach(polygon => {
+            polygon.setOptions({
+                strokeColor: '#00008B',
+                fillColor: '#AADDFF',
+                fillOpacity: 0.35
+            });
+        });
+
+        clearAllInfoWindows();
+    }
+
+    function toggleSmallInfoWindow() {
+        if (!document.getElementById('showSmallInfoCheckbox').checked) {
             clearAllInfoWindows();
         }
+    }
 
-        function toggleSmallInfoWindow() {
-            if (!document.getElementById('showSmallInfoCheckbox').checked) {
-                clearAllInfoWindows();
-            }
-        }
+    function createInfoWindow(data, latLng) {
+        const infoWindow = document.createElement('div');
+        infoWindow.className = 'small-info-window';
+        infoWindow.innerHTML = `
+            <div class="info-content">
+                <h3>${data["Building Type"] || 'N/A'}</h3>
+                <p>Building Status: ${data["Status Building"] || 'N/A'}</p>
+                <p>Tender Fiscal Year: ${data["Fiscal Year Based on Tender"] || 'N/A'}</p>
+                <p>Tender Date: ${data["Tender Announcement Date"] || 'N/A'}</p>
+            </div>
+            <div class="info-pointer"></div>
+        `;
 
-        function createInfoWindow(data, latLng) {
-            const infoWindow = document.createElement('div');
-            infoWindow.className = 'small-info-window';
-            infoWindow.innerHTML = `
-                <div class="info-content">
-                    <h3>${data["Building Type"] || 'N/A'}</h3>
-                    <p>Building Status: ${data["Status Building"] || 'N/A'}</p>
-                    <p>Tender Fiscal Year: ${data["Fiscal Year Based on Tender"] || 'N/A'}</p>
-                    <p>Tender Date: ${data["Tender Announcement Date"] || 'N/A'}</p>
-                </div>
-                <div class="info-pointer"></div>
-            `;
+        document.getElementById('map').appendChild(infoWindow);
+        infoWindows.push({ element: infoWindow, building: latLng });
 
-            document.getElementById('map').appendChild(infoWindow);
-            infoWindows.push({ element: infoWindow, building: latLng });
+        $(infoWindow).draggable().resizable();
 
-            $(infoWindow).draggable().resizable();
+        // Position the window near the building
+        const position = map.getProjection().fromLatLngToPoint(latLng);
+        infoWindow.style.left = position.x + 'px';
+        infoWindow.style.top = position.y + 'px';
 
-            // Position the window near the building
-            const projection = map.getProjection();
-            const point = projection.fromLatLngToPoint(latLng);
-            infoWindow.style.left = (point.x * 256) + 'px';
-            infoWindow.style.top = (point.y * 256) + 'px';
-
-            // Update pointer on drag
-            $(infoWindow).on('dragstop', function() {
-                updateInfoWindowPointer(infoWindow, latLng);
-            });
-
+        // Update pointer on drag
+        $(infoWindow).on('dragstop', function() {
             updateInfoWindowPointer(infoWindow, latLng);
-        }
+        });
 
-        function updateInfoWindowPointer(infoWindow, buildingLatLng) {
-            const windowRect = infoWindow.getBoundingClientRect();
-            const projection = map.getProjection();
-            const buildingPoint = projection.fromLatLngToPoint(buildingLatLng);
+        updateInfoWindowPointer(infoWindow, latLng);
+    }
 
-            const pointer = infoWindow.querySelector('.info-pointer');
-            const pointerAngle = Math.atan2(buildingPoint.y * 256 - windowRect.top, buildingPoint.x * 256 - windowRect.left);
-            
-            pointer.style.transform = `rotate(${pointerAngle}rad)`;
-        }
+    function updateInfoWindowPointer(infoWindow, buildingLatLng) {
+        const windowRect = infoWindow.getBoundingClientRect();
+        const buildingPoint = map.getProjection().fromLatLngToPoint(buildingLatLng);
 
-        function clearAllInfoWindows() {
-            infoWindows.forEach(iw => iw.element.remove());
-            infoWindows = [];
-        }
+        const pointer = infoWindow.querySelector('.info-pointer');
+        const pointerAngle = Math.atan2(buildingPoint.y - windowRect.top, buildingPoint.x - windowRect.left);
+        
+        pointer.style.transform = `rotate(${pointerAngle}rad)`;
+    }
 
-        function adjustOverlappingWindows() {
-            for (let i = 0; i < infoWindows.length; i++) {
-                for (let j = i + 1; j < infoWindows.length; j++) {
-                    if (checkOverlap(infoWindows[i].element, infoWindows[j].element)) {
-                        const elem = infoWindows[j].element;
-                        elem.style.top = (parseInt(elem.style.top) + 20) + 'px';
-                        elem.style.left = (parseInt(elem.style.left) + 20) + 'px';
-                        updateInfoWindowPointer(elem, infoWindows[j].building);
-                    }
+    function clearAllInfoWindows() {
+        infoWindows.forEach(iw => iw.element.remove());
+        infoWindows = [];
+    }
+
+    function adjustOverlappingWindows() {
+        for (let i = 0; i < infoWindows.length; i++) {
+            for (let j = i + 1; j < infoWindows.length; j()) {
+                if (checkOverlap(infoWindows[i].element, infoWindows[j].element)) {
+                    const elem = infoWindows[j].element;
+                    elem.style.top = (parseInt(elem.style.top) + 20) + 'px';
+                    elem.style.left = (parseInt(elem.style.left) + 20) + 'px';
+                    updateInfoWindowPointer(elem, infoWindows[j].building);
                 }
             }
         }
+    }
 
-        function checkOverlap(elem1, elem2) {
-            const rect1 = elem1.getBoundingClientRect();
-            const rect2 = elem2.getBoundingClientRect();
-            return !(rect1.right < rect2.left || 
-                     rect1.left > rect2.right || 
-                     rect1.bottom < rect2.top || 
-                     rect1.top > rect2.bottom);
-        }
+    function checkOverlap(elem1, elem2) {
+        const rect1 = elem1.getBoundingClientRect();
+        const rect2 = elem2.getBoundingClientRect();
+        return !(rect1.right < rect2.left || 
+                 rect1.left > rect2.right || 
+                 rect1.bottom < rect2.top || 
+                 rect1.top > rect2.bottom);
+    }
 
-        function autocomplete(inp, arr) {
-            var currentFocus;
-            inp.addEventListener("input", function(e) {
-                var a, b, i, val = this.value;
-                closeAllLists();
-                if (!val) { return false;}
-                currentFocus = -1;
-                a = document.createElement("DIV");
-                a.setAttribute("id", this.id + "autocomplete-list");
-                a.setAttribute("class", "autocomplete-items");
-                this.parentNode.appendChild(a);
-                for (i = 0; i < arr.length; i++) {
-                    if (arr[i].toLowerCase().includes(val.toLowerCase())) {
-                        b = document.createElement("DIV");
-                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                        b.innerHTML += arr[i].substr(val.length);
-                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-                        b.addEventListener("click", function(e) {
-                            inp.value = this.getElementsByTagName("input")[0].value;
-                            closeAllLists();
-                        });
-                        a.appendChild(b);
-                    }
-                }
-            });
-            inp.addEventListener("keydown", function(e) {
-                var x = document.getElementById(this.id + "autocomplete-list");
-                if (x) x = x.getElementsByTagName("div");
-                if (e.keyCode == 40) {
-                    currentFocus++;
-                    addActive(x);
-                } else if (e.keyCode == 38) {
-                    currentFocus--;
-                    addActive(x);
-                } else if (e.keyCode == 13) {
-                    e.preventDefault();
-                    if (currentFocus > -1) {
-                        if (x) x[currentFocus].click();
-                    }
-                }
-            });
-            function addActive(x) {
-                if (!x) return false;
-                removeActive(x);
-                if (currentFocus >= x.length) currentFocus = 0;
-                if (currentFocus < 0) currentFocus = (x.length - 1);
-                x[currentFocus].classList.add("autocomplete-active");
-            }
-            function removeActive(x) {
-                for (var i = 0; i < x.length; i++) {
-                    x[i].classList.remove("autocomplete-active");
+    function autocomplete(inp, arr) {
+        var currentFocus;
+        inp.addEventListener("input", function(e) {
+            var a, b, i, val = this.value;
+            closeAllLists();
+            if (!val) { return false;}
+            currentFocus = -1;
+            a = document.createElement("DIV");
+            a.setAttribute("id", this.id + "autocomplete-list");
+            a.setAttribute("class", "autocomplete-items");
+            this.parentNode.appendChild(a);
+            for (i = 0; i < arr.length; i++) {
+                if (arr[i].toLowerCase().includes(val.toLowerCase())) {
+                    b = document.createElement("DIV");
+                    b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                    b.innerHTML += arr[i].substr(val.length);
+                    b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                    b.addEventListener("click", function(e) {
+                        inp.value = this.getElementsByTagName("input")[0].value;
+                        closeAllLists();
+                    });
+                    a.appendChild(b);
                 }
             }
-            function closeAllLists(elmnt) {
-                var x = document.getElementsByClassName("autocomplete-items");
-                for (var i = 0; i < x.length; i++) {
-                    if (elmnt != x[i] && elmnt != inp) {
-                        x[i].parentNode.removeChild(x[i]);
-                    }
+        });
+        inp.addEventListener("keydown", function(e) {
+            var x = document.getElementById(this.id + "autocomplete-list");
+            if (x) x = x.getElementsByTagName("div");
+            if (e.keyCode == 40) {
+                currentFocus++;
+                addActive(x);
+            } else if (e.keyCode == 38) {
+                currentFocus--;
+                addActive(x);
+            } else if (e.keyCode == 13) {
+                e.preventDefault();
+                if (currentFocus > -1) {
+                    if (x) x[currentFocus].click();
                 }
             }
-            document.addEventListener("click", function (e) {
-                closeAllLists(e.target);
-            });
+        });
+        function addActive(x) {
+            if (!x) return false;
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = (x.length - 1);
+            x[currentFocus].classList.add("autocomplete-active");
         }
-    </script>
+        function removeActive(x) {
+            for (var i = 0; i < x.length; i++) {
+                x[i].classList.remove("autocomplete-active");
+            }
+        }
+        function closeAllLists(elmnt) {
+            var x = document.getElementsByClassName("autocomplete-items");
+            for (var i = 0; i < x.length; i++) {
+                if (elmnt != x[i] && elmnt != inp) {
+                    x[i].parentNode.removeChild(x[i]);
+                }
+            }
+        }
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+    }
+</script>
+
 </body>
 </html>
