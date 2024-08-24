@@ -109,7 +109,7 @@
             cursor: pointer;
             color: red;
         }
-        #buildingStatusSelect, #buildingOperationalStatusSelect {
+        #buildingStatusSelect, #buildingOperationalStatusSelect, #fiscalYearSelect {
             width: 100%;
             margin-bottom: 10px;
         }
@@ -208,6 +208,15 @@
             <div id="selectedBuildingOperationalStatuses"></div>
         </div>
 
+        <!-- Added Tender Fiscal Year -->
+        <div class="search-section">
+            <select id="fiscalYearSelect">
+                <option value="">Select Tender Fiscal Year</option>
+            </select>
+            <button onclick="addFiscalYear()">Add Tender Fiscal Year</button>
+            <div id="selectedFiscalYears"></div>
+        </div>
+
         <button onclick="combinedSearch()">Search</button>
         <input type="checkbox" id="showSmallInfoCheckbox" onchange="toggleSmallInfoWindow()">
         <label for="showSmallInfoCheckbox">Show Small Info Window</label>
@@ -231,10 +240,12 @@
         let buildingTypes = new Set();
         let buildingStatuses = new Set();
         let buildingOperationalStatuses = new Set();
+        let fiscalYears = new Set();
         let selectedBuildings = [];
         let selectedPkgTenCon = [];
         let selectedBuildingStatuses = [];
         let selectedBuildingOperationalStatuses = [];
+        let selectedFiscalYears = [];
         let smallInfoWindowBuilding = null;
 
         function initMap() {
@@ -258,11 +269,13 @@
                         if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
                         if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
                         if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
+                        if (item["Fiscal Year Based on Tender"]) fiscalYears.add(item["Fiscal Year Based on Tender"]);
                     });
                     autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
                     autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
                     populateBuildingStatusSelect();
                     populateBuildingOperationalStatusSelect();
+                    populateFiscalYearSelect();
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
         }
@@ -440,6 +453,16 @@
             });
         }
 
+        function populateFiscalYearSelect() {
+            const select = document.getElementById('fiscalYearSelect');
+            fiscalYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                select.appendChild(option);
+            });
+        }
+
         function addItem(type) {
             const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
             const value = input.value.trim();
@@ -475,6 +498,16 @@
             }
         }
 
+        function addFiscalYear() {
+            const select = document.getElementById('fiscalYearSelect');
+            const value = select.value;
+            if (value && !selectedFiscalYears.includes(value)) {
+                selectedFiscalYears.push(value);
+                updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
+                select.selectedIndex = 0;
+            }
+        }
+
         function updateSelectedItemsDisplay(containerId, items) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -502,12 +535,15 @@
             } else if (containerId === 'selectedBuildingOperationalStatuses') {
                 selectedBuildingOperationalStatuses = selectedBuildingOperationalStatuses.filter(s => s !== item);
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+            } else if (containerId === 'selectedFiscalYears') {
+                selectedFiscalYears = selectedFiscalYears.filter(y => y !== item);
+                updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
             }
         }
 
         function combinedSearch() {
             if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
-                selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0) {
+                selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0 && selectedFiscalYears.length === 0) {
                 alert('Please specify at least one search criterion.');
                 return;
             }
@@ -539,6 +575,10 @@
 
                     if (selectedBuildingOperationalStatuses.length > 0) {
                         isMatch = isMatch && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"]);
+                    }
+
+                    if (selectedFiscalYears.length > 0) {
+                        isMatch = isMatch && selectedFiscalYears.includes(matchingData["Fiscal Year Based on Tender"]);
                     }
 
                     if (isMatch) {
@@ -578,14 +618,17 @@
             selectedPkgTenCon = [];
             selectedBuildingStatuses = [];
             selectedBuildingOperationalStatuses = [];
+            selectedFiscalYears = [];
             updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
             updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
             updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
             updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+            updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
             document.getElementById('buildingSearch').value = '';
             document.getElementById('pkgTenConSearch').value = '';
             document.getElementById('buildingStatusSelect').selectedIndex = 0;
             document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
+            document.getElementById('fiscalYearSelect').selectedIndex = 0;
             
             polygons.forEach(polygon => {
                 polygon.setOptions({
