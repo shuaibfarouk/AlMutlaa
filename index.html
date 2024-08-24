@@ -151,20 +151,23 @@
             font-weight: bold;
         }
 
-        /* New styles for the info window */
-        #infoWindow {
+        /* Styles for the small info window */
+        #smallInfoWindow {
             display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 300px;
+            position: absolute;
+            padding: 10px;
             background-color: white;
             border: 1px solid #ccc;
-            padding: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: move;
+            z-index: 10000;
         }
-        #showInfoCheckbox {
+        #showSmallInfoCheckbox {
             margin-left: 10px;
+        }
+        .trailing-line {
+            stroke: #FF0000;
+            stroke-width: 2;
         }
     </style>
 </head>
@@ -205,18 +208,20 @@
         </div>
 
         <button onclick="combinedSearch()">Search</button>
-        <input type="checkbox" id="showInfoCheckbox" onchange="toggleInfoWindow()">
-        <label for="showInfoCheckbox">Show Info Window</label>
+        <input type="checkbox" id="showSmallInfoCheckbox" onchange="toggleSmallInfoWindow()">
+        <label for="showSmallInfoCheckbox">Show Small Info Window</label>
         <button onclick="clearSearch()">Clear Search</button>
     </div>
-
     <div id="revision">Rev.17</div>
 
-    <!-- New info window -->
-    <div id="infoWindow">
-        <div id="infoWindowContent"></div>
-        <button onclick="closeInfoWindow()">Close</button>
+    <!-- Small info window -->
+    <div id="smallInfoWindow">
+        <div id="smallInfoWindowContent"></div>
     </div>
+
+    <svg id="trailingLineContainer" style="position: absolute; pointer-events: none;" width="100%" height="100%">
+        <line id="trailingLine" class="trailing-line" x1="0" y1="0" x2="0" y2="0" />
+    </svg>
 
     <script>
         let map;
@@ -229,6 +234,7 @@
         let selectedPkgTenCon = [];
         let selectedBuildingStatuses = [];
         let selectedBuildingOperationalStatuses = [];
+        let smallInfoWindowBuilding = null;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -239,6 +245,7 @@
 
             loadJSONData();
             loadKML();
+            makeSmallInfoWindowDraggable();
         }
 
         function loadJSONData() {
@@ -313,6 +320,11 @@
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
+                    if (document.getElementById('showSmallInfoCheckbox').checked) {
+                        smallInfoWindowBuilding = event.latLng;
+                        showSmallInfoWindow(matchingData, event.latLng);
+                    }
+
                     const content = `
                         <div class="info-window">
                             <table>
@@ -545,9 +557,7 @@
                 }
             });
 
-            if (foundMatch) {
-                updateInfoWindow();
-            } else {
+            if (!foundMatch) {
                 alert('No buildings found matching the selected criteria.');
             }
         }
@@ -574,51 +584,92 @@
                 });
             });
 
-            closeInfoWindow();
+            hideSmallInfoWindow();
         }
 
-        function toggleInfoWindow() {
-            const checkbox = document.getElementById('showInfoCheckbox');
-            const infoWindow = document.getElementById('infoWindow');
-            
-            if (checkbox.checked) {
-                updateInfoWindow();
-            } else {
-                infoWindow.style.display = 'none';
+        function toggleSmallInfoWindow() {
+            if (!document.getElementById('showSmallInfoCheckbox').checked) {
+                hideSmallInfoWindow();
             }
         }
 
-        function updateInfoWindow() {
-            const checkbox = document.getElementById('showInfoCheckbox');
-            const infoWindow = document.getElementById('infoWindow');
-            const infoWindowContent = document.getElementById('infoWindowContent');
-            
-            if (checkbox.checked) {
-                const buildingInfo = {
-                    name: "Sample Building",
-                    type: "Office",
-                    status: "Under Construction",
-                    fiscalYear: "2024",
-                    tenderDate: "2023-09-15"
-                };
+        function showSmallInfoWindow(data, latLng) {
+            const smallInfoWindow = document.getElementById('smallInfoWindow');
+            const content = `
+                <p><strong>Building Name:</strong> ${data["Building Type"] || 'N/A'}</p>
+                <p><strong>Building Status:</strong> ${data["Status Building"] || 'N/A'}</p>
+                <p><strong>Tender Fiscal Year:</strong> ${data["Fiscal Year Based on Tender"] || 'N/A'}</p>
+                <p><strong>Tender Date:</strong> ${data["Tender Announcement Date"] || 'N/A'}</p>
+            `;
+            document.getElementById('smallInfoWindowContent').innerHTML = content;
 
-                infoWindowContent.innerHTML = `
-                    <p><strong>Building Name:</strong> ${buildingInfo.name}</p>
-                    <p><strong>Building Type:</strong> ${buildingInfo.type}</p>
-                    <p><strong>Building Status:</strong> ${buildingInfo.status}</p>
-                    <p><strong>Tender Fiscal Year:</strong> ${buildingInfo.fiscalYear}</p>
-                    <p><strong>Tender Date:</strong> ${buildingInfo.tenderDate}</p>
-                `;
+            smallInfoWindow.style.left = `${latLng.x}px`;
+            smallInfoWindow.style.top = `${latLng.y}px`;
+            smallInfoWindow.style.display = 'block';
 
-                infoWindow.style.display = 'block';
-            } else {
-                infoWindow.style.display = 'none';
-            }
+            drawTrailingLine(latLng);
         }
 
-        function closeInfoWindow() {
-            document.getElementById('infoWindow').style.display = 'none';
-            document.getElementById('showInfoCheckbox').checked = false;
+        function hideSmallInfoWindow() {
+            const smallInfoWindow = document.getElementById('smallInfoWindow');
+            smallInfoWindow.style.display = 'none';
+
+            clearTrailingLine();
+        }
+
+        function drawTrailingLine(latLng) {
+            const trailingLine = document.getElementById('trailingLine');
+            const mapContainer = document.getElementById('map');
+
+            const mapRect = mapContainer.getBoundingClientRect();
+            const x1 = latLng.x - mapRect.left;
+            const y1 = latLng.y - mapRect.top;
+
+            const smallInfoWindow = document.getElementById('smallInfoWindow');
+            const smallInfoWindowRect = smallInfoWindow.getBoundingClientRect();
+            const x2 = smallInfoWindowRect.left + smallInfoWindowRect.width / 2 - mapRect.left;
+            const y2 = smallInfoWindowRect.top + smallInfoWindowRect.height / 2 - mapRect.top;
+
+            trailingLine.setAttribute('x1', x1);
+            trailingLine.setAttribute('y1', y1);
+            trailingLine.setAttribute('x2', x2);
+            trailingLine.setAttribute('y2', y2);
+            trailingLine.style.display = 'block';
+        }
+
+        function clearTrailingLine() {
+            const trailingLine = document.getElementById('trailingLine');
+            trailingLine.style.display = 'none';
+        }
+
+        function makeSmallInfoWindowDraggable() {
+            const smallInfoWindow = document.getElementById('smallInfoWindow');
+
+            smallInfoWindow.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+
+                const startX = event.clientX;
+                const startY = event.clientY;
+                const startLeft = parseInt(window.getComputedStyle(smallInfoWindow).left, 10);
+                const startTop = parseInt(window.getComputedStyle(smallInfoWindow).top, 10);
+
+                function mouseMoveHandler(e) {
+                    smallInfoWindow.style.left = `${startLeft + e.clientX - startX}px`;
+                    smallInfoWindow.style.top = `${startTop + e.clientY - startY}px`;
+
+                    if (smallInfoWindowBuilding) {
+                        drawTrailingLine(smallInfoWindowBuilding);
+                    }
+                }
+
+                function mouseUpHandler() {
+                    document.removeEventListener('mousemove', mouseMoveHandler);
+                    document.removeEventListener('mouseup', mouseUpHandler);
+                }
+
+                document.addEventListener('mousemove', mouseMoveHandler);
+                document.addEventListener('mouseup', mouseUpHandler);
+            });
         }
 
         function autocomplete(inp, arr) {
