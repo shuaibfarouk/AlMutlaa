@@ -153,7 +153,7 @@
         }
 
         /* Styles for the small info window */
-        #smallInfoWindow {
+        .small-info-window {
             display: none;
             position: absolute;
             padding: 8px;
@@ -162,15 +162,29 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             cursor: move;
             z-index: 10000;
-            width: 240px; /* Reduced size by 20% */
-            font-size: 12px; /* Smaller font size */
+            width: 240px;
+            font-size: 12px;
         }
-        #showSmallInfoCheckbox {
-            margin-left: 10px;
+        .info-pointer {
+            width: 10px;
+            height: 10px;
+            background: transparent;
+            border-right: 2px solid #ccc;
+            border-bottom: 2px solid #ccc;
+            transform: rotate(45deg);
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            margin-left: -7px;
         }
-        .trailing-line {
-            stroke: #FF0000;
-            stroke-width: 2;
+        .info-content h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .info-content p {
+            margin: 2px 0;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -226,15 +240,6 @@
     </div>
     <div id="revision">Rev.17</div>
 
-    <!-- Small info window -->
-    <div id="smallInfoWindow">
-        <div id="smallInfoWindowContent"></div>
-    </div>
-
-    <svg id="trailingLineContainer" style="position: absolute; pointer-events: none;" width="100%" height="100%">
-        <line id="trailingLine" class="trailing-line" x1="0" y1="0" x2="0" y2="0" />
-    </svg>
-
     <script>
         let map;
         let jsonData = {};
@@ -248,7 +253,7 @@
         let selectedBuildingStatuses = [];
         let selectedBuildingOperationalStatuses = [];
         let selectedFiscalYears = [];
-        let smallInfoWindows = [];
+        let infoWindows = [];
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -596,7 +601,7 @@
                                 bounds.extend(latLng);
                             });
                             const center = bounds.getCenter();
-                            showSmallInfoWindow(matchingData, center);
+                            createInfoWindow(matchingData, center);
                         }
                     } else {
                         polygon.setOptions({
@@ -611,6 +616,8 @@
             if (!foundMatch) {
                 alert('No buildings found matching the selected criteria.');
             }
+
+            adjustOverlappingWindows();
         }
 
         function clearSearch() {
@@ -638,92 +645,81 @@
                 });
             });
 
-            hideAllSmallInfoWindows();
+            clearAllInfoWindows();
         }
 
         function toggleSmallInfoWindow() {
             if (!document.getElementById('showSmallInfoCheckbox').checked) {
-                hideAllSmallInfoWindows();
+                clearAllInfoWindows();
             }
         }
 
-        function showSmallInfoWindow(data, latLng) {
-            const smallInfoWindow = document.createElement('div');
-            smallInfoWindow.className = 'small-info-window';
-            smallInfoWindow.style.position = 'absolute';
-            smallInfoWindow.style.left = `${latLng.lng()}px`;
-            smallInfoWindow.style.top = `${latLng.lat()}px`;
-            smallInfoWindow.style.transform = 'translate(-50%, -100%)';
-
-            const content = `
-                <p><strong>Building Name:</strong> ${data["Building Type"] || 'N/A'}</p>
-                <p><strong>Building Status:</strong> ${data["Status Building"] || 'N/A'}</p>
-                <p><strong>Tender Fiscal Year:</strong> ${data["Fiscal Year Based on Tender"] || 'N/A'}</p>
-                <p><strong>Tender Date:</strong> ${data["Tender Announcement Date"] || 'N/A'}</p>
+        function createInfoWindow(data, latLng) {
+            const infoWindow = document.createElement('div');
+            infoWindow.className = 'small-info-window';
+            infoWindow.innerHTML = `
+                <div class="info-content">
+                    <h3>${data["Building Type"] || 'N/A'}</h3>
+                    <p>Building Status: ${data["Status Building"] || 'N/A'}</p>
+                    <p>Tender Fiscal Year: ${data["Fiscal Year Based on Tender"] || 'N/A'}</p>
+                    <p>Tender Date: ${data["Tender Announcement Date"] || 'N/A'}</p>
+                </div>
+                <div class="info-pointer"></div>
             `;
-            smallInfoWindow.innerHTML = content;
 
-            document.body.appendChild(smallInfoWindow);
-            makeSmallInfoWindowDraggable(smallInfoWindow);
-            smallInfoWindows.push(smallInfoWindow);
+            document.getElementById('map').appendChild(infoWindow);
+            infoWindows.push({ element: infoWindow, building: latLng });
 
-            drawTrailingLine(latLng, smallInfoWindow);
-        }
+            $(infoWindow).draggable().resizable();
 
-        function hideAllSmallInfoWindows() {
-            smallInfoWindows.forEach(window => {
-                window.remove();
+            // Position the window near the building
+            const position = map.getProjection().fromLatLngToPoint(latLng);
+            infoWindow.style.left = position.x + 'px';
+            infoWindow.style.top = position.y + 'px';
+
+            // Update pointer on drag
+            $(infoWindow).on('dragstop', function() {
+                updateInfoWindowPointer(infoWindow, latLng);
             });
-            smallInfoWindows = [];
-            clearTrailingLine();
+
+            updateInfoWindowPointer(infoWindow, latLng);
         }
 
-        function drawTrailingLine(latLng, smallInfoWindow) {
-            const trailingLine = document.getElementById('trailingLine');
-            const mapContainer = document.getElementById('map');
+        function updateInfoWindowPointer(infoWindow, buildingLatLng) {
+            const windowRect = infoWindow.getBoundingClientRect();
+            const buildingPoint = map.getProjection().fromLatLngToPoint(buildingLatLng);
 
-            const mapRect = mapContainer.getBoundingClientRect();
-            const x1 = latLng.lng() - mapRect.left;
-            const y1 = latLng.lat() - mapRect.top;
-
-            const smallInfoWindowRect = smallInfoWindow.getBoundingClientRect();
-            const x2 = smallInfoWindowRect.left + smallInfoWindowRect.width / 2 - mapRect.left;
-            const y2 = smallInfoWindowRect.top + smallInfoWindowRect.height / 2 - mapRect.top;
-
-            trailingLine.setAttribute('x1', x1);
-            trailingLine.setAttribute('y1', y1);
-            trailingLine.setAttribute('x2', x2);
-            trailingLine.setAttribute('y2', y2);
-            trailingLine.style.display = 'block';
+            const pointer = infoWindow.querySelector('.info-pointer');
+            const pointerAngle = Math.atan2(buildingPoint.y - windowRect.top, buildingPoint.x - windowRect.left);
+            
+            pointer.style.transform = `rotate(${pointerAngle}rad)`;
         }
 
-        function clearTrailingLine() {
-            const trailingLine = document.getElementById('trailingLine');
-            trailingLine.style.display = 'none';
+        function clearAllInfoWindows() {
+            infoWindows.forEach(iw => iw.element.remove());
+            infoWindows = [];
         }
 
-        function makeSmallInfoWindowDraggable(smallInfoWindow) {
-            smallInfoWindow.addEventListener('mousedown', function (event) {
-                event.preventDefault();
-
-                const startX = event.clientX;
-                const startY = event.clientY;
-                const startLeft = parseInt(window.getComputedStyle(smallInfoWindow).left, 10);
-                const startTop = parseInt(window.getComputedStyle(smallInfoWindow).top, 10);
-
-                function mouseMoveHandler(e) {
-                    smallInfoWindow.style.left = `${startLeft + e.clientX - startX}px`;
-                    smallInfoWindow.style.top = `${startTop + e.clientY - startY}px`;
+        function adjustOverlappingWindows() {
+            for (let i = 0; i < infoWindows.length; i++) {
+                for (let j = i + 1; j < infoWindows.length; j++) {
+                    if (checkOverlap(infoWindows[i].element, infoWindows[j].element)) {
+                        const elem = infoWindows[j].element;
+                        elem.style.top = (parseInt(elem.style.top) + 20) + 'px';
+                        elem.style.left = (parseInt(elem.style.left) + 20) + 'px';
+                        updateInfoWindowPointer(elem, infoWindows[j].building);
+                    }
                 }
+            }
+        }
 
-                function mouseUpHandler() {
-                    document.removeEventListener('mousemove', mouseMoveHandler);
-                    document.removeEventListener('mouseup', mouseUpHandler);
-                }
-
-                document.addEventListener('mousemove', mouseMoveHandler);
-                document.addEventListener('mouseup', mouseUpHandler);
-            });
+        function checkOverlap(elem1, elem2) {
+            const rect1 = elem1.getBoundingClientRect();
+            const rect2 = elem2.getBoundingClientRect();
+            return !(rect1.right < rect2.left || 
+                     rect1.left > rect2.right || 
+                     rect1.bottom < rect2.top || 
+                     rect1.top > rect2.bottom);
         }
 
         function autocomplete(inp, arr) {
