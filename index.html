@@ -548,6 +548,16 @@
                             fillOpacity: 0.7
                         });
                         foundMatch = true;
+
+                        // Show small info window if checkbox is checked
+                        if (document.getElementById('showSmallInfoCheckbox').checked) {
+                            const bounds = new google.maps.LatLngBounds();
+                            polygon.getPath().forEach(function(latLng) {
+                                bounds.extend(latLng);
+                            });
+                            const center = bounds.getCenter();
+                            showSmallInfoWindow(matchingData, center);
+                        }
                     } else {
                         polygon.setOptions({
                             strokeColor: '#00008B',
