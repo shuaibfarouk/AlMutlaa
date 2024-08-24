@@ -1,31 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Maps - Building Viewer</title>
-    <!-- Load Google Maps JavaScript API -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
     <style>
-        /* Set up full-page layout for the map */
         html, body, #map {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
         }
-        /* Settings button style, reduced size by 10% */
         .settings-button {
             position: absolute;
             top: 5px;
             right: 10px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
-            width: 36px;  /* Reduced size */
-            height: 36px; /* Reduced size */
+            width: 40px;
+            height: 40px;
             cursor: pointer;
         }
-        /* Menu style, reduced size by 10% */
         .menu {
             position: absolute;
             top: 50px;
@@ -33,43 +29,44 @@
             background: #e6f3ff;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 14px;  /* Reduced padding */
+            padding: 15px;
+            animation: fadeIn 0.3s ease-out;
             z-index: 1000;
-            width: 270px;  /* Reduced width */
-            font-size: 13px; /* Reduced font size */
-            display: none; /* Initially hidden */
+            width: 300px;
+            font-size: 14px;
+            display: none;
         }
-        /* Styles for search inputs and select dropdowns */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .menu input[type="text"], .menu select {
             width: 100%;
-            padding: 8px;
+            padding: 6px;
             margin-bottom: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 13px; /* Reduced font size */
+            font-size: 14px;
         }
-        /* Styles for menu buttons */
         .menu button {
             background-color: #4CAF50;
             color: white;
-            padding: 8px 14px; /* Adjusted padding */
+            padding: 8px 12px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
-            font-size: 13px; /* Adjusted font size */
-            margin-top: 8px;
+            font-size: 14px;
+            margin-top: 5px;
         }
         .menu button:hover {
             background-color: #45a049;
         }
-        /* Section separator style within the menu */
         .search-section {
-            margin-top: 12px;
+            margin-top: 10px;
             border-top: 1px solid #ccc;
-            padding-top: 12px;
+            padding-top: 10px;
         }
-        /* Autocomplete dropdown styling (restored) */
         .autocomplete {
             position: relative;
             display: inline-block;
@@ -100,7 +97,53 @@
             background-color: DodgerBlue !important; 
             color: #ffffff; 
         }
-        /* Revision number style */
+        .selected-item {
+            background-color: #f0f0f0;
+            padding: 4px;
+            margin: 2px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+        .remove-item {
+            cursor: pointer;
+            color: red;
+        }
+        #buildingStatusSelect, #buildingOperationalStatusSelect {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .info-window {
+            max-width: 320px;
+            font-family: Arial, sans-serif;
+        }
+        .info-window table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-window th, .info-window td {
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            text-align: left;
+            font-size: 12px;
+        }
+        .info-window th {
+            background-color: #f2f2f2;
+        }
+        .info-window th[colspan="4"] {
+            text-align: center;
+        }
+        .info-window td {
+            vertical-align: top;
+        }
+        .info-window td[colspan="3"] {
+            text-align: left;
+            white-space: nowrap;
+        }
+        .gm-ui-hover-effect {
+            width: 20px;
+            height: 20px;
+        }
         #revision {
             position: absolute;
             bottom: 10px;
@@ -108,541 +151,593 @@
             color: red;
             font-weight: bold;
         }
+
+        /* Styles for the small info window */
+        #smallInfoWindow {
+            display: none;
+            position: absolute;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: move;
+            z-index: 10000;
+        }
+        #showSmallInfoCheckbox {
+            margin-left: 10px;
+        }
+        .trailing-line {
+            stroke: #FF0000;
+            stroke-width: 2;
+        }
     </style>
 </head>
 <body onload="initMap()">
-
-<!-- Main map container -->
-<div id="map"></div>
-
-<!-- Settings button -->
-<div class="settings-button" onclick="toggleMenu()"></div>
-
-<!-- Settings menu -->
-<div id="menu" class="menu">
-    <!-- Building type search and add section -->
-    <div class="search-section">
-        <div class="autocomplete">
-            <input id="buildingSearch" type="text" placeholder="Enter Building Type">
+    <div id="map"></div>
+    <div class="settings-button" onclick="toggleMenu()"></div>
+    <div id="menu" class="menu">
+        <div class="search-section">
+            <div class="autocomplete">
+                <input id="buildingSearch" type="text" placeholder="Enter Building Type">
+            </div>
+            <button onclick="addItem('building')">Add Building Type</button>
+            <div id="selectedBuildings"></div>
         </div>
-        <button onclick="addItem('building')">Add Building Type</button>
-        <div id="selectedBuildings"></div>
-    </div>
-
-    <!-- Package/Tender/Contract search and add section -->
-    <div class="search-section">
-        <div class="autocomplete">
-            <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
+        
+        <div class="search-section">
+            <div class="autocomplete">
+                <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
+            </div>
+            <button onclick="addItem('pkgTenCon')">Add Package/Tender/Contract</button>
+            <div id="selectedPkgTenCon"></div>
         </div>
-        <button onclick="addItem('pkgTenCon')">Add Package/Tender/Contract</button>
-        <div id="selectedPkgTenCon"></div>
+
+        <div class="search-section">
+            <select id="buildingStatusSelect">
+                <option value="">Select Building Status</option>
+            </select>
+            <button onclick="addBuildingStatus()">Add Building Status</button>
+            <div id="selectedBuildingStatuses"></div>
+        </div>
+
+        <div class="search-section">
+            <select id="buildingOperationalStatusSelect">
+                <option value="">Select Building Operational Status</option>
+            </select>
+            <button onclick="addBuildingOperationalStatus()">Add Building Operational Status</button>
+            <div id="selectedBuildingOperationalStatuses"></div>
+        </div>
+
+        <button onclick="combinedSearch()">Search</button>
+        <input type="checkbox" id="showSmallInfoCheckbox" onchange="toggleSmallInfoWindow()">
+        <label for="showSmallInfoCheckbox">Show Small Info Window</label>
+        <button onclick="clearSearch()">Clear Search</button>
+    </div>
+    <div id="revision">Rev.17</div>
+
+    <!-- Small info window -->
+    <div id="smallInfoWindow">
+        <div id="smallInfoWindowContent"></div>
     </div>
 
-    <!-- Building status select and add section -->
-    <div class="search-section">
-        <label for="buildingStatusSelect">Select Building Status</label>
-        <select id="buildingStatusSelect"></select>
-        <button onclick="addBuildingStatus()">Add Building Status</button>
-        <div id="selectedBuildingStatuses"></div>
-    </div>
+    <svg id="trailingLineContainer" style="position: absolute; pointer-events: none;" width="100%" height="100%">
+        <line id="trailingLine" class="trailing-line" x1="0" y1="0" x2="0" y2="0" />
+    </svg>
 
-    <!-- Building operational status select and add section -->
-    <div class="search-section">
-        <label for="buildingOperationalStatusSelect">Select Building Operational Status</label>
-        <select id="buildingOperationalStatusSelect"></select>
-        <button onclick="addBuildingOperationalStatus()">Add Building Operational Status</button>
-        <div id="selectedBuildingOperationalStatuses"></div>
-    </div>
+    <script>
+        let map;
+        let jsonData = {};
+        let polygons = [];
+        let buildingTypes = new Set();
+        let buildingStatuses = new Set();
+        let buildingOperationalStatuses = new Set();
+        let selectedBuildings = [];
+        let selectedPkgTenCon = [];
+        let selectedBuildingStatuses = [];
+        let selectedBuildingOperationalStatuses = [];
+        let smallInfoWindowBuilding = null;
 
-    <!-- Tender fiscal year select and add section -->
-    <div class="search-section">
-        <label for="fiscalYearSelect">Select Tender Fiscal Year</label>
-        <select id="fiscalYearSelect"></select>
-        <button onclick="addFiscalYear()">Add Tender Fiscal Year</button>
-        <div id="selectedFiscalYears"></div>
-    </div>
-
-    <!-- Search and clear buttons -->
-    <button onclick="combinedSearch()">Search</button>
-    <button onclick="clearSearch()">Clear Search</button>
-</div>
-
-<!-- Revision number display -->
-<div id="revision">Rev.17</div>
-
-<script>
-    let map;
-    let jsonData = {};
-    let polygons = [];
-    let buildingTypes = new Set();
-    let buildingStatuses = new Set();
-    let buildingOperationalStatuses = new Set();
-    let fiscalYears = new Set();
-    let selectedBuildings = [];
-    let selectedPkgTenCon = [];
-    let selectedBuildingStatuses = [];
-    let selectedBuildingOperationalStatuses = [];
-    let selectedFiscalYears = [];
-
-    // Initialize the map and load the data
-    function initMap() {
-        map = new google.maps.Map(document.getElementById('map'), {
-            center: { lat: 29.478324, lng: 47.607149 },
-            zoom: 12,
-            mapTypeId: 'roadmap'
-        });
-
-        loadJSONData();
-        loadKML();
-    }
-
-    // Load JSON data for building information
-    function loadJSONData() {
-        fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
-            .then(response => response.json())
-            .then(data => {
-                jsonData = data;
-                data.forEach(item => {
-                    if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
-                    if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
-                    if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
-                    if (item["Fiscal Year Based on Tender"]) fiscalYears.add(item["Fiscal Year Based on Tender"]);
-                });
-                autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
-                autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
-                populateBuildingStatusSelect();
-                populateBuildingOperationalStatusSelect();
-                populateFiscalYearSelect();
-            })
-            .catch(error => console.error('Error loading JSON data:', error));
-    }
-
-    // Load KML data for building polygons
-    function loadKML() {
-        const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
-        
-        fetch(kmlUrl)
-            .then(response => response.text())
-            .then(kmlData => {
-                const parser = new DOMParser();
-                const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
-                const placemarks = kmlDoc.getElementsByTagName('Placemark');
-
-                for (let placemark of placemarks) {
-                    const coordinates = placemark.getElementsByTagName('coordinates')[0].textContent.trim().split(' ');
-                    const path = coordinates.map(coord => {
-                        const [lng, lat] = coord.split(',');
-                        return {lat: parseFloat(lat), lng: parseFloat(lng)};
-                    });
-
-                    const polygon = new google.maps.Polygon({
-                        paths: path,
-                        strokeColor: '#00008B',
-                        strokeOpacity: 1,
-                        strokeWeight: 2,
-                        fillColor: '#AADDFF',
-                        fillOpacity: 0.35,
-                        map: map
-                    });
-
-                    const componentId = getComponentId(placemark);
-                    polygon.componentId = componentId;
-                    polygons.push(polygon);
-                    
-                    polygon.addListener('click', function(event) {
-                        handlePolygonClick(event, componentId);
-                    });
-                }
-            })
-            .catch(error => console.error('Error loading KML:', error));
-    }
-
-    // Extract Component ID from KML placemark
-    function getComponentId(placemark) {
-        const simpleDataElements = placemark.getElementsByTagName('SimpleData');
-        for (let element of simpleDataElements) {
-            if (element.getAttribute('name') === 'Component ID') {
-                return element.textContent;
-            }
-        }
-        return null;
-    }
-
-    // Handle polygon click event
-    function handlePolygonClick(event, componentId) {
-        if (componentId) {
-            const matchingData = jsonData.find(item => item["Component ID"] == componentId);
-
-            if (matchingData) {
-                const content = `
-                    <div class="info-window">
-                        <table>
-                            <tr>
-                                <th colspan="2">${matchingData["Building Type"] || 'N/A'}</th>
-                                <th>${matchingData["Neighborhood"] || 'N/A'}</th>
-                                <th>Block ${matchingData["Block"] || 'N/A'}</th>
-                            </tr>
-                            <tr>
-                                <th colspan="4">${matchingData["Package-Tender-Contract"] || 'N/A'}</th>
-                            </tr>
-                            <tr>
-                                <td>Tender / Contract Status</td>
-                                <td colspan="3">${matchingData["Status Package"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Building Status</td>
-                                <td colspan="3">${matchingData["Status Building"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Building Operational Status</td>
-                                <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Tender:</td>
-                                <td colspan="3">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Tender Date:</td>
-                                <td colspan="3">${matchingData["Tender Announcement Date"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Construction:</td>
-                                <td colspan="3">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Start Date:</td>
-                                <td colspan="3">${matchingData["Construction Start Date"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>End Date:</td>
-                                <td colspan="3">${matchingData["Construction End Date"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Progress %:</td>
-                                <td colspan="3">${matchingData["Package Completion %"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Building Energized:</td>
-                                <td colspan="3">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Handed Over to End User:</td>
-                                <td colspan="3">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Operational:</td>
-                                <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>Stakeholder:</td>
-                                <td colspan="3">${matchingData["Stakeholder"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td>End User:</td>
-                                <td colspan="3">${matchingData["End User"] || 'N/A'}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
-                            </tr>
-                        </table>
-                    </div>
-                `;
-
-                const infoWindow = new google.maps.InfoWindow({
-                    content: content,
-                    position: event.latLng
-                });
-
-                infoWindow.open(map);
-
-            } else {
-                alert('No matching data found for this Component ID.');
-            }
-        } else {
-            alert('Unable to identify this building. Please try another.');
-        }
-    }
-
-    // Toggle visibility of the settings menu
-    function toggleMenu() {
-        const menu = document.getElementById('menu');
-        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-    }
-
-    // Populate the building status dropdown
-    function populateBuildingStatusSelect() {
-        const select = document.getElementById('buildingStatusSelect');
-        buildingStatuses.forEach(status => {
-            const option = document.createElement('option');
-            option.value = status;
-            option.textContent = status;
-            select.appendChild(option);
-        });
-    }
-
-    // Populate the building operational status dropdown
-    function populateBuildingOperationalStatusSelect() {
-        const select = document.getElementById('buildingOperationalStatusSelect');
-        buildingOperationalStatuses.forEach(status => {
-            const option = document.createElement('option');
-            option.value = status;
-            option.textContent = status;
-            select.appendChild(option);
-        });
-    }
-
-    // Populate the fiscal year dropdown
-    function populateFiscalYearSelect() {
-        const select = document.getElementById('fiscalYearSelect');
-        fiscalYears.forEach(year => {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            select.appendChild(option);
-        });
-    }
-
-    // Add selected building type to the list
-    function addItem(type) {
-        const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
-        const value = input.value.trim();
-        if (value) {
-            if (type === 'building' && !selectedBuildings.includes(value)) {
-                selectedBuildings.push(value);
-                updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-            } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
-                selectedPkgTenCon.push(value);
-                updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
-            }
-            input.value = '';
-        }
-    }
-
-    // Add selected building status to the list
-    function addBuildingStatus() {
-        const select = document.getElementById('buildingStatusSelect');
-        const value = select.value;
-        if (value && !selectedBuildingStatuses.includes(value)) {
-            selectedBuildingStatuses.push(value);
-            updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
-            select.selectedIndex = 0;
-        }
-    }
-
-    // Add selected building operational status to the list
-    function addBuildingOperationalStatus() {
-        const select = document.getElementById('buildingOperationalStatusSelect');
-        const value = select.value;
-        if (value && !selectedBuildingOperationalStatuses.includes(value)) {
-            selectedBuildingOperationalStatuses.push(value);
-            updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
-            select.selectedIndex = 0;
-        }
-    }
-
-    // Add selected fiscal year to the list
-    function addFiscalYear() {
-        const select = document.getElementById('fiscalYearSelect');
-        const value = select.value;
-        if (value && !selectedFiscalYears.includes(value)) {
-            selectedFiscalYears.push(value);
-            updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
-            select.selectedIndex = 0;
-        }
-    }
-
-    // Update display for selected items
-    function updateSelectedItemsDisplay(containerId, items) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-        items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'selected-item';
-            div.innerHTML = `
-                ${item}
-                <span class="remove-item" onclick="removeItem('${containerId}', '${item}')">&times;</span>
-            `;
-            container.appendChild(div);
-        });
-    }
-
-    // Remove selected item from the list
-    function removeItem(containerId, item) {
-        if (containerId === 'selectedBuildings') {
-            selectedBuildings = selectedBuildings.filter(b => b !== item);
-            updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-        } else if (containerId === 'selectedPkgTenCon') {
-            selectedPkgTenCon = selectedPkgTenCon.filter(p => p !== item);
-            updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
-        } else if (containerId === 'selectedBuildingStatuses') {
-            selectedBuildingStatuses = selectedBuildingStatuses.filter(s => s !== item);
-            updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
-        } else if (containerId === 'selectedBuildingOperationalStatuses') {
-            selectedBuildingOperationalStatuses = selectedBuildingOperationalStatuses.filter(s => s !== item);
-            updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
-        } else if (containerId === 'selectedFiscalYears') {
-            selectedFiscalYears = selectedFiscalYears.filter(y => y !== item);
-            updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
-        }
-    }
-
-    // Perform combined search based on selected criteria
-    function combinedSearch() {
-        if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
-            selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0 && selectedFiscalYears.length === 0) {
-            alert('Please specify at least one search criterion.');
-            return;
-        }
-
-        let foundMatch = false;
-
-        polygons.forEach(polygon => {
-            const componentId = polygon.componentId;
-            const matchingData = jsonData.find(item => item["Component ID"] == componentId);
-
-            if (matchingData) {
-                let isMatch = true;
-
-                if (selectedBuildings.length > 0) {
-                    isMatch = isMatch && selectedBuildings.some(selected => 
-                        matchingData["Building Type"] && matchingData["Building Type"].toLowerCase().includes(selected.toLowerCase())
-                    );
-                }
-
-                if (selectedPkgTenCon.length > 0) {
-                    isMatch = isMatch && selectedPkgTenCon.some(selected => 
-                        matchingData["Package-Tender-Contract"] && matchingData["Package-Tender-Contract"].toLowerCase().includes(selected.toLowerCase())
-                    );
-                }
-
-                if (selectedBuildingStatuses.length > 0) {
-                    isMatch = isMatch && selectedBuildingStatuses.includes(matchingData["Status Building"]);
-                }
-
-                if (selectedBuildingOperationalStatuses.length > 0) {
-                    isMatch = isMatch && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"]);
-                }
-
-                if (selectedFiscalYears.length > 0) {
-                    isMatch = isMatch && selectedFiscalYears.includes(matchingData["Fiscal Year Based on Tender"]);
-                }
-
-                if (isMatch) {
-                    polygon.setOptions({
-                        strokeColor: '#00008B',
-                        fillColor: '#FF0000',
-                        fillOpacity: 0.7
-                    });
-                    foundMatch = true;
-                } else {
-                    polygon.setOptions({
-                        strokeColor: '#00008B',
-                        fillColor: '#AADDFF',
-                        fillOpacity: 0.35
-                    });
-                }
-            }
-        });
-
-        if (!foundMatch) {
-            alert('No buildings found matching the selected criteria.');
-        }
-    }
-
-    // Clear the search and reset the map
-    function clearSearch() {
-        selectedBuildings = [];
-        selectedPkgTenCon = [];
-        selectedBuildingStatuses = [];
-        selectedBuildingOperationalStatuses = [];
-        selectedFiscalYears = [];
-        updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-        updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
-        updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
-        updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
-        updateSelectedItemsDisplay('selectedFiscalYears', selectedFiscalYears);
-        document.getElementById('buildingSearch').value = '';
-        document.getElementById('pkgTenConSearch').value = '';
-        document.getElementById('buildingStatusSelect').selectedIndex = 0;
-        document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
-        document.getElementById('fiscalYearSelect').selectedIndex = 0;
-        
-        polygons.forEach(polygon => {
-            polygon.setOptions({
-                strokeColor: '#00008B',
-                fillColor: '#AADDFF',
-                fillOpacity: 0.35
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 29.478324, lng: 47.607149 },
+                zoom: 12,
+                mapTypeId: 'roadmap'
             });
-        });
-    }
 
-    // Autocomplete function for search inputs
-    function autocomplete(inp, arr) {
-        var currentFocus;
-        inp.addEventListener("input", function(e) {
-            var a, b, i, val = this.value;
-            closeAllLists();
-            if (!val) { return false;}
-            currentFocus = -1;
-            a = document.createElement("DIV");
-            a.setAttribute("id", this.id + "autocomplete-list");
-            a.setAttribute("class", "autocomplete-items");
-            document.body.appendChild(a);  // Append the autocomplete list to the body
-            for (i = 0; i < arr.length; i++) {
-                if (arr[i].toLowerCase().includes(val.toLowerCase())) {
-                    b = document.createElement("DIV");
-                    b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                    b.innerHTML += arr[i].substr(val.length);
-                    b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-                    b.addEventListener("click", function(e) {
-                        inp.value = this.getElementsByTagName("input")[0].value;
-                        closeAllLists();
+            loadJSONData();
+            loadKML();
+            makeSmallInfoWindowDraggable();
+        }
+
+        function loadJSONData() {
+            fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
+                .then(response => response.json())
+                .then(data => {
+                    jsonData = data;
+                    data.forEach(item => {
+                        if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
+                        if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
+                        if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
                     });
-                    a.appendChild(b);
-                }
-            }
-        });
-        inp.addEventListener("keydown", function(e) {
-            var x = document.getElementById(this.id + "autocomplete-list");
-            if (x) x = x.getElementsByTagName("div");
-            if (e.keyCode == 40) {
-                currentFocus++;
-                addActive(x);
-            } else if (e.keyCode == 38) {
-                currentFocus--;
-                addActive(x);
-            } else if (e.keyCode == 13) {
-                e.preventDefault();
-                if (currentFocus > -1) {
-                    if (x) x[currentFocus].click();
-                }
-            }
-        });
-        function addActive(x) {
-            if (!x) return false;
-            removeActive(x);
-            if (currentFocus >= x.length) currentFocus = 0;
-            if (currentFocus < 0) currentFocus = (x.length - 1);
-            x[currentFocus].classList.add("autocomplete-active");
+                    autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
+                    autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
+                    populateBuildingStatusSelect();
+                    populateBuildingOperationalStatusSelect();
+                })
+                .catch(error => console.error('Error loading JSON data:', error));
         }
-        function removeActive(x) {
-            for (var i = 0; i < x.length; i++) {
-                x[i].classList.remove("autocomplete-active");
-            }
-        }
-        function closeAllLists(elmnt) {
-            var x = document.getElementsByClassName("autocomplete-items");
-            for (var i = 0; i < x.length; i++) {
-                if (elmnt != x[i] && elmnt != inp) {
-                    x[i].parentNode.removeChild(x[i]);
-                }
-            }
-        }
-        document.addEventListener("click", function (e) {
-            closeAllLists(e.target);
-        });
-    }
-</script>
 
+        function loadKML() {
+            const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
+            
+            fetch(kmlUrl)
+                .then(response => response.text())
+                .then(kmlData => {
+                    const parser = new DOMParser();
+                    const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
+                    const placemarks = kmlDoc.getElementsByTagName('Placemark');
+
+                    for (let placemark of placemarks) {
+                        const coordinates = placemark.getElementsByTagName('coordinates')[0].textContent.trim().split(' ');
+                        const path = coordinates.map(coord => {
+                            const [lng, lat] = coord.split(',');
+                            return {lat: parseFloat(lat), lng: parseFloat(lng)};
+                        });
+
+                        const polygon = new google.maps.Polygon({
+                            paths: path,
+                            strokeColor: '#00008B',
+                            strokeOpacity: 1,
+                            strokeWeight: 2,
+                            fillColor: '#AADDFF',
+                            fillOpacity: 0.35,
+                            map: map
+                        });
+
+                        const componentId = getComponentId(placemark);
+                        polygon.componentId = componentId;
+                        polygons.push(polygon);
+                        
+                        polygon.addListener('click', function(event) {
+                            handlePolygonClick(event, componentId);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error loading KML:', error));
+        }
+
+        function getComponentId(placemark) {
+            const simpleDataElements = placemark.getElementsByTagName('SimpleData');
+            for (let element of simpleDataElements) {
+                if (element.getAttribute('name') === 'Component ID') {
+                    return element.textContent;
+                }
+            }
+            return null;
+        }
+
+        function handlePolygonClick(event, componentId) {
+            if (componentId) {
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData) {
+                    if (document.getElementById('showSmallInfoCheckbox').checked) {
+                        smallInfoWindowBuilding = event.latLng;
+                        showSmallInfoWindow(matchingData, event.latLng);
+                    }
+
+                    const content = `
+                        <div class="info-window">
+                            <table>
+                                <tr>
+                                    <th colspan="2">${matchingData["Building Type"] || 'N/A'}</th>
+                                    <th>${matchingData["Neighborhood"] || 'N/A'}</th>
+                                    <th>Block ${matchingData["Block"] || 'N/A'}</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="4">${matchingData["Package-Tender-Contract"] || 'N/A'}</th>
+                                </tr>
+                                <tr>
+                                    <td>Tender / Contract Status</td>
+                                    <td colspan="3">${matchingData["Status Package"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Building Status</td>
+                                    <td colspan="3">${matchingData["Status Building"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Building Operational Status</td>
+                                    <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Tender:</td>
+                                    <td colspan="3">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Tender Date:</td>
+                                    <td colspan="3">${matchingData["Tender Announcement Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Construction:</td>
+                                    <td colspan="3">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Start Date:</td>
+                                    <td colspan="3">${matchingData["Construction Start Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>End Date:</td>
+                                    <td colspan="3">${matchingData["Construction End Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Progress %:</td>
+                                    <td colspan="3">${matchingData["Package Completion %"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Building Energized:</td>
+                                    <td colspan="3">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Handed Over to End User:</td>
+                                    <td colspan="3">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Operational:</td>
+                                    <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Stakeholder:</td>
+                                    <td colspan="3">${matchingData["Stakeholder"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>End User:</td>
+                                    <td colspan="3">${matchingData["End User"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    `;
+
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: content,
+                        position: event.latLng
+                    });
+
+                    infoWindow.open(map);
+
+                } else {
+                    alert('No matching data found for this Component ID.');
+                }
+            } else {
+                alert('Unable to identify this building. Please try another.');
+            }
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('menu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function populateBuildingStatusSelect() {
+            const select = document.getElementById('buildingStatusSelect');
+            buildingStatuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                select.appendChild(option);
+            });
+        }
+
+        function populateBuildingOperationalStatusSelect() {
+            const select = document.getElementById('buildingOperationalStatusSelect');
+            buildingOperationalStatuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                select.appendChild(option);
+            });
+        }
+
+        function addItem(type) {
+            const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
+            const value = input.value.trim();
+            if (value) {
+                if (type === 'building' && !selectedBuildings.includes(value)) {
+                    selectedBuildings.push(value);
+                    updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+                } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
+                    selectedPkgTenCon.push(value);
+                    updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+                }
+                input.value = '';
+            }
+        }
+
+        function addBuildingStatus() {
+            const select = document.getElementById('buildingStatusSelect');
+            const value = select.value;
+            if (value && !selectedBuildingStatuses.includes(value)) {
+                selectedBuildingStatuses.push(value);
+                updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+                select.selectedIndex = 0;
+            }
+        }
+
+        function addBuildingOperationalStatus() {
+            const select = document.getElementById('buildingOperationalStatusSelect');
+            const value = select.value;
+            if (value && !selectedBuildingOperationalStatuses.includes(value)) {
+                selectedBuildingOperationalStatuses.push(value);
+                updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+                select.selectedIndex = 0;
+            }
+        }
+
+        function updateSelectedItemsDisplay(containerId, items) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'selected-item';
+                div.innerHTML = `
+                    ${item}
+                    <span class="remove-item" onclick="removeItem('${containerId}', '${item}')">&times;</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeItem(containerId, item) {
+            if (containerId === 'selectedBuildings') {
+                selectedBuildings = selectedBuildings.filter(b => b !== item);
+                updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+            } else if (containerId === 'selectedPkgTenCon') {
+                selectedPkgTenCon = selectedPkgTenCon.filter(p => p !== item);
+                updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+            } else if (containerId === 'selectedBuildingStatuses') {
+                selectedBuildingStatuses = selectedBuildingStatuses.filter(s => s !== item);
+                updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+            } else if (containerId === 'selectedBuildingOperationalStatuses') {
+                selectedBuildingOperationalStatuses = selectedBuildingOperationalStatuses.filter(s => s !== item);
+                updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+            }
+        }
+
+        function combinedSearch() {
+            if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
+                selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0) {
+                alert('Please specify at least one search criterion.');
+                return;
+            }
+
+            let foundMatch = false;
+
+            polygons.forEach(polygon => {
+                const componentId = polygon.componentId;
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData) {
+                    let isMatch = true;
+
+                    if (selectedBuildings.length > 0) {
+                        isMatch = isMatch && selectedBuildings.some(selected => 
+                            matchingData["Building Type"] && matchingData["Building Type"].toLowerCase().includes(selected.toLowerCase())
+                        );
+                    }
+
+                    if (selectedPkgTenCon.length > 0) {
+                        isMatch = isMatch && selectedPkgTenCon.some(selected => 
+                            matchingData["Package-Tender-Contract"] && matchingData["Package-Tender-Contract"].toLowerCase().includes(selected.toLowerCase())
+                        );
+                    }
+
+                    if (selectedBuildingStatuses.length > 0) {
+                        isMatch = isMatch && selectedBuildingStatuses.includes(matchingData["Status Building"]);
+                    }
+
+                    if (selectedBuildingOperationalStatuses.length > 0) {
+                        isMatch = isMatch && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"]);
+                    }
+
+                    if (isMatch) {
+                        polygon.setOptions({
+                            strokeColor: '#00008B',
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.7
+                        });
+                        foundMatch = true;
+                    } else {
+                        polygon.setOptions({
+                            strokeColor: '#00008B',
+                            fillColor: '#AADDFF',
+                            fillOpacity: 0.35
+                        });
+                    }
+                }
+            });
+
+            if (!foundMatch) {
+                alert('No buildings found matching the selected criteria.');
+            }
+        }
+
+        function clearSearch() {
+            selectedBuildings = [];
+            selectedPkgTenCon = [];
+            selectedBuildingStatuses = [];
+            selectedBuildingOperationalStatuses = [];
+            updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+            updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+            updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+            updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+            document.getElementById('buildingSearch').value = '';
+            document.getElementById('pkgTenConSearch').value = '';
+            document.getElementById('buildingStatusSelect').selectedIndex = 0;
+            document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
+            
+            polygons.forEach(polygon => {
+                polygon.setOptions({
+                    strokeColor: '#00008B',
+                    fillColor: '#AADDFF',
+                    fillOpacity: 0.35
+                });
+            });
+
+            hideSmallInfoWindow();
+        }
+
+        function toggleSmallInfoWindow() {
+            if (!document.getElementById('showSmallInfoCheckbox').checked) {
+                hideSmallInfoWindow();
+            }
+        }
+
+        function showSmallInfoWindow(data, latLng) {
+            const smallInfoWindow = document.getElementById('smallInfoWindow');
+            const content = `
+                <p><strong>Building Name:</strong> ${data["Building Type"] || 'N/A'}</p>
+                <p><strong>Building Status:</strong> ${data["Status Building"] || 'N/A'}</p>
+                <p><strong>Tender Fiscal Year:</strong> ${data["Fiscal Year Based on Tender"] || 'N/A'}</p>
+                <p><strong>Tender Date:</strong> ${data["Tender Announcement Date"] || 'N/A'}</p>
+            `;
+            document.getElementById('smallInfoWindowContent').innerHTML = content;
+
+            smallInfoWindow.style.left = `${latLng.x}px`;
+            smallInfoWindow.style.top = `${latLng.y}px`;
+            smallInfoWindow.style.display = 'block';
+
+            drawTrailingLine(latLng);
+        }
+
+        function hideSmallInfoWindow() {
+            const smallInfoWindow = document.getElementById('smallInfoWindow');
+            smallInfoWindow.style.display = 'none';
+
+            clearTrailingLine();
+        }
+
+        function drawTrailingLine(latLng) {
+            const trailingLine = document.getElementById('trailingLine');
+            const mapContainer = document.getElementById('map');
+
+            const mapRect = mapContainer.getBoundingClientRect();
+            const x1 = latLng.x - mapRect.left;
+            const y1 = latLng.y - mapRect.top;
+
+            const smallInfoWindow = document.getElementById('smallInfoWindow');
+            const smallInfoWindowRect = smallInfoWindow.getBoundingClientRect();
+            const x2 = smallInfoWindowRect.left + smallInfoWindowRect.width / 2 - mapRect.left;
+            const y2 = smallInfoWindowRect.top + smallInfoWindowRect.height / 2 - mapRect.top;
+
+            trailingLine.setAttribute('x1', x1);
+            trailingLine.setAttribute('y1', y1);
+            trailingLine.setAttribute('x2', x2);
+            trailingLine.setAttribute('y2', y2);
+            trailingLine.style.display = 'block';
+        }
+
+        function clearTrailingLine() {
+            const trailingLine = document.getElementById('trailingLine');
+            trailingLine.style.display = 'none';
+        }
+
+        function makeSmallInfoWindowDraggable() {
+            const smallInfoWindow = document.getElementById('smallInfoWindow');
+
+            smallInfoWindow.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+
+                const startX = event.clientX;
+                const startY = event.clientY;
+                const startLeft = parseInt(window.getComputedStyle(smallInfoWindow).left, 10);
+                const startTop = parseInt(window.getComputedStyle(smallInfoWindow).top, 10);
+
+                function mouseMoveHandler(e) {
+                    smallInfoWindow.style.left = `${startLeft + e.clientX - startX}px`;
+                    smallInfoWindow.style.top = `${startTop + e.clientY - startY}px`;
+
+                    if (smallInfoWindowBuilding) {
+                        drawTrailingLine(smallInfoWindowBuilding);
+                    }
+                }
+
+                function mouseUpHandler() {
+                    document.removeEventListener('mousemove', mouseMoveHandler);
+                    document.removeEventListener('mouseup', mouseUpHandler);
+                }
+
+                document.addEventListener('mousemove', mouseMoveHandler);
+                document.addEventListener('mouseup', mouseUpHandler);
+            });
+        }
+
+        function autocomplete(inp, arr) {
+            var currentFocus;
+            inp.addEventListener("input", function(e) {
+                var a, b, i, val = this.value;
+                closeAllLists();
+                if (!val) { return false;}
+                currentFocus = -1;
+                a = document.createElement("DIV");
+                a.setAttribute("id", this.id + "autocomplete-list");
+                a.setAttribute("class", "autocomplete-items");
+                this.parentNode.appendChild(a);
+                for (i = 0; i < arr.length; i++) {
+                    if (arr[i].toLowerCase().includes(val.toLowerCase())) {
+                        b = document.createElement("DIV");
+                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                        b.innerHTML += arr[i].substr(val.length);
+                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                        b.addEventListener("click", function(e) {
+                            inp.value = this.getElementsByTagName("input")[0].value;
+                            closeAllLists();
+                        });
+                        a.appendChild(b);
+                    }
+                }
+            });
+            inp.addEventListener("keydown", function(e) {
+                var x = document.getElementById(this.id + "autocomplete-list");
+                if (x) x = x.getElementsByTagName("div");
+                if (e.keyCode == 40) {
+                    currentFocus++;
+                    addActive(x);
+                } else if (e.keyCode == 38) {
+                    currentFocus--;
+                    addActive(x);
+                } else if (e.keyCode == 13) {
+                    e.preventDefault();
+                    if (currentFocus > -1) {
+                        if (x) x[currentFocus].click();
+                    }
+                }
+            });
+            function addActive(x) {
+                if (!x) return false;
+                removeActive(x);
+                if (currentFocus >= x.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = (x.length - 1);
+                x[currentFocus].classList.add("autocomplete-active");
+            }
+            function removeActive(x) {
+                for (var i = 0; i < x.length; i++) {
+                    x[i].classList.remove("autocomplete-active");
+                }
+            }
+            function closeAllLists(elmnt) {
+                var x = document.getElementsByClassName("autocomplete-items");
+                for (var i = 0; i < x.length; i++) {
+                    if (elmnt != x[i] && elmnt != inp) {
+                        x[i].parentNode.removeChild(x[i]);
+                    }
+                }
+            }
+            document.addEventListener("click", function (e) {
+                closeAllLists(e.target);
+            });
+        }
+    </script>
 </body>
 </html>
