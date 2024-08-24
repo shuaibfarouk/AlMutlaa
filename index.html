@@ -4,26 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Maps - Building Viewer</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <!-- Load Google Maps JavaScript API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
     <style>
+        /* Set up full-page layout for the map */
         html, body, #map {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
         }
+        /* Settings button style, reduced size by 20% */
         .settings-button {
             position: absolute;
             top: 5px;
             right: 10px;
             background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
             background-size: contain;
-            width: 40px;
-            height: 40px;
+            width: 32px;  /* Reduced size */
+            height: 32px; /* Reduced size */
             cursor: pointer;
         }
+        /* Menu style, reduced size by 20% */
         .menu {
             position: absolute;
             top: 50px;
@@ -31,121 +33,49 @@
             background: #e6f3ff;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 16px;
-            animation: fadeIn 0.3s ease-out;
+            padding: 12px;  /* Reduced padding */
             z-index: 1000;
-            width: 300px;
-            font-size: 14px;
-            display: none;
+            width: 240px;  /* Reduced width */
+            font-size: 12px; /* Reduced font size */
+            display: none; /* Initially hidden */
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Styles for search inputs and select dropdowns */
         .menu input[type="text"], .menu select {
             width: 100%;
             padding: 8px;
             margin-bottom: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px; /* Reduced font size */
         }
+        /* Styles for menu buttons */
         .menu button {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 15px;
+            padding: 8px 12px; /* Reduced padding */
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
-            font-size: 14px;
+            font-size: 12px; /* Reduced font size */
             margin-top: 8px;
         }
         .menu button:hover {
             background-color: #45a049;
         }
+        /* Section separator style within the menu */
         .search-section {
             margin-top: 12px;
             border-top: 1px solid #ccc;
             padding-top: 12px;
         }
+        /* Autocomplete dropdown styling */
         .autocomplete {
             position: relative;
             display: inline-block;
             width: 100%;
         }
-        .autocomplete-items {
-            position: absolute;
-            border: 1px solid #d4d4d4;
-            border-top: none;
-            z-index: 99;
-            top: 100%;
-            left: 0;
-            right: 0;
-            max-height: 150px;
-            overflow-y: auto;
-            background-color: #fff;
-        }
-        .autocomplete-items div {
-            padding: 10px;
-            cursor: pointer;
-            background-color: #fff; 
-            border-bottom: 1px solid #d4d4d4; 
-        }
-        .autocomplete-items div:hover {
-            background-color: #e9e9e9; 
-        }
-        .autocomplete-active {
-            background-color: DodgerBlue !important; 
-            color: #ffffff; 
-        }
-        .selected-item {
-            background-color: #f0f0f0;
-            padding: 8px;
-            margin: 4px 0;
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-        }
-        .remove-item {
-            cursor: pointer;
-            color: red;
-        }
-        #buildingStatusSelect, #buildingOperationalStatusSelect, #fiscalYearSelect {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-        .info-window {
-            max-width: 320px;
-            font-family: Arial, sans-serif;
-        }
-        .info-window table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .info-window th, .info-window td {
-            border: 1px solid #ddd;
-            padding: 6px 12px;
-            text-align: left;
-            font-size: 14px;
-        }
-        .info-window th {
-            background-color: #f2f2f2;
-        }
-        .info-window th[colspan="4"] {
-            text-align: center;
-        }
-        .info-window td {
-            vertical-align: top;
-        }
-        .info-window td[colspan="3"] {
-            text-align: left;
-            white-space: nowrap;
-        }
-        .gm-ui-hover-effect {
-            width: 25px;
-            height: 25px;
-        }
+        /* Revision number style */
         #revision {
             position: absolute;
             bottom: 10px;
@@ -153,49 +83,19 @@
             color: red;
             font-weight: bold;
         }
-
-        /* Styles for the small info window */
-        .small-info-window {
-            position: absolute;
-            padding: 10px;
-            background-color: white;
-            border: 1px solid #ccc;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            cursor: move;
-            z-index: 10000;
-            width: 240px;
-            font-size: 12px;
-        }
-        .info-pointer {
-            width: 10px;
-            height: 10px;
-            background: transparent;
-            border-right: 2px solid #ccc;
-            border-bottom: 2px solid #ccc;
-            transform: rotate(45deg);
-            position: absolute;
-            top: -7px;
-            left: 50%;
-            margin-left: -7px;
-        }
-        .info-content h3 {
-            margin: 0;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .info-content p {
-            margin: 2px 0;
-            font-size: 12px;
-        }
     </style>
 </head>
 <body onload="initMap()">
 
+<!-- Main map container -->
 <div id="map"></div>
 
+<!-- Settings button -->
 <div class="settings-button" onclick="toggleMenu()"></div>
 
+<!-- Settings menu -->
 <div id="menu" class="menu">
+    <!-- Building type search and add section -->
     <div class="search-section">
         <div class="autocomplete">
             <input id="buildingSearch" type="text" placeholder="Enter Building Type">
@@ -204,6 +104,7 @@
         <div id="selectedBuildings"></div>
     </div>
 
+    <!-- Package/Tender/Contract search and add section -->
     <div class="search-section">
         <div class="autocomplete">
             <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
@@ -212,6 +113,7 @@
         <div id="selectedPkgTenCon"></div>
     </div>
 
+    <!-- Building status select and add section -->
     <div class="search-section">
         <label for="buildingStatusSelect">Select Building Status</label>
         <select id="buildingStatusSelect"></select>
@@ -219,6 +121,7 @@
         <div id="selectedBuildingStatuses"></div>
     </div>
 
+    <!-- Building operational status select and add section -->
     <div class="search-section">
         <label for="buildingOperationalStatusSelect">Select Building Operational Status</label>
         <select id="buildingOperationalStatusSelect"></select>
@@ -226,6 +129,7 @@
         <div id="selectedBuildingOperationalStatuses"></div>
     </div>
 
+    <!-- Tender fiscal year select and add section -->
     <div class="search-section">
         <label for="fiscalYearSelect">Select Tender Fiscal Year</label>
         <select id="fiscalYearSelect"></select>
@@ -233,16 +137,12 @@
         <div id="selectedFiscalYears"></div>
     </div>
 
+    <!-- Search and clear buttons -->
     <button onclick="combinedSearch()">Search</button>
-
-    <div>
-        <input type="checkbox" id="showSmallInfoCheckbox" onchange="toggleSmallInfoWindow()">
-        <label for="showSmallInfoCheckbox">Show Small Info Window</label>
-    </div>
-
     <button onclick="clearSearch()">Clear Search</button>
 </div>
 
+<!-- Revision number display -->
 <div id="revision">Rev.17</div>
 
 <script>
@@ -258,8 +158,8 @@
     let selectedBuildingStatuses = [];
     let selectedBuildingOperationalStatuses = [];
     let selectedFiscalYears = [];
-    let infoWindows = [];
 
+    // Initialize the map and load the data
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             center: { lat: 29.478324, lng: 47.607149 },
@@ -271,6 +171,7 @@
         loadKML();
     }
 
+    // Load JSON data for building information
     function loadJSONData() {
         fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
             .then(response => response.json())
@@ -291,6 +192,7 @@
             .catch(error => console.error('Error loading JSON data:', error));
     }
 
+    // Load KML data for building polygons
     function loadKML() {
         const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
         
@@ -330,6 +232,7 @@
             .catch(error => console.error('Error loading KML:', error));
     }
 
+    // Extract Component ID from KML placemark
     function getComponentId(placemark) {
         const simpleDataElements = placemark.getElementsByTagName('SimpleData');
         for (let element of simpleDataElements) {
@@ -340,15 +243,12 @@
         return null;
     }
 
+    // Handle polygon click event
     function handlePolygonClick(event, componentId) {
         if (componentId) {
             const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
             if (matchingData) {
-                if (document.getElementById('showSmallInfoCheckbox').checked) {
-                    showSmallInfoWindow(matchingData, event.latLng);
-                }
-
                 const content = `
                     <div class="info-window">
                         <table>
@@ -438,11 +338,13 @@
         }
     }
 
+    // Toggle visibility of the settings menu
     function toggleMenu() {
         const menu = document.getElementById('menu');
         menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
     }
 
+    // Populate the building status dropdown
     function populateBuildingStatusSelect() {
         const select = document.getElementById('buildingStatusSelect');
         buildingStatuses.forEach(status => {
@@ -453,6 +355,7 @@
         });
     }
 
+    // Populate the building operational status dropdown
     function populateBuildingOperationalStatusSelect() {
         const select = document.getElementById('buildingOperationalStatusSelect');
         buildingOperationalStatuses.forEach(status => {
@@ -463,6 +366,7 @@
         });
     }
 
+    // Populate the fiscal year dropdown
     function populateFiscalYearSelect() {
         const select = document.getElementById('fiscalYearSelect');
         fiscalYears.forEach(year => {
@@ -473,6 +377,7 @@
         });
     }
 
+    // Add selected building type to the list
     function addItem(type) {
         const input = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
         const value = input.value.trim();
@@ -488,6 +393,7 @@
         }
     }
 
+    // Add selected building status to the list
     function addBuildingStatus() {
         const select = document.getElementById('buildingStatusSelect');
         const value = select.value;
@@ -498,6 +404,7 @@
         }
     }
 
+    // Add selected building operational status to the list
     function addBuildingOperationalStatus() {
         const select = document.getElementById('buildingOperationalStatusSelect');
         const value = select.value;
@@ -508,6 +415,7 @@
         }
     }
 
+    // Add selected fiscal year to the list
     function addFiscalYear() {
         const select = document.getElementById('fiscalYearSelect');
         const value = select.value;
@@ -518,6 +426,7 @@
         }
     }
 
+    // Update display for selected items
     function updateSelectedItemsDisplay(containerId, items) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
@@ -532,6 +441,7 @@
         });
     }
 
+    // Remove selected item from the list
     function removeItem(containerId, item) {
         if (containerId === 'selectedBuildings') {
             selectedBuildings = selectedBuildings.filter(b => b !== item);
@@ -551,6 +461,7 @@
         }
     }
 
+    // Perform combined search based on selected criteria
     function combinedSearch() {
         if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
             selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0 && selectedFiscalYears.length === 0) {
@@ -559,7 +470,6 @@
         }
 
         let foundMatch = false;
-        clearAllInfoWindows();  // Clear any existing info windows
 
         polygons.forEach(polygon => {
             const componentId = polygon.componentId;
@@ -599,16 +509,6 @@
                         fillOpacity: 0.7
                     });
                     foundMatch = true;
-
-                    // Show small info window if checkbox is checked
-                    if (document.getElementById('showSmallInfoCheckbox').checked) {
-                        const bounds = new google.maps.LatLngBounds();
-                        polygon.getPath().forEach(function(latLng) {
-                            bounds.extend(latLng);
-                        });
-                        const center = bounds.getCenter();
-                        createInfoWindow(matchingData, center);
-                    }
                 } else {
                     polygon.setOptions({
                         strokeColor: '#00008B',
@@ -622,10 +522,9 @@
         if (!foundMatch) {
             alert('No buildings found matching the selected criteria.');
         }
-
-        adjustOverlappingWindows();
     }
 
+    // Clear the search and reset the map
     function clearSearch() {
         selectedBuildings = [];
         selectedPkgTenCon = [];
@@ -650,84 +549,9 @@
                 fillOpacity: 0.35
             });
         });
-
-        clearAllInfoWindows();
     }
 
-    function toggleSmallInfoWindow() {
-        if (!document.getElementById('showSmallInfoCheckbox').checked) {
-            clearAllInfoWindows();
-        }
-    }
-
-    function createInfoWindow(data, latLng) {
-        const infoWindow = document.createElement('div');
-        infoWindow.className = 'small-info-window';
-        infoWindow.innerHTML = `
-            <div class="info-content">
-                <h3>${data["Building Type"] || 'N/A'}</h3>
-                <p>Building Status: ${data["Status Building"] || 'N/A'}</p>
-                <p>Tender Fiscal Year: ${data["Fiscal Year Based on Tender"] || 'N/A'}</p>
-                <p>Tender Date: ${data["Tender Announcement Date"] || 'N/A'}</p>
-            </div>
-            <div class="info-pointer"></div>
-        `;
-
-        document.getElementById('map').appendChild(infoWindow);
-        infoWindows.push({ element: infoWindow, building: latLng });
-
-        $(infoWindow).draggable().resizable();
-
-        // Position the window near the building
-        const position = map.getProjection().fromLatLngToPoint(latLng);
-        infoWindow.style.left = position.x + 'px';
-        infoWindow.style.top = position.y + 'px';
-
-        // Update pointer on drag
-        $(infoWindow).on('dragstop', function() {
-            updateInfoWindowPointer(infoWindow, latLng);
-        });
-
-        updateInfoWindowPointer(infoWindow, latLng);
-    }
-
-    function updateInfoWindowPointer(infoWindow, buildingLatLng) {
-        const windowRect = infoWindow.getBoundingClientRect();
-        const buildingPoint = map.getProjection().fromLatLngToPoint(buildingLatLng);
-
-        const pointer = infoWindow.querySelector('.info-pointer');
-        const pointerAngle = Math.atan2(buildingPoint.y - windowRect.top, buildingPoint.x - windowRect.left);
-        
-        pointer.style.transform = `rotate(${pointerAngle}rad)`;
-    }
-
-    function clearAllInfoWindows() {
-        infoWindows.forEach(iw => iw.element.remove());
-        infoWindows = [];
-    }
-
-    function adjustOverlappingWindows() {
-        for (let i = 0; i < infoWindows.length; i++) {
-            for (let j = i + 1; j < infoWindows.length; j++) {
-                if (checkOverlap(infoWindows[i].element, infoWindows[j].element)) {
-                    const elem = infoWindows[j].element;
-                    elem.style.top = (parseInt(elem.style.top) + 20) + 'px';
-                    elem.style.left = (parseInt(elem.style.left) + 20) + 'px';
-                    updateInfoWindowPointer(elem, infoWindows[j].building);
-                }
-            }
-        }
-    }
-
-    function checkOverlap(elem1, elem2) {
-        const rect1 = elem1.getBoundingClientRect();
-        const rect2 = elem2.getBoundingClientRect();
-        return !(rect1.right < rect2.left || 
-                 rect1.left > rect2.right || 
-                 rect1.bottom < rect2.top || 
-                 rect1.top > rect2.bottom);
-    }
-
+    // Autocomplete function for search inputs
     function autocomplete(inp, arr) {
         var currentFocus;
         inp.addEventListener("input", function(e) {
