@@ -673,9 +673,10 @@
             $(infoWindow).draggable().resizable();
 
             // Position the window near the building
-            const position = map.getProjection().fromLatLngToPoint(latLng);
-            infoWindow.style.left = position.x + 'px';
-            infoWindow.style.top = position.y + 'px';
+            const projection = map.getProjection();
+            const point = projection.fromLatLngToPoint(latLng);
+            infoWindow.style.left = (point.x * 256) + 'px';
+            infoWindow.style.top = (point.y * 256) + 'px';
 
             // Update pointer on drag
             $(infoWindow).on('dragstop', function() {
@@ -687,10 +688,11 @@
 
         function updateInfoWindowPointer(infoWindow, buildingLatLng) {
             const windowRect = infoWindow.getBoundingClientRect();
-            const buildingPoint = map.getProjection().fromLatLngToPoint(buildingLatLng);
+            const projection = map.getProjection();
+            const buildingPoint = projection.fromLatLngToPoint(buildingLatLng);
 
             const pointer = infoWindow.querySelector('.info-pointer');
-            const pointerAngle = Math.atan2(buildingPoint.y - windowRect.top, buildingPoint.x - windowRect.left);
+            const pointerAngle = Math.atan2(buildingPoint.y * 256 - windowRect.top, buildingPoint.x * 256 - windowRect.left);
             
             pointer.style.transform = `rotate(${pointerAngle}rad)`;
         }
