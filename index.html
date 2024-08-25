@@ -75,6 +75,7 @@
             cursor: pointer;
             transition: background-color 0.3s, transform 0.2s; /* Hover and active effect */
             font-size: 14px;
+            margin-top: 8px; /* Add margin to prevent overlap */
         }
 
         .menu button:hover {
@@ -92,16 +93,42 @@
             margin-top: 8px;
             border-top: 1px solid #ddd;
             padding-top: 8px;
-            display: flex;
-            align-items: center;
         }
 
-        .search-section select, .search-section input[type="text"] {
-            flex-grow: 1;
+        /* Improved Autofill Styling */
+        .autocomplete {
+            position: relative;
+            display: inline-block;
+            width: 100%;
         }
 
-        .search-section button {
-            margin-left: 8px;
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4; /* Separator line */
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+
+        .autocomplete-active {
+            background-color: DodgerBlue !important;
+            color: #ffffff;
         }
 
         .selected-item {
@@ -177,16 +204,16 @@
                 <input id="buildingSearch" type="text" placeholder="Enter Building Type">
             </div>
             <button onclick="addItem('building')">Add</button>
-            <div id="selectedBuildings"></div>
         </div>
+        <div id="selectedBuildings"></div> <!-- Move selected buildings here -->
         
         <div class="search-section">
             <div class="autocomplete">
                 <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
             </div>
             <button onclick="addItem('pkgTenCon')">Add</button>
-            <div id="selectedPkgTenCon"></div>
         </div>
+        <div id="selectedPkgTenCon"></div> <!-- Move selected packages here -->
 
         <div class="search-section">
             <select id="buildingStatusSelect">
@@ -595,16 +622,16 @@
 
                     if (isMatch) {
                         polygon.setOptions({
-                            strokeColor: '#007BFF', /* Updated to match the modern color scheme */
-                            fillColor: '#17a2b8', /* Updated to match the modern color scheme */
+                            strokeColor: '#0056b3', /* Darker border color */
+                            fillColor: '#003d80', /* Darker fill color */
                             fillOpacity: 0.7
                         });
                         foundMatch = true;
                     } else {
                         polygon.setOptions({
-                            strokeColor: '#007BFF',
-                            fillColor: '#AADDFF',
-                            fillOpacity: 0.35
+                            strokeColor: '#cccccc', /* Lighter border color */
+                            fillColor: '#e6e6e6', /* Lighter fill color */
+                            fillOpacity: 0.3
                         });
                     }
                 }
@@ -634,9 +661,9 @@
             
             polygons.forEach(polygon => {
                 polygon.setOptions({
-                    strokeColor: '#007BFF',
-                    fillColor: '#AADDFF',
-                    fillOpacity: 0.35
+                    strokeColor: '#007BFF', /* Default border color */
+                    fillColor: '#17a2b8', /* Default fill color */
+                    fillOpacity: 0.6
                 });
             });
         }
