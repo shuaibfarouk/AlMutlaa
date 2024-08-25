@@ -137,8 +137,18 @@
             margin: 4px 0;
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 12px;
             border-radius: 4px;
+        }
+
+        .color-picker {
+            margin-left: 10px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
         }
 
         .remove-item {
@@ -184,7 +194,7 @@
         /* Position of Revision Info */
         #revision {
             position: absolute;
-            bottom: 30px;
+            bottom: 10px;
             left: 10px;
             color: #dc3545; /* Dark Red color */
             font-weight: bold;
@@ -242,7 +252,7 @@
         <button onclick="combinedSearch()">Search</button>
         <button onclick="clearSearch()">Clear</button>
     </div>
-    <div id="revision">Status as of : 30 July 2024</div>
+    <div id="revision">Status as of: 30 July 2024</div>
 
     <script>
         let map;
@@ -257,6 +267,7 @@
         let selectedBuildingStatuses = [];
         let selectedBuildingOperationalStatuses = [];
         let selectedFiscalYearTenders = [];
+        let colorMapping = {};  // Store selected colors for each criterion
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -507,9 +518,11 @@
             if (value) {
                 if (type === 'building' && !selectedBuildings.includes(value)) {
                     selectedBuildings.push(value);
+                    colorMapping[value] = '#17a2b8'; // Default color
                     updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
                 } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
                     selectedPkgTenCon.push(value);
+                    colorMapping[value] = '#17a2b8'; // Default color
                     updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
                 }
                 input.value = '';
@@ -521,6 +534,7 @@
             const value = select.value;
             if (value && !selectedBuildingStatuses.includes(value)) {
                 selectedBuildingStatuses.push(value);
+                colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
                 select.selectedIndex = 0;
             }
@@ -531,6 +545,7 @@
             const value = select.value;
             if (value && !selectedBuildingOperationalStatuses.includes(value)) {
                 selectedBuildingOperationalStatuses.push(value);
+                colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
                 select.selectedIndex = 0;
             }
@@ -541,6 +556,7 @@
             const value = select.value;
             if (value && !selectedFiscalYearTenders.includes(value)) {
                 selectedFiscalYearTenders.push(value);
+                colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
                 select.selectedIndex = 0;
             }
@@ -554,10 +570,16 @@
                 div.className = 'selected-item';
                 div.innerHTML = `
                     ${item}
+                    <input type="color" class="color-picker" value="${colorMapping[item]}" onchange="updateColor('${item}', this.value)">
                     <span class="remove-item" onclick="removeItem('${containerId}', '${item}')">&times;</span>
                 `;
                 container.appendChild(div);
             });
+        }
+
+        function updateColor(item, color) {
+            colorMapping[item] = color;
+            applyColors();
         }
 
         function removeItem(containerId, item) {
@@ -577,69 +599,74 @@
                 selectedFiscalYearTenders = selectedFiscalYearTenders.filter(f => f !== item);
                 updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
             }
+            applyColors();
         }
 
-        function combinedSearch() {
-            let foundMatch = false;
-
+        function applyColors() {
             polygons.forEach(polygon => {
                 const componentId = polygon.componentId;
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
-                    let isMatch = true;
+                    let color = '#cccccc'; // Default color if no match
 
                     if (selectedBuildings.length > 0) {
-                        isMatch = isMatch && selectedBuildings.some(selected => 
-                            matchingData["Building Type"] && matchingData["Building Type"].toLowerCase().includes(selected.toLowerCase())
-                        );
+                        selectedBuildings.forEach(selected => {
+                            if (matchingData["Building Type"] && matchingData["Building Type"].toLowerCase().includes(selected.toLowerCase())) {
+                                color = colorMapping[selected];
+                            }
+                        });
                     }
 
                     if (selectedPkgTenCon.length > 0) {
-                        isMatch = isMatch && selectedPkgTenCon.some(selected => 
-                            matchingData["Package-Tender-Contract"] && matchingData["Package-Tender-Contract"].toLowerCase().includes(selected.toLowerCase())
-                        );
+                        selectedPkgTenCon.forEach(selected => {
+                            if (matchingData["Package-Tender-Contract"] && matchingData["Package-Tender-Contract"].toLowerCase().includes(selected.toLowerCase())) {
+                                color = colorMapping[selected];
+                            }
+                        });
                     }
 
                     if (selectedBuildingStatuses.length > 0) {
-                        isMatch = isMatch && selectedBuildingStatuses.includes(matchingData["Status Building"]);
+                        selectedBuildingStatuses.forEach(selected => {
+                            if (matchingData["Status Building"] && matchingData["Status Building"].toLowerCase().includes(selected.toLowerCase())) {
+                                color = colorMapping[selected];
+                            }
+                        });
                     }
 
                     if (selectedBuildingOperationalStatuses.length > 0) {
-                        isMatch = isMatch && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"]);
+                        selectedBuildingOperationalStatuses.forEach(selected => {
+                            if (matchingData["Building Operational Status"] && matchingData["Building Operational Status"].toLowerCase().includes(selected.toLowerCase())) {
+                                color = colorMapping[selected];
+                            }
+                        });
                     }
 
                     if (selectedFiscalYearTenders.length > 0) {
-                        isMatch = isMatch && selectedFiscalYearTenders.includes(matchingData["Fiscal Year Based on Tender"]);
+                        selectedFiscalYearTenders.forEach(selected => {
+                            if (matchingData["Fiscal Year Based on Tender"] && matchingData["Fiscal Year Based on Tender"].toLowerCase().includes(selected.toLowerCase())) {
+                                color = colorMapping[selected];
+                            }
+                        });
                     }
 
-                    if (isMatch) {
-                        polygon.setOptions({
-                            strokeColor: '#0056b3', /* Darker border color */
-                            fillColor: '#003d80', /* Darker fill color */
-                            fillOpacity: 0.7
-                        });
-                        foundMatch = true;
-                    } else {
-                        polygon.setOptions({
-                            strokeColor: '#cccccc', /* Lighter border color */
-                            fillColor: '#e6e6e6', /* Lighter fill color */
-                            fillOpacity: 0.3
-                        });
-                    }
-                } else {
-                    // Building not in JSON, should also be light color
                     polygon.setOptions({
-                        strokeColor: '#cccccc', /* Lighter border color */
-                        fillColor: '#e6e6e6', /* Lighter fill color */
+                        strokeColor: color,
+                        fillColor: color,
+                        fillOpacity: 0.7
+                    });
+                } else {
+                    polygon.setOptions({
+                        strokeColor: '#cccccc',
+                        fillColor: '#e6e6e6',
                         fillOpacity: 0.3
                     });
                 }
             });
+        }
 
-            if (!foundMatch) {
-                alert('No buildings found matching the selected criteria.');
-            }
+        function combinedSearch() {
+            applyColors();
         }
 
         function clearSearch() {
@@ -648,6 +675,7 @@
             selectedBuildingStatuses = [];
             selectedBuildingOperationalStatuses = [];
             selectedFiscalYearTenders = [];
+            colorMapping = {};
             updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
             updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
             updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
