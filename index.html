@@ -580,13 +580,6 @@
         }
 
         function combinedSearch() {
-            if (selectedBuildings.length === 0 && selectedPkgTenCon.length === 0 && 
-                selectedBuildingStatuses.length === 0 && selectedBuildingOperationalStatuses.length === 0 && 
-                selectedFiscalYearTenders.length === 0) {
-                alert('Please specify at least one search criterion.');
-                return;
-            }
-
             let foundMatch = false;
 
             polygons.forEach(polygon => {
@@ -634,6 +627,13 @@
                             fillOpacity: 0.3
                         });
                     }
+                } else {
+                    // Building not in JSON, should also be light color
+                    polygon.setOptions({
+                        strokeColor: '#cccccc', /* Lighter border color */
+                        fillColor: '#e6e6e6', /* Lighter fill color */
+                        fillOpacity: 0.3
+                    });
                 }
             });
 
