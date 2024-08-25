@@ -267,6 +267,7 @@
         let selectedBuildingStatuses = [];
         let selectedBuildingOperationalStatuses = [];
         let selectedFiscalYearTenders = [];
+        let filteredData = []; // To hold filtered JSON data based on selections
         let colorMapping = {};  // Store selected colors for each criterion
 
         function initMap() {
@@ -319,17 +320,14 @@
                 .then(response => response.json())
                 .then(data => {
                     jsonData = data;
+                    filteredData = data; // Initially, all data is available
                     data.forEach(item => {
                         if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
                         if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
                         if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
                         if (item["Fiscal Year Based on Tender"]) fiscalYearTenders.add(item["Fiscal Year Based on Tender"]);
                     });
-                    autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
-                    autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(data.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
-                    populateBuildingStatusSelect();
-                    populateBuildingOperationalStatusSelect();
-                    populateFiscalYearTenderSelect();
+                    populateAutocompleteAndDropdowns(); // Populate fields with initial data
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
         }
@@ -482,33 +480,26 @@
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         }
 
-        function populateBuildingStatusSelect() {
-            const select = document.getElementById('buildingStatusSelect');
-            buildingStatuses.forEach(status => {
-                const option = document.createElement('option');
-                option.value = status;
-                option.textContent = status;
-                select.appendChild(option);
-            });
+        function populateAutocompleteAndDropdowns() {
+            // Populate Building Type Autocomplete
+            autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
+            // Populate Package/Tender/Contract Autocomplete
+            autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(filteredData.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
+            // Populate Building Status Select
+            populateSelect(document.getElementById('buildingStatusSelect'), buildingStatuses);
+            // Populate Building Operational Status Select
+            populateSelect(document.getElementById('buildingOperationalStatusSelect'), buildingOperationalStatuses);
+            // Populate Fiscal Year Tender Select
+            populateSelect(document.getElementById('fiscalYearTenderSelect'), fiscalYearTenders);
         }
 
-        function populateBuildingOperationalStatusSelect() {
-            const select = document.getElementById('buildingOperationalStatusSelect');
-            buildingOperationalStatuses.forEach(status => {
-                const option = document.createElement('option');
-                option.value = status;
-                option.textContent = status;
-                select.appendChild(option);
-            });
-        }
-
-        function populateFiscalYearTenderSelect() {
-            const select = document.getElementById('fiscalYearTenderSelect');
-            fiscalYearTenders.forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                select.appendChild(option);
+        function populateSelect(selectElement, optionsSet) {
+            selectElement.innerHTML = '<option value="">Select</option>'; // Clear existing options
+            optionsSet.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                selectElement.appendChild(optionElement);
             });
         }
 
@@ -520,13 +511,37 @@
                     selectedBuildings.push(value);
                     colorMapping[value] = '#17a2b8'; // Default color
                     updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+                    filterDataBySelectedBuildingType();
                 } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
                     selectedPkgTenCon.push(value);
                     colorMapping[value] = '#17a2b8'; // Default color
                     updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+                    filterDataBySelectedPkgTenCon();
                 }
                 input.value = '';
             }
+        }
+
+        function filterDataBySelectedBuildingType() {
+            filteredData = jsonData.filter(item => selectedBuildings.includes(item["Building Type"]));
+            updateOtherCriteriaOptions();
+        }
+
+        function filterDataBySelectedPkgTenCon() {
+            filteredData = filteredData.filter(item => selectedPkgTenCon.includes(item["Package-Tender-Contract"]));
+            updateOtherCriteriaOptions();
+        }
+
+        function updateOtherCriteriaOptions() {
+            buildingStatuses.clear();
+            buildingOperationalStatuses.clear();
+            fiscalYearTenders.clear();
+            filteredData.forEach(item => {
+                if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
+                if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
+                if (item["Fiscal Year Based on Tender"]) fiscalYearTenders.add(item["Fiscal Year Based on Tender"]);
+            });
+            populateAutocompleteAndDropdowns();
         }
 
         function addBuildingStatus() {
@@ -536,8 +551,14 @@
                 selectedBuildingStatuses.push(value);
                 colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+                filterDataBySelectedBuildingStatus();
                 select.selectedIndex = 0;
             }
+        }
+
+        function filterDataBySelectedBuildingStatus() {
+            filteredData = filteredData.filter(item => selectedBuildingStatuses.includes(item["Status Building"]));
+            updateOtherCriteriaOptions();
         }
 
         function addBuildingOperationalStatus() {
@@ -547,8 +568,14 @@
                 selectedBuildingOperationalStatuses.push(value);
                 colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+                filterDataBySelectedOperationalStatus();
                 select.selectedIndex = 0;
             }
+        }
+
+        function filterDataBySelectedOperationalStatus() {
+            filteredData = filteredData.filter(item => selectedBuildingOperationalStatuses.includes(item["Building Operational Status"]));
+            updateOtherCriteriaOptions();
         }
 
         function addFiscalYearTender() {
@@ -558,8 +585,14 @@
                 selectedFiscalYearTenders.push(value);
                 colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
+                filterDataBySelectedFiscalYearTender();
                 select.selectedIndex = 0;
             }
+        }
+
+        function filterDataBySelectedFiscalYearTender() {
+            filteredData = filteredData.filter(item => selectedFiscalYearTenders.includes(item["Fiscal Year Based on Tender"]));
+            updateOtherCriteriaOptions();
         }
 
         function updateSelectedItemsDisplay(containerId, items) {
@@ -585,18 +618,23 @@
         function removeItem(containerId, item) {
             if (containerId === 'selectedBuildings') {
                 selectedBuildings = selectedBuildings.filter(b => b !== item);
+                filterDataBySelectedBuildingType();
                 updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
             } else if (containerId === 'selectedPkgTenCon') {
                 selectedPkgTenCon = selectedPkgTenCon.filter(p => p !== item);
+                filterDataBySelectedPkgTenCon();
                 updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
             } else if (containerId === 'selectedBuildingStatuses') {
                 selectedBuildingStatuses = selectedBuildingStatuses.filter(s => s !== item);
+                filterDataBySelectedBuildingStatus();
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
             } else if (containerId === 'selectedBuildingOperationalStatuses') {
                 selectedBuildingOperationalStatuses = selectedBuildingOperationalStatuses.filter(s => s !== item);
+                filterDataBySelectedOperationalStatus();
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
             } else if (containerId === 'selectedFiscalYearTenders') {
                 selectedFiscalYearTenders = selectedFiscalYearTenders.filter(f => f !== item);
+                filterDataBySelectedFiscalYearTender();
                 updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
             }
             applyColors();
@@ -605,7 +643,7 @@
         function applyColors() {
             polygons.forEach(polygon => {
                 const componentId = polygon.componentId;
-                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+                const matchingData = filteredData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
                     let color = '#cccccc'; // Default color if no match
@@ -675,6 +713,7 @@
             selectedBuildingStatuses = [];
             selectedBuildingOperationalStatuses = [];
             selectedFiscalYearTenders = [];
+            filteredData = jsonData;
             colorMapping = {};
             updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
             updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
@@ -686,7 +725,9 @@
             document.getElementById('buildingStatusSelect').selectedIndex = 0;
             document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
             document.getElementById('fiscalYearTenderSelect').selectedIndex = 0;
-            
+
+            populateAutocompleteAndDropdowns(); // Reset dropdowns and autocomplete options
+
             polygons.forEach(polygon => {
                 polygon.setOptions({
                     strokeColor: '#007BFF', /* Default border color */
