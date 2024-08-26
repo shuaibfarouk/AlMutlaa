@@ -372,11 +372,11 @@
 
                         const polygon = new google.maps.Polygon({
                             paths: path,
-                            strokeColor: '#007BFF',
+                            strokeColor: '#00aaff',
                             strokeOpacity: 1,
                             strokeWeight: 2,
-                            fillColor: '#17a2b8',
-                            fillOpacity: 0.6,
+                            fillColor: '#00aaff',
+                            fillOpacity: 0.5,
                             map: map
                         });
 
@@ -662,7 +662,7 @@
                 const matchingData = filteredData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
-                    let color = '#cccccc'; // Default color if no match
+                    let color = '#00aaff'; // Modern blue-green color for matched buildings
 
                     if (selectedBuildings.length > 0) {
                         selectedBuildings.forEach(selected => {
@@ -711,9 +711,9 @@
                     });
                 } else {
                     polygon.setOptions({
-                        strokeColor: '#cccccc',
-                        fillColor: '#e6e6e6',
-                        fillOpacity: 0.3
+                        strokeColor: '#00aaff', // Modern blue-green color
+                        fillColor: '#00aaff',  // Modern blue-green color
+                        fillOpacity: 0.5
                     });
                 }
             });
@@ -747,9 +747,9 @@
 
             polygons.forEach(polygon => {
                 polygon.setOptions({
-                    strokeColor: '#007BFF', /* Default border color */
-                    fillColor: '#17a2b8', /* Default fill color */
-                    fillOpacity: 0.6
+                    strokeColor: '#00aaff', /* Modern blue-green border color */
+                    fillColor: '#00aaff', /* Modern blue-green fill color */
+                    fillOpacity: 0.5
                 });
             });
 
