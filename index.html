@@ -133,7 +133,7 @@
 
         .selected-item {
             background-color: #e9ecef; /* Light gray for selected items */
-            padding: 6px;
+            padding: 4px; /* Reduced padding */
             margin: 4px 0;
             display: flex;
             justify-content: space-between;
@@ -147,8 +147,8 @@
             padding: 0;
             border: none;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
+            width: 20px; /* Reduced size */
+            height: 20px; /* Reduced size */
         }
 
         .remove-item {
@@ -198,6 +198,14 @@
             left: 10px;
             color: #dc3545; /* Dark Red color */
             font-weight: bold;
+        }
+
+        /* Number of Buildings Display */
+        #building-count {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
         }
     </style>
 </head>
@@ -265,6 +273,7 @@
 
         <button onclick="combinedSearch()">Search</button>
         <button onclick="clearSearch()">Clear</button>
+        <div id="building-count"></div> <!-- Number of buildings displayed here -->
     </div>
     <div id="revision">Status as of: 30 July 2024</div>
 
@@ -523,11 +532,9 @@
             if (value) {
                 if (type === 'building' && !selectedBuildings.includes(value)) {
                     selectedBuildings.push(value);
-                    colorMapping[value] = '#17a2b8'; // Default color
                     updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
                 } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
                     selectedPkgTenCon.push(value);
-                    colorMapping[value] = '#17a2b8'; // Default color
                     updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
                 }
                 input.value = '';
@@ -563,6 +570,7 @@
             });
 
             updateOtherCriteriaOptions(); // Update dropdown options based on filtered data
+            updateBuildingCount(); // Update the number of buildings
         }
 
         function updateOtherCriteriaOptions() {
@@ -582,7 +590,6 @@
             const value = select.value;
             if (value && !selectedBuildingStatuses.includes(value)) {
                 selectedBuildingStatuses.push(value);
-                colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
                 updateFilteredData(); // Update filtered data based on new selection
                 select.selectedIndex = 0;
@@ -594,7 +601,6 @@
             const value = select.value;
             if (value && !selectedBuildingOperationalStatuses.includes(value)) {
                 selectedBuildingOperationalStatuses.push(value);
-                colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
                 updateFilteredData(); // Update filtered data based on new selection
                 select.selectedIndex = 0;
@@ -606,7 +612,6 @@
             const value = select.value;
             if (value && !selectedFiscalYearTenders.includes(value)) {
                 selectedFiscalYearTenders.push(value);
-                colorMapping[value] = '#17a2b8'; // Default color
                 updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
                 updateFilteredData(); // Update filtered data based on new selection
                 select.selectedIndex = 0;
@@ -621,7 +626,6 @@
                 div.className = 'selected-item';
                 div.innerHTML = `
                     ${item}
-                    <input type="color" class="color-picker" value="${colorMapping[item]}" onchange="updateColor('${item}', this.value)">
                     <span class="remove-item" onclick="removeItem('${containerId}', '${item}')">&times;</span>
                 `;
                 container.appendChild(div);
@@ -749,6 +753,8 @@
                     fillOpacity: 0.6
                 });
             });
+
+            document.getElementById('building-count').textContent = ''; // Clear building count
         }
 
         /* Autocomplete Functionality */
@@ -842,10 +848,20 @@
                 div.className = 'selected-item';
                 div.innerHTML = `
                     ${item}
-                    <input type="color" class="color-picker" value="${colorMapping[item]}" onchange="updateColor('${item}', this.value)">
+                    <input type="color" class="color-picker" value="${colorMapping[item] || '#17a2b8'}" onchange="updateColor('${item}', this.value)">
                 `;
                 colorSelectionContainer.appendChild(div);
             });
+        }
+
+        function updateBuildingCount() {
+            const count = filteredData.length;
+            const buildingCountElement = document.getElementById('building-count');
+            if (count === 1) {
+                buildingCountElement.textContent = `Showing 1 Building`;
+            } else {
+                buildingCountElement.textContent = `Showing ${count} Buildings`;
+            }
         }
     </script>
 </body>
