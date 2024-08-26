@@ -269,8 +269,6 @@
             </select>
         </div>
 
-        <div id="colorSelectionContainer"></div> <!-- Container for color pickers -->
-
         <button onclick="combinedSearch()">Search</button>
         <button onclick="clearSearch()">Clear</button>
         <div id="building-count"></div> <!-- Number of buildings displayed here -->
@@ -626,6 +624,7 @@
                 div.className = 'selected-item';
                 div.innerHTML = `
                     ${item}
+                    <input type="color" class="color-picker" style="display: none;" value="${colorMapping[item] || '#17a2b8'}" onchange="updateColor('${item}', this.value)">
                     <span class="remove-item" onclick="removeItem('${containerId}', '${item}')">&times;</span>
                 `;
                 container.appendChild(div);
@@ -826,8 +825,6 @@
 
         function handleColorCriteriaChange() {
             const selectedCriteria = document.getElementById('colorCriteriaSelect').value;
-            const colorSelectionContainer = document.getElementById('colorSelectionContainer');
-            colorSelectionContainer.innerHTML = '';
 
             let itemsToColor = [];
 
@@ -844,13 +841,10 @@
             }
 
             itemsToColor.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'selected-item';
-                div.innerHTML = `
-                    ${item}
-                    <input type="color" class="color-picker" value="${colorMapping[item] || '#17a2b8'}" onchange="updateColor('${item}', this.value)">
-                `;
-                colorSelectionContainer.appendChild(div);
+                const colorPicker = document.querySelector(`input[type="color"][onchange="updateColor('${item}', this.value)"]`);
+                if (colorPicker) {
+                    colorPicker.style.display = 'inline-block';
+                }
             });
         }
 
