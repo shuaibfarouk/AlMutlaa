@@ -542,37 +542,19 @@
 
         function updateFilteredData() {
             filteredData = jsonData.filter(item => {
-                let matchesBuildingType = true, matchesPkgTenCon = true, matchesBuildingStatus = true, matchesBuildingOperationalStatus = true, matchesFiscalYearTender = true;
-                
-                if (selectedBuildings.length > 0) {
-                    matchesBuildingType = selectedBuildings.includes(item["Building Type"]);
-                }
-                
-                if (selectedPkgTenCon.length > 0) {
-                    matchesPkgTenCon = selectedPkgTenCon.includes(item["Package-Tender-Contract"]);
-                }
-                
-                if (selectedBuildingStatuses.length > 0) {
-                    matchesBuildingStatus = selectedBuildingStatuses.includes(item["Status Building"]);
-                }
-                
-                if (selectedBuildingOperationalStatuses.length > 0) {
-                    matchesBuildingOperationalStatus = selectedBuildingOperationalStatuses.includes(item["Building Operational Status"]);
-                }
-                
-                if (selectedFiscalYearTenders.length > 0) {
-                    matchesFiscalYearTender = selectedFiscalYearTenders.includes(item["Fiscal Year Based on Tender"]);
-                }
+                let matchesBuildingType = selectedBuildings.length === 0 || selectedBuildings.includes(item["Building Type"]);
+                let matchesBuildingStatus = selectedBuildingStatuses.length === 0 || selectedBuildingStatuses.includes(item["Status Building"]);
+                let matchesBuildingOperationalStatus = selectedBuildingOperationalStatuses.length === 0 || selectedBuildingOperationalStatuses.includes(item["Building Operational Status"]);
+                let matchesFiscalYearTender = selectedFiscalYearTenders.length === 0 || selectedFiscalYearTenders.includes(item["Fiscal Year Based on Tender"]);
 
-                return matchesBuildingType && matchesPkgTenCon && matchesBuildingStatus && matchesBuildingOperationalStatus && matchesFiscalYearTender;
+                return matchesBuildingType && matchesBuildingStatus && matchesBuildingOperationalStatus && matchesFiscalYearTender;
             });
 
-            updateOtherCriteriaOptions(); // Update dropdown options based on filtered data
-            updateBuildingCount(); // Update the number of buildings
+            updateOtherCriteriaOptions();
+            updateBuildingCount();
         }
 
         function updateOtherCriteriaOptions() {
-            buildingStatuses.clear();
             buildingOperationalStatuses.clear();
             fiscalYearTenders.clear();
 
