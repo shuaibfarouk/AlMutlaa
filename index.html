@@ -590,7 +590,8 @@
                 selectedBuildingStatuses.push(value);
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
                 updateFilteredData(); // Update filtered data based on new selection
-                select.selectedIndex = 0;
+                // Repopulate the select without removing other options
+                populateSelect(select, buildingStatuses, "Select Building Status");
             }
         }
 
@@ -601,7 +602,8 @@
                 selectedBuildingOperationalStatuses.push(value);
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
                 updateFilteredData(); // Update filtered data based on new selection
-                select.selectedIndex = 0;
+                // Repopulate the select without removing other options
+                populateSelect(select, buildingOperationalStatuses, "Select Building Operational Status");
             }
         }
 
@@ -612,7 +614,8 @@
                 selectedFiscalYearTenders.push(value);
                 updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
                 updateFilteredData(); // Update filtered data based on new selection
-                select.selectedIndex = 0;
+                // Repopulate the select without removing other options
+                populateSelect(select, fiscalYearTenders, "Select Fiscal Year Tender");
             }
         }
 
