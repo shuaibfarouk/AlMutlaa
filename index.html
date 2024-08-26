@@ -572,9 +572,6 @@
         }
 
         function updateOtherCriteriaOptions() {
-            buildingStatuses.clear();
-            buildingOperationalStatuses.clear();
-            fiscalYearTenders.clear();
             filteredData.forEach(item => {
                 if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
                 if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
@@ -590,7 +587,7 @@
                 selectedBuildingStatuses.push(value);
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
                 updateFilteredData(); // Update filtered data based on new selection
-                // Repopulate the select without removing other options
+                // Repopulate the select with all options
                 populateSelect(select, buildingStatuses, "Select Building Status");
             }
         }
@@ -602,7 +599,7 @@
                 selectedBuildingOperationalStatuses.push(value);
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
                 updateFilteredData(); // Update filtered data based on new selection
-                // Repopulate the select without removing other options
+                // Repopulate the select with all options
                 populateSelect(select, buildingOperationalStatuses, "Select Building Operational Status");
             }
         }
@@ -614,7 +611,7 @@
                 selectedFiscalYearTenders.push(value);
                 updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
                 updateFilteredData(); // Update filtered data based on new selection
-                // Repopulate the select without removing other options
+                // Repopulate the select with all options
                 populateSelect(select, fiscalYearTenders, "Select Fiscal Year Tender");
             }
         }
