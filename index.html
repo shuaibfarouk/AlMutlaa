@@ -249,6 +249,20 @@
             <div id="selectedFiscalYearTenders"></div>
         </div>
 
+        <!-- Dropdown for Color Criteria -->
+        <div class="search-section">
+            <select id="colorCriteriaSelect" onchange="handleColorCriteriaChange()">
+                <option value="">Select Criteria for Coloring</option>
+                <option value="buildingType">Building Type</option>
+                <option value="buildingStatus">Building Status</option>
+                <option value="pkgTenCon">Package/Tender/Contract</option>
+                <option value="operationalStatus">Operational Status</option>
+                <option value="fiscalYear">Fiscal Year</option>
+            </select>
+        </div>
+
+        <div id="colorSelectionContainer"></div> <!-- Container for color pickers -->
+
         <button onclick="combinedSearch()">Search</button>
         <button onclick="clearSearch()">Clear</button>
     </div>
@@ -801,6 +815,36 @@
             }
             document.addEventListener("click", function (e) {
                 closeAllLists(e.target);
+            });
+        }
+
+        function handleColorCriteriaChange() {
+            const selectedCriteria = document.getElementById('colorCriteriaSelect').value;
+            const colorSelectionContainer = document.getElementById('colorSelectionContainer');
+            colorSelectionContainer.innerHTML = '';
+
+            let itemsToColor = [];
+
+            if (selectedCriteria === 'buildingType') {
+                itemsToColor = selectedBuildings;
+            } else if (selectedCriteria === 'buildingStatus') {
+                itemsToColor = selectedBuildingStatuses;
+            } else if (selectedCriteria === 'pkgTenCon') {
+                itemsToColor = selectedPkgTenCon;
+            } else if (selectedCriteria === 'operationalStatus') {
+                itemsToColor = selectedBuildingOperationalStatuses;
+            } else if (selectedCriteria === 'fiscalYear') {
+                itemsToColor = selectedFiscalYearTenders;
+            }
+
+            itemsToColor.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'selected-item';
+                div.innerHTML = `
+                    ${item}
+                    <input type="color" class="color-picker" value="${colorMapping[item]}" onchange="updateColor('${item}', this.value)">
+                `;
+                colorSelectionContainer.appendChild(div);
             });
         }
     </script>
