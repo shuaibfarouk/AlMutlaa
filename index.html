@@ -358,7 +358,7 @@
                         const path = coordinates.map(coord => {
                             const [lng, lat] = coord.split(',');
                             return {lat: parseFloat(lat), lng: parseFloat(lng)};
-                        });
+});
 
                         const polygon = new google.maps.Polygon({
                             paths: path,
@@ -415,6 +415,7 @@
                                 <tr>
                                     <td>Building Status</td>
                                     <td colspan="3">${matchingData["Status Building"] || 'N/A'}</td>
+                                </tr>
                                 <tr>
                                     <td>Building Operational Status</td>
                                     <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
@@ -576,11 +577,11 @@
         function addItem(type) {
             const inputElement = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
             const value = inputElement.value.trim();
-            if (value && !selectedBuildings.includes(value)) {
-                if (type === 'building') {
+            if (value) {
+                if (type === 'building' && !selectedBuildings.includes(value)) {
                     selectedBuildings.push(value);
                     updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-                } else if (type === 'pkgTenCon') {
+                } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
                     selectedPkgTenCon.push(value);
                     updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
                 }
@@ -626,7 +627,11 @@
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             const currentCriteria = document.getElementById('colorCriteriaSelect').value;
-            const showColorPicker = currentCriteria && containerId.toLowerCase().includes(currentCriteria);
+            const showColorPicker = (currentCriteria === 'building' && containerId === 'selectedBuildings') ||
+                                    (currentCriteria === 'pkgTenCon' && containerId === 'selectedPkgTenCon') ||
+                                    (currentCriteria === 'status' && containerId === 'selectedBuildingStatuses') ||
+                                    (currentCriteria === 'operational' && containerId === 'selectedBuildingOperationalStatuses') ||
+                                    (currentCriteria === 'fiscal' && containerId === 'selectedFiscalYearTenders');
 
             selectedItems.forEach(item => {
                 const div = document.createElement('div');
@@ -683,7 +688,8 @@
                 let color = nonMatchedColor;
 
                 if (matchingData) {
-                    const criteriaType = document.getElementById('colorCriteriaSelect').value;
+                    const criteriaType = document.
+getElementById('colorCriteriaSelect').value;
                     switch (criteriaType) {
                         case 'building':
                             color = colorMapping[matchingData["Building Type"]] || matchedColor;
@@ -751,7 +757,8 @@
             updateBuildingCount();
             populateAutocompleteAndDropdowns();
         }
-function handleColorCriteriaChange() {
+
+        function handleColorCriteriaChange() {
             const criteriaType = document.getElementById('colorCriteriaSelect').value;
             let selectedItems;
             let containerId;
