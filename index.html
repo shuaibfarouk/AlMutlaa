@@ -261,11 +261,11 @@
         <div class="search-section">
             <select id="colorCriteriaSelect" onchange="handleColorCriteriaChange()">
                 <option value="">Select Criteria for Coloring</option>
-                <option value="buildingType">Building Type</option>
-                <option value="buildingStatus">Building Status</option>
+                <option value="building">Building Type</option>
                 <option value="pkgTenCon">Package/Tender/Contract</option>
-                <option value="operationalStatus">Operational Status</option>
-                <option value="fiscalYear">Fiscal Year</option>
+                <option value="status">Building Status</option>
+                <option value="operational">Operational Status</option>
+                <option value="fiscal">Fiscal Year</option>
             </select>
         </div>
 
@@ -504,7 +504,7 @@
         function populateAutocompleteAndDropdowns() {
             // Populate Building Type Autocomplete
             autocomplete(document.getElementById("buildingSearch"), Array.from(buildingTypes));
-            // Populate Package/Tender/Contract Autocomplete
+            // Populate Package-Tender-Contract Autocomplete
             autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(filteredData.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
             // Populate Building Status Select
             populateSelect(document.getElementById('buildingStatusSelect'), buildingStatuses, "Select Building Status");
