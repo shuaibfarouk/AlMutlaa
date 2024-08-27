@@ -610,6 +610,8 @@
                 selectedBuildingStatuses.push(value);
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
                 updateFilteredData(); // Update filtered data based on new selection
+                // Repopulate the select without removing other options
+                populateSelect(select, buildingStatuses, "Select Building Status");
             }
         }
 
