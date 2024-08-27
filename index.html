@@ -1,121 +1,267 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Building Viewer</title>
-    <style>
-        /* Add your CSS styles here */
-        #map {
-            height: 100%;
-        }
+    <title>Google Maps - Building Viewer</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
+    
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
 
-        html, body {
+    <style>
+        /* General Styles for Modern Look */
+        html, body, #map {
+            width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
         }
 
-        #menu {
+        #map {
+            filter: grayscale(10%) brightness(95%);
+        }
+
+        .settings-button {
             position: absolute;
-            top: 10px;
+            top: 60px;
+            right: 5px;
+            background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
+            background-size: contain;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.2));
+        }
+
+        .menu {
+            position: absolute;
+            top: 80px;
             right: 10px;
-            background-color: white;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             padding: 10px;
+            z-index: 1000;
+            width: 250px;
+            font-size: 14px;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .menu input[type="text"], .menu select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
             border: 1px solid #ccc;
-            z-index: 5;
-            width: 300px;
-            max-height: 90%;
+            border-radius: 5px;
+            font-size: 14px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu button {
+            background-color: #007BFF;
+            color: white;
+            padding: 6px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .menu button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .menu button:active {
+            background-color: #003d80;
+            transform: translateY(1px);
+        }
+
+        .search-section {
+            margin-top: 8px;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+        }
+
+        .autocomplete {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 150px;
             overflow-y: auto;
+            background-color: #fff;
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+
+        .autocomplete-active {
+            background-color: DodgerBlue !important;
+            color: #ffffff;
+        }
+
+        .selected-item {
+            background-color: #e9ecef;
+            padding: 4px;
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .color-picker {
+            margin-left: 10px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        .remove-item {
+            cursor: pointer;
+            color: red;
+            margin-left: 10px;
+        }
+
+        .info-window {
+            max-width: 350px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            color: #333;
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-window table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-window th, .info-window td {
+            border: 1px solid #ddd;
+            padding: 6px 10px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .info-window th {
+            background-color: #f8f9fa;
+            font-weight: 700;
+        }
+
+        .gm-ui-hover-effect {
+            width: 20px;
+            height: 20px;
         }
 
         #revision {
             position: absolute;
             bottom: 10px;
             left: 10px;
-            background-color: white;
-            padding: 5px;
-            border: 1px solid #ccc;
-            z-index: 5;
-        }
-
-        .selected-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .remove-item {
-            margin-left: 10px;
-            color: red;
-            cursor: pointer;
-        }
-
-        .color-picker {
-            margin-left: 10px;
-            cursor: pointer;
+            color: #dc3545;
+            font-weight: bold;
         }
 
         #building-count {
             margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
         }
     </style>
 </head>
 <body onload="initMap()">
-
     <div id="map"></div>
 
-    <div id="menu">
-        <h3>Search Criteria</h3>
+    <!-- Settings Button -->
+    <div class="settings-button" onclick="toggleMenu()"></div>
 
-        <div>
-            <label for="buildingSearch">Enter Building Type</label>
-            <input id="buildingSearch" type="text" placeholder="Enter Building Type">
+    <!-- Menu Section -->
+    <div id="menu" class="menu">
+        <div class="search-section">
+            <div class="autocomplete">
+                <input id="buildingSearch" type="text" placeholder="Enter Building Type">
+            </div>
             <button onclick="addItem('building')">Add</button>
-            <div id="selectedBuildings"></div>
         </div>
-
-        <div>
-            <label for="pkgTenConSearch">Enter Package/Tender/Contract</label>
-            <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
+        <div id="selectedBuildings"></div>
+        
+        <div class="search-section">
+            <div class="autocomplete">
+                <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
+            </div>
             <button onclick="addItem('pkgTenCon')">Add</button>
-            <div id="selectedPkgTenCon"></div>
         </div>
+        <div id="selectedPkgTenCon"></div>
 
-        <div>
-            <label for="buildingStatusSelect">Select Building Status</label>
-            <select id="buildingStatusSelect"></select>
+        <div class="search-section">
+            <select id="buildingStatusSelect">
+                <option value="">Select Building Status</option>
+            </select>
             <button onclick="addBuildingStatus()">Add</button>
             <div id="selectedBuildingStatuses"></div>
         </div>
 
-        <div>
-            <label for="buildingOperationalStatusSelect">Select Building Operational Status</label>
-            <select id="buildingOperationalStatusSelect"></select>
+        <div class="search-section">
+            <select id="buildingOperationalStatusSelect">
+                <option value="">Select Building Operational Status</option>
+            </select>
             <button onclick="addBuildingOperationalStatus()">Add</button>
             <div id="selectedBuildingOperationalStatuses"></div>
         </div>
 
-        <div>
-            <label for="fiscalYearTenderSelect">Select Fiscal Year Tender</label>
-            <select id="fiscalYearTenderSelect"></select>
+        <div class="search-section">
+            <select id="fiscalYearTenderSelect">
+                <option value="">Select Fiscal Year Tender</option>
+            </select>
             <button onclick="addFiscalYearTender()">Add</button>
             <div id="selectedFiscalYearTenders"></div>
         </div>
 
-        <div>
-            <label for="colorCriteriaSelect">Select Criteria for Coloring</label>
+        <div class="search-section">
             <select id="colorCriteriaSelect" onchange="handleColorCriteriaChange()">
                 <option value="">Select Criteria for Coloring</option>
                 <option value="building">Building Type</option>
                 <option value="pkgTenCon">Package/Tender/Contract</option>
                 <option value="status">Building Status</option>
-                <option value="operational">Building Operational Status</option>
-                <option value="fiscal">Fiscal Year Tender</option>
+                <option value="operational">Operational Status</option>
+                <option value="fiscal">Fiscal Year</option>
             </select>
         </div>
 
         <button onclick="combinedSearch()">Search</button>
         <button onclick="clearSearch()">Clear</button>
-        <div id="building-count"></div> <!-- Number of buildings displayed here -->
+        <div id="building-count"></div>
     </div>
     <div id="revision">Status as of: 30 July 2024</div>
 
@@ -132,15 +278,15 @@
         let selectedBuildingStatuses = [];
         let selectedBuildingOperationalStatuses = [];
         let selectedFiscalYearTenders = [];
-        let filteredData = []; // To hold filtered JSON data based on selections
-        let colorMapping = {};  // Store selected colors for each criterion
+        let filteredData = [];
+        let colorMapping = {};
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 29.478324, lng: 47.607149 },
                 zoom: 12,
                 mapTypeId: 'roadmap',
-                styles: [ /* Custom Map Style */
+                styles: [
                     {
                         "elementType": "geometry",
                         "stylers": [{ "color": "#ebe3cd" }]
@@ -185,14 +331,14 @@
                 .then(response => response.json())
                 .then(data => {
                     jsonData = data;
-                    filteredData = data; // Initially, all data is available
+                    filteredData = data;
                     data.forEach(item => {
                         if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
                         if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
                         if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
                         if (item["Fiscal Year Based on Tender"]) fiscalYearTenders.add(item["Fiscal Year Based on Tender"]);
                     });
-                    populateAutocompleteAndDropdowns(); // Populate fields with initial data
+                    populateAutocompleteAndDropdowns();
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
         }
@@ -237,28 +383,128 @@
         }
 
         function getComponentId(placemark) {
-            const description = placemark.getElementsByTagName('description')[0].textContent;
-            const matches = description.match(/Component ID:\s*(\w+)/);
-            return matches ? matches[1] : null;
+            const simpleDataElements = placemark.getElementsByTagName('SimpleData');
+            for (let element of simpleDataElements) {
+                if (element.getAttribute('name') === 'Component ID') {
+                    return element.textContent;
+                }
+            }
+            return null;
+        }
+
+        function handlePolygonClick(event, componentId) {
+            if (componentId) {
+                const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+
+                if (matchingData) {
+                    const content = `
+                        <div class="info-window">
+                            <table>
+                                <tr>
+                                    <th colspan="2">${matchingData["Building Type"] || 'N/A'}</th>
+                                    <th>${matchingData["Neighborhood"] || 'N/A'}</th>
+                                    <th>Block ${matchingData["Block"] || 'N/A'}</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="4">${matchingData["Package-Tender-Contract"] || 'N/A'}</th>
+                                </tr>
+                                <tr>
+                                    <td>Tender / Contract Status</td>
+                                    <td colspan="3">${matchingData["Status Package"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Building Status</td>
+                                    <td colspan="3">${matchingData["Status Building"] || 'N/A'}</td>
+                                <tr>
+                                    <td>Building Operational Status</td>
+                                    <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Tender:</td>
+                                    <td colspan="3">${matchingData["Fiscal Year Based on Tender"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Tender Date:</td>
+                                    <td colspan="3">${matchingData["Tender Announcement Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Construction:</td>
+                                    <td colspan="3">${matchingData["Fiscal Year Based on Construction"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Start Date:</td>
+                                    <td colspan="3">${matchingData["Construction Start Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>End Date:</td>
+                                    <td colspan="3">${matchingData["Construction End Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Progress %:</td>
+                                    <td colspan="3">${matchingData["Package Completion %"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Building Energized:</td>
+                                    <td colspan="3">${matchingData["Electrical Connection Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Handed Over to End User:</td>
+                                    <td colspan="3">${matchingData["Handing over to End User - Date"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Operational:</td>
+                                    <td colspan="3">${matchingData["Building Operational Status"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Stakeholder:</td>
+                                    <td colspan="3">${matchingData["Stakeholder"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td>End User:</td>
+                                    <td colspan="3">${matchingData["End User"] || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">${matchingData["Component ID"] || 'N/A'}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    `;
+
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: content,
+                        position: event.latLng
+                    });
+
+                    infoWindow.open(map);
+
+                } else {
+                    alert('No matching data found for this Component ID.');
+                }
+            } else {
+                alert('Unable to identify this building. Please try another.');
+            }
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('menu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         }
 
         function populateAutocompleteAndDropdowns() {
             const dataToUse = filteredData.length < jsonData.length ? jsonData : filteredData;
 
-            // Populate Building Type Autocomplete
             autocomplete(document.getElementById("buildingSearch"), Array.from(new Set(dataToUse.map(item => item["Building Type"]).filter(Boolean))));
-            
-            // Populate Package-Tender-Contract Autocomplete
             autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(dataToUse.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
-            
-            // Populate Building Status Select
             populateSelect(document.getElementById('buildingStatusSelect'), new Set(dataToUse.map(item => item["Status Building"]).filter(Boolean)), "Select Building Status");
-            
-            // Populate Operational Status Select
             populateSelect(document.getElementById('buildingOperationalStatusSelect'), new Set(dataToUse.map(item => item["Building Operational Status"]).filter(Boolean)), "Select Building Operational Status");
-            
-            // Populate Fiscal Year Select
             populateSelect(document.getElementById('fiscalYearTenderSelect'), new Set(dataToUse.map(item => item["Fiscal Year Based on Tender"]).filter(Boolean)), "Select Fiscal Year Tender");
+        }
+
+        function populateSelect(selectElement, dataSet, defaultOption) {
+            selectElement.innerHTML = `<option value="">${defaultOption}</option>`;
+            dataSet.forEach(item => {
+                selectElement.innerHTML += `<option value="${item}">${item}</option>`;
+            });
         }
 
         function autocomplete(inp, arr) {
@@ -338,8 +584,8 @@
                     selectedPkgTenCon.push(value);
                     updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
                 }
-                updateFilteredData(); // Update filtered data based on new selection
-                inputElement.value = ''; // Clear input field after adding
+                updateFilteredData();
+                inputElement.value = '';
             }
         }
 
@@ -350,7 +596,7 @@
                 selectedBuildingStatuses.push(value);
                 updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
                 updateFilteredData();
-                select.value = ''; // Reset selection instead of repopulating
+                select.value = '';
             }
         }
 
@@ -361,7 +607,7 @@
                 selectedBuildingOperationalStatuses.push(value);
                 updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
                 updateFilteredData();
-                select.value = ''; // Reset selection
+                select.value = '';
             }
         }
 
@@ -372,7 +618,7 @@
                 selectedFiscalYearTenders.push(value);
                 updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
                 updateFilteredData();
-                select.value = ''; // Reset selection
+                select.value = '';
             }
         }
 
@@ -400,7 +646,7 @@
                     const colorPicker = document.createElement('input');
                     colorPicker.type = 'color';
                     colorPicker.className = 'color-picker';
-                    colorPicker.value = colorMapping[item] || '#00aaff'; // Default color
+                    colorPicker.value = colorMapping[item] || '#00aaff';
                     colorPicker.oninput = (e) => {
                         colorMapping[item] = e.target.value;
                         applyUnifiedColors();
@@ -423,28 +669,13 @@
                 return matchesBuildingType && matchesBuildingStatus && matchesPkgTenCon && matchesOperationalStatus && matchesFiscalYear;
             });
 
-            updateOtherCriteriaOptions();
             applyUnifiedColors();
             updateBuildingCount();
         }
 
-        function updateOtherCriteriaOptions() {
-            buildingStatuses.clear();
-            buildingOperationalStatuses.clear();
-            fiscalYearTenders.clear();
-
-            filteredData.forEach(item => {
-                if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
-                if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
-                if (item["Fiscal Year Based on Tender"]) fiscalYearTenders.add(item["Fiscal Year Based on Tender"]);
-            });
-
-            populateAutocompleteAndDropdowns();
-        }
-
         function applyUnifiedColors() {
-            const matchedColor = '#00aaff'; // Default color for matched buildings
-            const nonMatchedColor = '#e6e6e6'; // Light gray color for non-matched buildings
+            const matchedColor = '#00aaff';
+            const nonMatchedColor = '#e6e6e6';
 
             polygons.forEach(polygon => {
                 const componentId = polygon.componentId;
@@ -452,35 +683,25 @@
                 let color = nonMatchedColor;
 
                 if (matchingData) {
-                    // Check if any custom color is applied
-                    let criteriaMatched = false;
-                    if (selectedBuildings.length > 0 && selectedBuildings.includes(matchingData["Building Type"])) {
-                        color = colorMapping[matchingData["Building Type"]] || matchedColor;
-                        criteriaMatched = true;
-                    }
-
-                    if (selectedPkgTenCon.length > 0 && selectedPkgTenCon.includes(matchingData["Package-Tender-Contract"])) {
-                        color = colorMapping[matchingData["Package-Tender-Contract"]] || matchedColor;
-                        criteriaMatched = true;
-                    }
-
-                    if (selectedBuildingStatuses.length > 0 && selectedBuildingStatuses.includes(matchingData["Status Building"])) {
-                        color = colorMapping[matchingData["Status Building"]] || matchedColor;
-                        criteriaMatched = true;
-                    }
-
-                    if (selectedBuildingOperationalStatuses.length > 0 && selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"])) {
-                        color = colorMapping[matchingData["Building Operational Status"]] || matchedColor;
-                        criteriaMatched = true;
-                    }
-
-                    if (selectedFiscalYearTenders.length > 0 && selectedFiscalYearTenders.includes(matchingData["Fiscal Year Based on Tender"])) {
-                        color = colorMapping[matchingData["Fiscal Year Based on Tender"]] || matchedColor;
-                        criteriaMatched = true;
-                    }
-
-                    if (!criteriaMatched) {
-                        color = matchedColor; // If none of the above criteria matched, use default matched color
+                    const criteriaType = document.getElementById('colorCriteriaSelect').value;
+                    switch (criteriaType) {
+                        case 'building':
+                            color = colorMapping[matchingData["Building Type"]] || matchedColor;
+                            break;
+                        case 'pkgTenCon':
+                            color = colorMapping[matchingData["Package-Tender-Contract"]] || matchedColor;
+                            break;
+                        case 'status':
+                            color = colorMapping[matchingData["Status Building"]] || matchedColor;
+                            break;
+                        case 'operational':
+                            color = colorMapping[matchingData["Building Operational Status"]] || matchedColor;
+                            break;
+                        case 'fiscal':
+                            color = colorMapping[matchingData["Fiscal Year Based on Tender"]] || matchedColor;
+                            break;
+                        default:
+                            color = matchedColor;
                     }
                 }
 
@@ -503,7 +724,7 @@
             selectedBuildingStatuses = [];
             selectedBuildingOperationalStatuses = [];
             selectedFiscalYearTenders = [];
-            colorMapping = {}; // Reset color mappings
+            colorMapping = {};
 
             updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
             updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
@@ -511,15 +732,26 @@
             updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
             updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
 
-            filteredData = jsonData; // Reset filtered data to full data set
-            applyUnifiedColors();
-            updateBuildingCount();
-
-            // Reset the color criteria select to the default option
+            document.getElementById('buildingSearch').value = '';
+            document.getElementById('pkgTenConSearch').value = '';
+            document.getElementById('buildingStatusSelect').selectedIndex = 0;
+            document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
+            document.getElementById('fiscalYearTenderSelect').selectedIndex = 0;
             document.getElementById('colorCriteriaSelect').selectedIndex = 0;
-        }
 
-        function handleColorCriteriaChange() {
+            filteredData = jsonData;
+
+            polygons.forEach(polygon => {
+                polygon.setOptions({
+                    fillColor: '#00aaff',
+                    strokeColor: '#00aaff'
+                });
+            });
+
+            updateBuildingCount();
+            populateAutocompleteAndDropdowns();
+        }
+function handleColorCriteriaChange() {
             const criteriaType = document.getElementById('colorCriteriaSelect').value;
             let selectedItems;
             let containerId;
@@ -546,7 +778,7 @@
                     containerId = 'selectedFiscalYearTenders';
                     break;
                 default:
-                    return; // If no valid criteria selected, do nothing
+                    return;
             }
 
             updateSelectedItemsDisplay(containerId, selectedItems);
@@ -554,7 +786,7 @@
         }
 
         function combinedSearch() {
-            updateFilteredData(); // Apply filtering and coloring in one function
+            updateFilteredData();
         }
     </script>
 </body>
