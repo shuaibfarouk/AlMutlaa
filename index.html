@@ -434,16 +434,21 @@
                             handlePolygonClick(event, componentId);
                         });
 
-                        // Add label to the polygon
+                        // Calculate bounds manually for the polygon and add label
+                        const bounds = new google.maps.LatLngBounds();
+                        path.forEach(function(element) {
+                            bounds.extend(element);
+                        });
+
                         const label = new google.maps.Marker({
-                            position: polygon.getBounds().getCenter(),
+                            position: bounds.getCenter(),
                             map: map,
                             icon: {
                                 path: google.maps.SymbolPath.CIRCLE,
                                 scale: 0,
                             },
                             label: {
-                                text: item["Building Type"] || '',
+                                text: componentId || '',
                                 color: "black",
                                 fontSize: "10px",
                             },
@@ -565,8 +570,8 @@
             autocomplete(document.getElementById("buildingSearch"), Array.from(new Set(dataToUse.map(item => item["Building Type"]).filter(Boolean))));
             autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(dataToUse.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
             populateSelect(document.getElementById('buildingStatusSelect'), new Set(dataToUse.map(item => item["Status Building"]).filter(Boolean)), "Select Building Status");
-            populateSelect(document.getElementById('buildingOperationalStatusSelect'), new Set(dataToUse.map(item => item["Building Operational Status"]).filter(Boolean)), "Select Building Operational Status");
-            populateSelect(document.getElementById('fiscalYearTenderSelect'), new Set(dataToUse.map(item => item["Fiscal Year Based on Tender"]).filter(Boolean)), "Select Fiscal Year Tender");
+            populateSelect(document.getElementById('buildingOperationalStatusSelect'), new Set(dataToUse.map(item["Building Operational Status"]).filter(Boolean)), "Select Building Operational Status");
+            populateSelect(document.getElementById('fiscalYearTenderSelect'), new Set(dataToUse.map(item["Fiscal Year Based on Tender"]).filter(Boolean)), "Select Fiscal Year Tender");
         }
 
         function populateSelect(selectElement, dataSet, defaultOption) {
