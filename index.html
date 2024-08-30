@@ -199,18 +199,20 @@
             color: #333;
         }
 
-        .tag-info-window {
+        .custom-info-window {
             background-color: #FF3B30;
             color: #FFFFFF;
-            font-size: 11px;
-            padding: 8px;
+            font-size: 12px;
+            padding: 5px;
             border-radius: 4px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            max-width: 200px;
-            width: auto;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .custom-info-window.zoomed-out {
+            font-size: 10px;
+            padding: 3px;
         }
 
         .checkbox-container {
@@ -309,7 +311,8 @@
         let selectedFiscalYearTenders = [];
         let filteredData = [];
         let colorMapping = {};
-        let tagInfoWindow;
+        let customInfoWindows = [];
+        let currentZoom;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -352,16 +355,9 @@
                 ]
             });
 
-            tagInfoWindow = new google.maps.InfoWindow({
-                disableAutoPan: true
-            });
-
-            // Remove close button from tag info window
-            google.maps.event.addListener(tagInfoWindow, 'domready', function() {
-                var closeButtons = document.getElementsByClassName('gm-ui-hover-effect');
-                if (closeButtons.length > 0) {
-                    closeButtons[0].style.display = 'none';
-                }
+            map.addListener('zoom_changed', function() {
+                currentZoom = map.getZoom();
+                updateInfoWindowsScale();
             });
 
             loadJSONData();
@@ -840,6 +836,8 @@
                                             selectedBuildingOperationalStatuses.length > 0 || 
                                             selectedFiscalYearTenders.length > 0;
 
+            closeAllTagInfoWindows();
+
             if (tagCheckbox.checked && hasActiveSearchCriteria && filteredData.length > 0) {
                 filteredData.forEach(item => {
                     const matchingPolygon = polygons.find(polygon => polygon.componentId === item["Component ID"]);
@@ -850,47 +848,72 @@
                         });
 
                         const center = bounds.getCenter();
-                        const position = new google.maps.LatLng(center.lat(), center.lng());
-
-                        const tagInfoContent = `
-                            <div class="tag-info-window">
-                                <strong>${item["Building Type"] || 'N/A'}</strong><br>
-                                ${item["Package-Tender-Contract"] || 'N/A'}<br>
-                                ${item["Status Building"] || 'N/A'}
-                            </div>
-                        `;
-
-                        const infoWindow = new google.maps.InfoWindow({
-                            content: tagInfoContent,
-                            position: position,
-                            disableAutoPan: true
-                        });
-
-                        infoWindow.open(map);
-
-                        // Remove close button
-                        google.maps.event.addListener(infoWindow, 'domready', function() {
-                            var closeButtons = document.getElementsByClassName('gm-ui-hover-effect');
-                            if (closeButtons.length > 0) {
-                                closeButtons[closeButtons.length - 1].style.display = 'none';
-                            }
-                        });
-
-                        matchingPolygon.tagInfoWindow = infoWindow;
+                        const customInfoWindow = new CustomInfoWindow(center, item);
+                        customInfoWindow.setMap(map);
+                        customInfoWindows.push(customInfoWindow);
                     }
                 });
-            } else {
-                closeAllTagInfoWindows();
+                updateInfoWindowsScale();
             }
         }
 
-        function closeAllTagInfoWindows() {
-            polygons.forEach(polygon => {
-                if (polygon.tagInfoWindow) {
-                    polygon.tagInfoWindow.close();
-                    polygon.tagInfoWindow = null;
+        class CustomInfoWindow extends google.maps.OverlayView {
+            constructor(position, data) {
+                super();
+                this.position = position;
+                this.data = data;
+                this.div = null;
+            }
+
+            onAdd() {
+                this.div = document.createElement('div');
+                this.div.className = 'custom-info-window';
+                this.div.innerHTML = this.getContent();
+
+                const panes = this.getPanes();
+                panes.overlayMouseTarget.appendChild(this.div);
+            }
+
+            draw() {
+                const overlayProjection = this.getProjection();
+                const position = overlayProjection.fromLatLngToDivPixel(this.position);
+                
+                this.div.style.left = position.x + 'px';
+                this.div.style.top = position.y + 'px';
+            }
+
+            onRemove() {
+                if (this.div) {
+                    this.div.parentNode.removeChild(this.div);
+                    this.div = null;
+                }
+            }
+
+            getContent() {
+                return `
+                    <strong>${this.data["Building Type"] || 'N/A'}</strong><br>
+                    ${this.data["Package-Tender-Contract"] || 'N/A'}<br>
+                    ${this.data["Status Building"] || 'N/A'}
+                `;
+            }
+        }
+
+        function updateInfoWindowsScale() {
+            const zoomThreshold = 14; // Adjust this value as needed
+            customInfoWindows.forEach(infoWindow => {
+                if (currentZoom < zoomThreshold) {
+                    infoWindow.div.classList.add('zoomed-out');
+                } else {
+                    infoWindow.div.classList.remove('zoomed-out');
                 }
             });
+        }
+
+        function closeAllTagInfoWindows() {
+            customInfoWindows.forEach(infoWindow => {
+                infoWindow.setMap(null);
+            });
+            customInfoWindows = [];
         }
 
         function toggleTagInfoWindow() {
