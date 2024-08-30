@@ -576,7 +576,7 @@
             autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(dataToUse.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
             populateSelect(document.getElementById('buildingStatusSelect'), new Set(dataToUse.map(item => item["Status Building"]).filter(Boolean)), "Select Building Status");
             populateSelect(document.getElementById('buildingOperationalStatusSelect'), new Set(dataToUse.map(item => item["Building Operational Status"]).filter(Boolean)), "Select Building Operational Status");
-            populateSelect(document.getElementById('fiscalYearTenderSelect'), new Set(dataToUse.map(item["Fiscal Year Based on Tender"]).filter(Boolean)), "Select Fiscal Year Tender");
+            populateSelect(document.getElementById('fiscalYearTenderSelect'), new Set(dataToUse.map(item => item["Fiscal Year Based on Tender"]).filter(Boolean)), "Select Fiscal Year Tender");
         }
 
         function populateSelect(selectElement, dataSet, defaultOption) {
