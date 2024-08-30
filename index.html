@@ -206,10 +206,7 @@
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            position: absolute;
-            z-index: 1000;
             max-width: 250px;
-            display: none;
         }
     </style>
 </head>
@@ -285,10 +282,6 @@
     </div>
     <div id="revision">Status as of: 30 July 2024</div>
 
-    <div id="tagInfoWindow" class="tag-info-window">
-        <div id="tagInfoContent"></div>
-    </div>
-
     <script>
         let map;
         let jsonData = {};
@@ -348,7 +341,6 @@
             });
 
             tagInfoWindow = new google.maps.InfoWindow({
-                content: document.getElementById('tagInfoWindow'),
                 disableAutoPan: true
             });
 
@@ -825,11 +817,13 @@
             if (tagCheckbox.checked && filteredData.length > 0) {
                 const firstItem = filteredData[0];
                 const tagInfoContent = `
-                    <strong>Building Type:</strong> ${firstItem["Building Type"] || 'N/A'}<br>
-                    <strong>Package/Tender/Contract:</strong> ${firstItem["Package-Tender-Contract"] || 'N/A'}<br>
-                    <strong>Building Status:</strong> ${firstItem["Status Building"] || 'N/A'}
+                    <div class="tag-info-window">
+                        <strong>Building Type:</strong> ${firstItem["Building Type"] || 'N/A'}<br>
+                        <strong>Package/Tender/Contract:</strong> ${firstItem["Package-Tender-Contract"] || 'N/A'}<br>
+                        <strong>Building Status:</strong> ${firstItem["Status Building"] || 'N/A'}
+                    </div>
                 `;
-                document.getElementById('tagInfoContent').innerHTML = tagInfoContent;
+                tagInfoWindow.setContent(tagInfoContent);
                 
                 // Find the first matching polygon
                 const matchingPolygon = polygons.find(polygon => 
@@ -845,7 +839,8 @@
 
                     // Position the info window above the center of the polygon
                     const center = bounds.getCenter();
-                    tagInfoWindow.setPosition(new google.maps.LatLng(center.lat(), center.lng()));
+                    const position = new google.maps.LatLng(center.lat(), center.lng());
+                    tagInfoWindow.setPosition(position);
                     tagInfoWindow.open(map);
                 }
             } else {
@@ -859,6 +854,7 @@
 
         function combinedSearch() {
             updateFilteredData();
+            displayTagInfoWindow();
         }
 
     </script>
