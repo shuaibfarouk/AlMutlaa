@@ -207,9 +207,8 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
             position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 2000;
+            z-index: 1000;
+            max-width: 250px;
             display: none;
         }
     </style>
@@ -275,7 +274,7 @@
 
         <div class="search-section">
             <label>
-                <input type="checkbox" id="tagSearchedBuilding" />
+                <input type="checkbox" id="tagSearchedBuilding" onchange="toggleTagInfoWindow()"/>
                 Tag searched building / Plot
             </label>
         </div>
@@ -305,6 +304,7 @@
         let selectedFiscalYearTenders = [];
         let filteredData = [];
         let colorMapping = {};
+        let tagInfoWindow;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -345,6 +345,11 @@
                         "stylers": [{ "color": "#blue" }]
                     }
                 ]
+            });
+
+            tagInfoWindow = new google.maps.InfoWindow({
+                content: document.getElementById('tagInfoWindow'),
+                disableAutoPan: true
             });
 
             loadJSONData();
@@ -776,7 +781,8 @@
             });
 
             updateBuildingCount();
-            displayTagInfoWindow();
+            tagInfoWindow.close();
+            document.getElementById('tagSearchedBuilding').checked = false;
             populateAutocompleteAndDropdowns();
         }
 
@@ -816,7 +822,6 @@
 
         function displayTagInfoWindow() {
             const tagCheckbox = document.getElementById('tagSearchedBuilding');
-            const tagInfoWindow = document.getElementById('tagInfoWindow');
             if (tagCheckbox.checked && filteredData.length > 0) {
                 const firstItem = filteredData[0];
                 const tagInfoContent = `
@@ -825,15 +830,37 @@
                     <strong>Building Status:</strong> ${firstItem["Status Building"] || 'N/A'}
                 `;
                 document.getElementById('tagInfoContent').innerHTML = tagInfoContent;
-                tagInfoWindow.style.display = 'block';
+                
+                // Find the first matching polygon
+                const matchingPolygon = polygons.find(polygon => 
+                    polygon.componentId === firstItem["Component ID"]
+                );
+
+                if (matchingPolygon) {
+                    // Get the bounds of the polygon
+                    const bounds = new google.maps.LatLngBounds();
+                    matchingPolygon.getPath().forEach(function(element) {
+                        bounds.extend(element);
+                    });
+
+                    // Position the info window above the center of the polygon
+                    const center = bounds.getCenter();
+                    tagInfoWindow.setPosition(new google.maps.LatLng(center.lat(), center.lng()));
+                    tagInfoWindow.open(map);
+                }
             } else {
-                tagInfoWindow.style.display = 'none';
+                tagInfoWindow.close();
             }
+        }
+
+        function toggleTagInfoWindow() {
+            displayTagInfoWindow();
         }
 
         function combinedSearch() {
             updateFilteredData();
         }
+
     </script>
 </body>
 </html>
