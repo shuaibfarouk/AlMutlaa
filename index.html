@@ -202,11 +202,25 @@
         .tag-info-window {
             background-color: #FF3B30;
             color: #FFFFFF;
-            font-size: 14px;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            max-width: 250px;
+            font-size: 11px;
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            max-width: 200px;
+            width: auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            transform: scale(0.8);
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -269,11 +283,9 @@
             </select>
         </div>
 
-        <div class="search-section">
-            <label>
-                <input type="checkbox" id="tagSearchedBuilding" onchange="toggleTagInfoWindow()"/>
-                Tag searched building / Plot
-            </label>
+        <div class="search-section checkbox-container">
+            <input type="checkbox" id="tagSearchedBuilding" onchange="toggleTagInfoWindow()"/>
+            <label for="tagSearchedBuilding">Tag searched building / Plot</label>
         </div>
 
         <button onclick="combinedSearch()">Search</button>
@@ -342,6 +354,14 @@
 
             tagInfoWindow = new google.maps.InfoWindow({
                 disableAutoPan: true
+            });
+
+            // Remove close button from tag info window
+            google.maps.event.addListener(tagInfoWindow, 'domready', function() {
+                var closeButtons = document.getElementsByClassName('gm-ui-hover-effect');
+                if (closeButtons.length > 0) {
+                    closeButtons[0].style.display = 'none';
+                }
             });
 
             loadJSONData();
@@ -694,7 +714,7 @@
 
             applyUnifiedColors();
             updateBuildingCount();
-            displayTagInfoWindow();
+            displayTagInfoWindows();
         }
 
         function applyUnifiedColors() {
@@ -773,7 +793,7 @@
             });
 
             updateBuildingCount();
-            tagInfoWindow.close();
+            closeAllTagInfoWindows();
             document.getElementById('tagSearchedBuilding').checked = false;
             populateAutocompleteAndDropdowns();
         }
@@ -812,49 +832,73 @@
             applyUnifiedColors();
         }
 
-        function displayTagInfoWindow() {
+        function displayTagInfoWindows() {
             const tagCheckbox = document.getElementById('tagSearchedBuilding');
-            if (tagCheckbox.checked && filteredData.length > 0) {
-                const firstItem = filteredData[0];
-                const tagInfoContent = `
-                    <div class="tag-info-window">
-                        <strong>Building Type:</strong> ${firstItem["Building Type"] || 'N/A'}<br>
-                        <strong>Package/Tender/Contract:</strong> ${firstItem["Package-Tender-Contract"] || 'N/A'}<br>
-                        <strong>Building Status:</strong> ${firstItem["Status Building"] || 'N/A'}
-                    </div>
-                `;
-                tagInfoWindow.setContent(tagInfoContent);
-                
-                // Find the first matching polygon
-                const matchingPolygon = polygons.find(polygon => 
-                    polygon.componentId === firstItem["Component ID"]
-                );
+            const hasActiveSearchCriteria = selectedBuildings.length > 0 || 
+                                            selectedPkgTenCon.length > 0 || 
+                                            selectedBuildingStatuses.length > 0 || 
+                                            selectedBuildingOperationalStatuses.length > 0 || 
+                                            selectedFiscalYearTenders.length > 0;
 
-                if (matchingPolygon) {
-                    // Get the bounds of the polygon
-                    const bounds = new google.maps.LatLngBounds();
-                    matchingPolygon.getPath().forEach(function(element) {
-                        bounds.extend(element);
-                    });
+            if (tagCheckbox.checked && hasActiveSearchCriteria && filteredData.length > 0) {
+                filteredData.forEach(item => {
+                    const matchingPolygon = polygons.find(polygon => polygon.componentId === item["Component ID"]);
+                    if (matchingPolygon) {
+                        const bounds = new google.maps.LatLngBounds();
+                        matchingPolygon.getPath().forEach(function(element) {
+                            bounds.extend(element);
+                        });
 
-                    // Position the info window above the center of the polygon
-                    const center = bounds.getCenter();
-                    const position = new google.maps.LatLng(center.lat(), center.lng());
-                    tagInfoWindow.setPosition(position);
-                    tagInfoWindow.open(map);
-                }
+                        const center = bounds.getCenter();
+                        const position = new google.maps.LatLng(center.lat(), center.lng());
+
+                        const tagInfoContent = `
+                            <div class="tag-info-window">
+                                <strong>${item["Building Type"] || 'N/A'}</strong><br>
+                                ${item["Package-Tender-Contract"] || 'N/A'}<br>
+                                ${item["Status Building"] || 'N/A'}
+                            </div>
+                        `;
+
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: tagInfoContent,
+                            position: position,
+                            disableAutoPan: true
+                        });
+
+                        infoWindow.open(map);
+
+                        // Remove close button
+                        google.maps.event.addListener(infoWindow, 'domready', function() {
+                            var closeButtons = document.getElementsByClassName('gm-ui-hover-effect');
+                            if (closeButtons.length > 0) {
+                                closeButtons[closeButtons.length - 1].style.display = 'none';
+                            }
+                        });
+
+                        matchingPolygon.tagInfoWindow = infoWindow;
+                    }
+                });
             } else {
-                tagInfoWindow.close();
+                closeAllTagInfoWindows();
             }
         }
 
+        function closeAllTagInfoWindows() {
+            polygons.forEach(polygon => {
+                if (polygon.tagInfoWindow) {
+                    polygon.tagInfoWindow.close();
+                    polygon.tagInfoWindow = null;
+                }
+            });
+        }
+
         function toggleTagInfoWindow() {
-            displayTagInfoWindow();
+            displayTagInfoWindows();
         }
 
         function combinedSearch() {
             updateFilteredData();
-            displayTagInfoWindow();
         }
 
     </script>
