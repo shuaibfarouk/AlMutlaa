@@ -200,7 +200,7 @@
         }
 
         .custom-info-window {
-            background-color: #007BFF;
+            background-color: rgba(0, 123, 255, 0.9);
             color: #FFFFFF;
             font-size: 10px;
             padding: 4px 8px;
@@ -211,6 +211,8 @@
             width: 100px;
             text-align: center;
             line-height: 1.2;
+            position: absolute;
+            z-index: 1000;
         }
 
         .custom-info-window.zoomed-out {
@@ -872,17 +874,19 @@
                 this.div = document.createElement('div');
                 this.div.className = 'custom-info-window';
                 this.div.innerHTML = this.getContent();
-
-                const panes = this.getPanes();
-                panes.overlayImage.appendChild(this.div);
+                this.getPanes().overlayMouseTarget.appendChild(this.div);
             }
 
             draw() {
                 const overlayProjection = this.getProjection();
                 const position = overlayProjection.fromLatLngToDivPixel(this.position);
                 
-                this.div.style.left = (position.x - 50) + 'px';
-                this.div.style.top = (position.y - 25) + 'px';
+                if (this.div) {
+                    this.div.style.left = (position.x - 50) + 'px';
+                    this.div.style.top = (position.y - 25) + 'px';
+                    this.div.style.position = 'absolute';
+                    this.div.style.visibility = 'visible';
+                }
             }
 
             onRemove() {
