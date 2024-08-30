@@ -200,19 +200,23 @@
         }
 
         .custom-info-window {
-            background-color: #FF3B30;
+            background-color: #007BFF;
             color: #FFFFFF;
-            font-size: 12px;
-            padding: 5px;
+            font-size: 10px;
+            padding: 4px 8px;
             border-radius: 4px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
             pointer-events: none;
             transition: all 0.3s ease;
+            width: 100px;
+            text-align: center;
+            line-height: 1.2;
         }
 
         .custom-info-window.zoomed-out {
-            font-size: 10px;
-            padding: 3px;
+            font-size: 8px;
+            padding: 2px 4px;
+            width: 80px;
         }
 
         .checkbox-container {
@@ -356,7 +360,6 @@
             });
 
             map.addListener('zoom_changed', function() {
-                currentZoom = map.getZoom();
                 updateInfoWindowsScale();
             });
 
@@ -871,15 +874,15 @@
                 this.div.innerHTML = this.getContent();
 
                 const panes = this.getPanes();
-                panes.overlayMouseTarget.appendChild(this.div);
+                panes.overlayImage.appendChild(this.div);
             }
 
             draw() {
                 const overlayProjection = this.getProjection();
                 const position = overlayProjection.fromLatLngToDivPixel(this.position);
                 
-                this.div.style.left = position.x + 'px';
-                this.div.style.top = position.y + 'px';
+                this.div.style.left = (position.x - 50) + 'px';
+                this.div.style.top = (position.y - 25) + 'px';
             }
 
             onRemove() {
@@ -899,9 +902,9 @@
         }
 
         function updateInfoWindowsScale() {
-            const zoomThreshold = 14; // Adjust this value as needed
+            const zoomThreshold = 14;
             customInfoWindows.forEach(infoWindow => {
-                if (currentZoom < zoomThreshold) {
+                if (map.getZoom() < zoomThreshold) {
                     infoWindow.div.classList.add('zoomed-out');
                 } else {
                     infoWindow.div.classList.remove('zoomed-out');
