@@ -332,6 +332,20 @@
         let baseTextSize = 11;
         let labelsVisible = true;
 
+        // Throttle function for zoom event
+        function throttle(func, limit) {
+            let inThrottle;
+            return function() {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            }
+        }
+
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 29.478324, lng: 47.607149 },
@@ -373,10 +387,11 @@
                 ]
             });
 
-            map.addListener('zoom_changed', function() {
+            // Use throttling for the zoom_changed listener
+            map.addListener('zoom_changed', throttle(function() {
                 updateLabelSize();
                 updateInfoWindowsScale();
-            });
+            }, 100));
 
             loadJSONData();
             loadKML();
@@ -440,6 +455,7 @@
                             bounds.extend(element);
                         });
 
+                        const matchingData = jsonData.find(item => item["Component ID"] == componentId);
                         const label = new google.maps.Marker({
                             position: bounds.getCenter(),
                             map: map,
@@ -448,7 +464,7 @@
                                 scale: 0,
                             },
                             label: {
-                                text: componentId || '',
+                                text: matchingData ? (matchingData["Building Type"] || '') : '',
                                 color: "black",
                                 fontSize: "10px",
                             },
@@ -570,7 +586,7 @@
             autocomplete(document.getElementById("buildingSearch"), Array.from(new Set(dataToUse.map(item => item["Building Type"]).filter(Boolean))));
             autocomplete(document.getElementById("pkgTenConSearch"), Array.from(new Set(dataToUse.map(item => item["Package-Tender-Contract"]).filter(Boolean))));
             populateSelect(document.getElementById('buildingStatusSelect'), new Set(dataToUse.map(item => item["Status Building"]).filter(Boolean)), "Select Building Status");
-            populateSelect(document.getElementById('buildingOperationalStatusSelect'), new Set(dataToUse.map(item["Building Operational Status"]).filter(Boolean)), "Select Building Operational Status");
+            populateSelect(document.getElementById('buildingOperationalStatusSelect'), new Set(dataToUse.map(item => item["Building Operational Status"]).filter(Boolean)), "Select Building Operational Status");
             populateSelect(document.getElementById('fiscalYearTenderSelect'), new Set(dataToUse.map(item["Fiscal Year Based on Tender"]).filter(Boolean)), "Select Fiscal Year Tender");
         }
 
@@ -976,7 +992,7 @@
 
         function updateLabelSize() {
             const zoom = map.getZoom();
-            const fontSize = Math.max(8, Math.min(16, baseTextSize + zoom - 4)) + "px";
+            const fontSize = Math.max(8, Math.min(16, baseTextSize + zoom - 12)) + "px";
             polygons.forEach(polygon => {
                 if (polygon.label) {
                     const currentLabel = polygon.label.getLabel();
@@ -995,7 +1011,12 @@
             labelsVisible = !labelsVisible;
             polygons.forEach(polygon => {
                 if (polygon.label) {
-                    polygon.label.setMap(labelsVisible ? map : null);
+                    if (labelsVisible) {
+                        polygon.label.setMap(map);
+                        updateLabelSize(); // Ensure correct size when showing
+                    } else {
+                        polygon.label.setMap(null);
+                    }
                 }
             });
             document.getElementById('toggleLabels').innerText = labelsVisible ? 'Hide Labels' : 'Show Labels';
