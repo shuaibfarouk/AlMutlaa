@@ -302,6 +302,16 @@
     </div>
     <div id="revision">Status as of: 30 July 2024</div>
 
+    <!-- Text Resize and Label Toggle Buttons -->
+    <div id="textResizeButtons" style="position: absolute; top: 10px; right: 60px;">
+        <button onclick="resizeText(1)">A+</button>
+        <span id="textSizeDisplay">11</span>
+        <button onclick="resizeText(-1)">A-</button>
+    </div>
+    <button id="toggleLabels" onclick="toggleBuildingLabels()" style="position: absolute; top: 10px; right: 150px;">
+        Hide Labels
+    </button>
+
     <script>
         let map;
         let jsonData = {};
@@ -319,6 +329,8 @@
         let colorMapping = {};
         let customInfoWindows = [];
         let currentZoom;
+        let baseTextSize = 11;
+        let labelsVisible = true;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
@@ -362,6 +374,7 @@
             });
 
             map.addListener('zoom_changed', function() {
+                updateLabelSize();
                 updateInfoWindowsScale();
             });
 
@@ -420,6 +433,22 @@
                         polygon.addListener('click', function(event) {
                             handlePolygonClick(event, componentId);
                         });
+
+                        // Add label to the polygon
+                        const label = new google.maps.Marker({
+                            position: polygon.getBounds().getCenter(),
+                            map: map,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 0,
+                            },
+                            label: {
+                                text: item["Building Type"] || '',
+                                color: "black",
+                                fontSize: "10px",
+                            },
+                        });
+                        polygon.label = label;
                     }
                 })
                 .catch(error => console.error('Error loading KML:', error));
@@ -754,6 +783,15 @@
                     fillColor: color,
                     strokeColor: color
                 });
+
+                // Update label color
+                if (polygon.label) {
+                    polygon.label.setLabel({
+                        text: polygon.label.getLabel().text,
+                        color: color === matchedColor ? "red" : "darkgray",
+                        fontSize: polygon.label.getLabel().fontSize
+                    });
+                }
             });
         }
 
@@ -931,6 +969,32 @@
             updateFilteredData();
         }
 
+        function updateLabelSize() {
+            const zoom = map.getZoom();
+            const fontSize = Math.max(8, Math.min(16, baseTextSize + zoom - 4)) + "px";
+            polygons.forEach(polygon => {
+                if (polygon.label) {
+                    const currentLabel = polygon.label.getLabel();
+                    polygon.label.setLabel({...currentLabel, fontSize: fontSize});
+                }
+            });
+        }
+
+        function resizeText(change) {
+            baseTextSize = Math.max(8, Math.min(16, baseTextSize + change));
+            document.getElementById('textSizeDisplay').innerText = baseTextSize;
+            updateLabelSize();
+        }
+
+        function toggleBuildingLabels() {
+            labelsVisible = !labelsVisible;
+            polygons.forEach(polygon => {
+                if (polygon.label) {
+                    polygon.label.setMap(labelsVisible ? map : null);
+                }
+            });
+            document.getElementById('toggleLabels').innerText = labelsVisible ? 'Hide Labels' : 'Show Labels';
+        }
     </script>
 </body>
 </html>
