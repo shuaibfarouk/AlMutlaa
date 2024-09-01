@@ -459,21 +459,26 @@
         }
 
         function loadJSONData() {
-            fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
-                .then(response => response.json())
-                .then(data => {
-                    jsonData = data;
-                    filteredData = data;
-                    data.forEach(item => {
-                        if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
-                        if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
-                        if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
-                        if (item["Fiscal Year Based on Tender"]) fiscalYearTenders.add(item["Fiscal Year Based on Tender"]);
-                    });
-                    populateAutocompleteAndDropdowns();
-                })
-                .catch(error => console.error('Error loading JSON data:', error));
-        }
+    fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
+        .then(response => response.json())
+        .then(data => {
+            console.log("JSON data loaded:", data);
+            jsonData = data;
+            filteredData = data;
+            data.forEach(item => {
+                if (item["Building Type"]) buildingTypes.add(item["Building Type"]);
+                if (item["Status Building"]) buildingStatuses.add(item["Status Building"]);
+                if (item["Building Operational Status"]) buildingOperationalStatuses.add(item["Building Operational Status"]);
+                if (item["Fiscal Year Based on Tender"]) fiscalYearTenders.add(item["Fiscal Year Based on Tender"]);
+            });
+            populateAutocompleteAndDropdowns();
+            console.log("Data processing complete");
+        })
+        .catch(error => {
+            console.error('Error loading JSON data:', error);
+            alert('Failed to load data. Please try refreshing the page.');
+        });
+}
 
         function loadKML() {
             const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
@@ -803,20 +808,46 @@
         }
 
 function updateFilteredData() {
+    console.log("Filtering data...");
+    console.log("Selected Buildings:", selectedBuildings);
+    console.log("Selected PkgTenCon:", selectedPkgTenCon);
+    console.log("Selected Building Statuses:", selectedBuildingStatuses);
+    console.log("Selected Operational Statuses:", selectedBuildingOperationalStatuses);
+    console.log("Selected Fiscal Years:", selectedFiscalYearTenders);
+
     filteredData = jsonData.filter(item => {
-        let matchesBuildingType = selectedBuildings.length === 0 || selectedBuildings.some(building => item["Building Type"].toUpperCase().includes(building.toUpperCase()));
-        let matchesBuildingStatus = selectedBuildingStatuses.length === 0 || selectedBuildingStatuses.includes(item["Status Building"]);
-        let matchesPkgTenCon = selectedPkgTenCon.length === 0 || selectedPkgTenCon.some(pkg => 
-            item["Package-Tender-Contract"] && item["Package-Tender-Contract"].toUpperCase().includes(pkg.toUpperCase())
-        );
-        let matchesOperationalStatus = selectedBuildingOperationalStatuses.length === 0 || selectedBuildingOperationalStatuses.includes(item["Building Operational Status"]);
-        let matchesFiscalYear = selectedFiscalYearTenders.length === 0 || selectedFiscalYearTenders.includes(item["Fiscal Year Based on Tender"]);
+        let matchesBuildingType = selectedBuildings.length === 0 || 
+            (item["Building Type"] && selectedBuildings.some(building => 
+                item["Building Type"].toLowerCase().includes(building.toLowerCase())
+            ));
 
-        // Check if this item has a corresponding polygon in KML data
-        let hasMatchingPolygon = polygons.some(polygon => polygon.componentId === item["Component ID"]);
+        let matchesBuildingStatus = selectedBuildingStatuses.length === 0 || 
+            (item["Status Building"] && selectedBuildingStatuses.some(status => 
+                item["Status Building"].toLowerCase() === status.toLowerCase()
+            ));
 
-        return matchesBuildingType && matchesBuildingStatus && matchesPkgTenCon && matchesOperationalStatus && matchesFiscalYear && hasMatchingPolygon;
+        let matchesPkgTenCon = selectedPkgTenCon.length === 0 || 
+            (item["Package-Tender-Contract"] && selectedPkgTenCon.some(pkg => 
+                item["Package-Tender-Contract"].toLowerCase().includes(pkg.toLowerCase())
+            ));
+
+        let matchesOperationalStatus = selectedBuildingOperationalStatuses.length === 0 || 
+            (item["Building Operational Status"] && selectedBuildingOperationalStatuses.some(status => 
+                item["Building Operational Status"].toLowerCase() === status.toLowerCase()
+            ));
+
+        let matchesFiscalYear = selectedFiscalYearTenders.length === 0 || 
+            (item["Fiscal Year Based on Tender"] && selectedFiscalYearTenders.some(year => 
+                item["Fiscal Year Based on Tender"].toLowerCase() === year.toLowerCase()
+            ));
+
+        let hasMatchingPolygon = polygons.some(polygon => polygon.componentId === item["Component ID"].toString());
+
+        return matchesBuildingType && matchesBuildingStatus && matchesPkgTenCon && 
+               matchesOperationalStatus && matchesFiscalYear && hasMatchingPolygon;
     });
+
+    console.log("Filtered Data:", filteredData);
 
     applyUnifiedColors();
     updateBuildingCount();
