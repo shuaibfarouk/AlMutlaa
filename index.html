@@ -4,7 +4,7 @@
     <title>Google Maps - Building Viewer</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    
+
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -14,7 +14,7 @@
     <!-- End Google Tag Manager -->
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
-    
+
     <!-- Google Fonts for Modern Typography -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
 
@@ -245,7 +245,7 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M7939L3V"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    
+
     <div id="map"></div>
 
     <!-- Settings Button -->
@@ -260,7 +260,7 @@
             <button onclick="addItem('building')">Add</button>
         </div>
         <div id="selectedBuildings"></div>
-        
+
         <div class="search-section">
             <div class="autocomplete">
                 <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
@@ -438,7 +438,7 @@
 
         function loadKML() {
             const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
-            
+
             fetch(kmlUrl)
                 .then(response => response.text())
                 .then(kmlData => {
@@ -466,7 +466,7 @@
                         const componentId = getComponentId(placemark);
                         polygon.componentId = componentId;
                         polygons.push(polygon);
-                        
+
                         polygon.addListener('click', function(event) {
                             handlePolygonClick(event, componentId);
                         });
@@ -950,7 +950,7 @@
             draw() {
                 const overlayProjection = this.getProjection();
                 const position = overlayProjection.fromLatLngToDivPixel(this.position);
-                
+
                 if (this.div) {
                     this.div.style.left = (position.x - 50) + 'px';
                     this.div.style.top = (position.y - 25) + 'px';
