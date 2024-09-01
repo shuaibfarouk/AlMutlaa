@@ -812,7 +812,10 @@ function updateFilteredData() {
         let matchesOperationalStatus = selectedBuildingOperationalStatuses.length === 0 || selectedBuildingOperationalStatuses.includes(item["Building Operational Status"]);
         let matchesFiscalYear = selectedFiscalYearTenders.length === 0 || selectedFiscalYearTenders.includes(item["Fiscal Year Based on Tender"]);
 
-        return matchesBuildingType && matchesBuildingStatus && matchesPkgTenCon && matchesOperationalStatus && matchesFiscalYear;
+        // Check if this item has a corresponding polygon in KML data
+        let hasMatchingPolygon = polygons.some(polygon => polygon.componentId === item["Component ID"]);
+
+        return matchesBuildingType && matchesBuildingStatus && matchesPkgTenCon && matchesOperationalStatus && matchesFiscalYear && hasMatchingPolygon;
     });
 
     applyUnifiedColors();
@@ -826,33 +829,30 @@ function applyUnifiedColors() {
 
     polygons.forEach(polygon => {
         const componentId = polygon.componentId;
-        const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+        const matchingData = filteredData.find(item => item["Component ID"] == componentId);
         let color = nonMatchedColor;
 
         if (matchingData) {
             const criteriaType = document.getElementById('colorCriteriaSelect').value;
-            const isFiltered = filteredData.some(item => item["Component ID"] == componentId);
-
-            if (isFiltered) {
-                switch (criteriaType) {
-                    case 'building':
-                        color = colorMapping[matchingData["Building Type"]] || matchedColor;
-                        break;
-                    case 'pkgTenCon':
-                        color = colorMapping[matchingData["Package-Tender-Contract"]] || matchedColor;
-                        break;
-                    case 'status':
-                        color = colorMapping[matchingData["Status Building"]] || matchedColor;
-                        break;
-                    case 'operational':
-                        color = colorMapping[matchingData["Building Operational Status"]] || matchedColor;
-                        break;
-                    case 'fiscal':
-                        color = colorMapping[matchingData["Fiscal Year Based on Tender"]] || matchedColor;
-                        break;
-                    default:
-                        color = matchedColor;
-                }
+            
+            switch (criteriaType) {
+                case 'building':
+                    color = colorMapping[matchingData["Building Type"]] || matchedColor;
+                    break;
+                case 'pkgTenCon':
+                    color = colorMapping[matchingData["Package-Tender-Contract"]] || matchedColor;
+                    break;
+                case 'status':
+                    color = colorMapping[matchingData["Status Building"]] || matchedColor;
+                    break;
+                case 'operational':
+                    color = colorMapping[matchingData["Building Operational Status"]] || matchedColor;
+                    break;
+                case 'fiscal':
+                    color = colorMapping[matchingData["Fiscal Year Based on Tender"]] || matchedColor;
+                    break;
+                default:
+                    color = matchedColor;
             }
         }
 
@@ -861,8 +861,9 @@ function applyUnifiedColors() {
             strokeColor: color
         });
 
+
                 // Update label color
-                if (polygon.label) {
+                 if (polygon.label) {
             polygon.label.setLabel({
                 text: polygon.label.getLabel().text,
                 color: color !== nonMatchedColor ? "black" : "darkgray",
@@ -872,11 +873,10 @@ function applyUnifiedColors() {
     });
 }
         function updateBuildingCount() {
-            const countElement = document.getElementById('building-count');
-            const count = filteredData.length;
-            countElement.textContent = `Showing ${count} Result${count === 1 ? '' : 's'}`;
-        }
-
+    const countElement = document.getElementById('building-count');
+    const count = filteredData.length;
+    countElement.textContent = `Showing ${count} Building${count === 1 ? '' : 's'}`;
+}
         function clearSearch() {
             selectedBuildings = [];
             selectedPkgTenCon = [];
@@ -948,33 +948,29 @@ function applyUnifiedColors() {
         }
 
         function displayTagInfoWindows() {
-            const tagCheckbox = document.getElementById('tagSearchedBuilding');
-            const hasActiveSearchCriteria = selectedBuildings.length > 0 || 
-                                            selectedPkgTenCon.length > 0 || 
-                                            selectedBuildingStatuses.length > 0 || 
-                                            selectedBuildingOperationalStatuses.length > 0 || 
-                                            selectedFiscalYearTenders.length > 0;
+    const tagCheckbox = document.getElementById('tagSearchedBuilding');
+    const hasActiveSearchCriteria = selectedBuildings.length > 0 || 
+                                    selectedPkgTenCon.length > 0 || 
+                                    selectedBuildingStatuses.length > 0 || 
+                                    selectedBuildingOperationalStatuses.length > 0 || 
+                                    selectedFiscalYearTenders.length > 0;
 
-            closeAllTagInfoWindows();
+    closeAllTagInfoWindows();
 
-            if (tagCheckbox.checked && hasActiveSearchCriteria && filteredData.length > 0) {
-                filteredData.forEach(item => {
-                    const matchingPolygon = polygons.find(polygon => polygon.componentId === item["Component ID"]);
-                    if (matchingPolygon) {
-                        const bounds = new google.maps.LatLngBounds();
-                        matchingPolygon.getPath().forEach(function(element) {
-                            bounds.extend(element);
-                        });
-
-                        const center = bounds.getCenter();
-                        const customInfoWindow = new CustomInfoWindow(center, item);
-                        customInfoWindow.setMap(map);
-                        customInfoWindows.push(customInfoWindow);
-                    }
-                });
-                updateInfoWindowsScale();
+    if (tagCheckbox.checked && hasActiveSearchCriteria && filteredData.length > 0) {
+        filteredData.forEach(item => {
+            const matchingPolygon = polygons.find(polygon => polygon.componentId === item["Component ID"]);
+            if (matchingPolygon) {
+                const bounds = matchingPolygon.getBounds();
+                const center = bounds.getCenter();
+                const customInfoWindow = new CustomInfoWindow(center, item);
+                customInfoWindow.setMap(map);
+                customInfoWindows.push(customInfoWindow);
             }
-        }
+        });
+        updateInfoWindowsScale();
+    }
+}
 
         class CustomInfoWindow extends google.maps.OverlayView {
             constructor(position, data) {
