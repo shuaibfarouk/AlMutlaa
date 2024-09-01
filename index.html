@@ -1046,21 +1046,21 @@ function applyUnifiedColors() {
         }
 
         function updateLabelSize() {
-            const zoom = map.getZoom();
-            const fontSize = Math.max(8, Math.min(16, baseTextSize + zoom - 12)) + "px";
-            polygons.forEach(polygon => {
-                if (polygon.label) {
-                    const currentLabel = polygon.label.getLabel();
-                    polygon.label.setLabel({...currentLabel, fontSize: fontSize});
-                }
-            });
+    const zoom = map.getZoom();
+    const fontSize = Math.max(8, Math.min(25, baseTextSize + zoom - 12)) + "px";
+    polygons.forEach(polygon => {
+        if (polygon.label) {
+            const currentLabel = polygon.label.getLabel();
+            polygon.label.setLabel({...currentLabel, fontSize: fontSize});
         }
+    });
+}
 
         function resizeText(change) {
-            baseTextSize = Math.max(8, Math.min(16, baseTextSize + change));
-            document.getElementById('textSizeDisplay').innerText = baseTextSize;
-            updateLabelSize();
-        }
+    baseTextSize = Math.max(8, Math.min(25, baseTextSize + change));
+    document.getElementById('textSizeDisplay').innerText = baseTextSize;
+    updateLabelSize();
+}
 
         function toggleBuildingLabels() {
             labelsVisible = !labelsVisible;
@@ -1078,39 +1078,41 @@ function applyUnifiedColors() {
         }
 
         function loadVisibleLabels() {
-            const bounds = map.getBounds();
-            polygons.forEach(polygon => {
-                if (!polygon.getBounds) return; // Skip if getBounds is not defined
-                
-                const matchingData = jsonData.find(item => item["Component ID"] == polygon.componentId);
-                if (matchingData && bounds.intersects(polygon.getBounds())) {
-                    const center = polygon.getBounds().getCenter();
-                    if (!center) return; // Skip if we can't get a valid center
-                    
-                    if (!polygon.label) {
-                        const label = new google.maps.Marker({
-                            position: center,
-                            map: map,
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                scale: 0,
-                            },
-                            label: {
-                                text: matchingData["Building Type"] || '',
-                                color: "black",
-                                fontSize: baseTextSize + "px",
-                            },
-                        });
-                        polygon.label = label;
-                    } else {
-                        polygon.label.setPosition(center);
-                        polygon.label.setMap(map);
-                    }
-                } else if (polygon.label) {
-                    polygon.label.setMap(null);
-                }
-            });
+    const bounds = map.getBounds();
+    polygons.forEach(polygon => {
+        if (!polygon.getBounds) return; // Skip if getBounds is not defined
+        
+        const matchingData = jsonData.find(item => item["Component ID"] == polygon.componentId);
+        if (matchingData && bounds.intersects(polygon.getBounds())) {
+            const center = polygon.getBounds().getCenter();
+            if (!center) return; // Skip if we can't get a valid center
+            
+            if (!polygon.label) {
+                const label = new google.maps.Marker({
+                    position: center,
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 0,
+                    },
+                    label: {
+                        text: matchingData["Building Type"] || '',
+                        color: "black",
+                        fontSize: baseTextSize + "px",
+                    },
+                });
+                polygon.label = label;
+            } else {
+                polygon.label.setPosition(center);
+                polygon.label.setMap(map);
+                const currentLabel = polygon.label.getLabel();
+                polygon.label.setLabel({...currentLabel, fontSize: baseTextSize + "px"});
+            }
+        } else if (polygon.label) {
+            polygon.label.setMap(null);
         }
+    });
+}
     </script>
 </body>
 </html>
