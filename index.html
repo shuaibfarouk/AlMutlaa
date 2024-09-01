@@ -12,7 +12,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Website Title</title>
-    <!-- Add your CSS and other head elements here -->
+    <style>
+        #map {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .menu {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            position: absolute;
+            z-index: 10;
+            top: 10px;
+            left: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        .autocomplete {
+            width: 200px;
+            display: inline-block;
+        }
+        .autocomplete input {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #textResizeButtons {
+            position: absolute;
+            top: 10px;
+            right: 60px;
+            z-index: 10;
+        }
+        .custom-info-window {
+            background-color: rgba(0, 123, 255, 0.9);
+            color: #FFFFFF;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            transition: all 0.3s ease;
+            width: 100px;
+            text-align: center;
+            line-height: 1.2;
+            position: absolute;
+            z-index: 1000;
+        }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
 </head>
 <body onload="initMap()">
     <!-- Google Tag Manager (noscript) -->
@@ -55,7 +107,6 @@
             </select>
             <button onclick="addBuildingOperationalStatus()">Add</button>
             <div id="selectedBuildingOperationalStatuses"></div>
-
         </div>
 
         <div class="search-section">
@@ -208,36 +259,29 @@
         }
 
         function loadKML() {
-            const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
-            
-            fetch(kmlUrl)
+            fetch('https://shuaibfarouk.github.io/AlMutlaa/yourkmlfile.kml')
                 .then(response => response.text())
-                .then(kmlData => {
+                .then(kmlText => {
                     const parser = new DOMParser();
-                    const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
-                    const placemarks = kmlDoc.getElementsByTagName('Placemark');
+                    const kml = parser.parseFromString(kmlText, 'text/xml');
+                    const placemarks = kml.getElementsByTagName('Placemark');
 
-                    for (let placemark of placemarks) {
-                        const coordinates = placemark.getElementsByTagName('coordinates')[0].textContent.trim().split(' ');
-                        const path = coordinates.map(coord => {
-                            const [lng, lat] = coord.split(',');
-                            return {lat: parseFloat(lat), lng: parseFloat(lng)};
-                        });
-
+                    for (let i = 0; i < placemarks.length; i++) {
+                        const placemark = placemarks[i];
                         const polygon = new google.maps.Polygon({
-                            paths: path,
+                            paths: parseKmlCoordinates(placemark),
                             strokeColor: '#00aaff',
-                            strokeOpacity: 1,
+                            strokeOpacity: 0.8,
                             strokeWeight: 2,
                             fillColor: '#00aaff',
-                            fillOpacity: 0.5,
+                            fillOpacity: 0.35,
                             map: map
                         });
 
                         const componentId = getComponentId(placemark);
                         polygon.componentId = componentId;
                         polygons.push(polygon);
-                        
+
                         polygon.addListener('click', function(event) {
                             handlePolygonClick(event, componentId);
                         });
@@ -446,18 +490,18 @@
         }
 
         function addItem(type) {
-            const inputElement = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
-            const value = inputElement.value.trim();
-            if (value) {
-                if (type === 'building' && !selectedBuildings.includes(value)) {
+            const input = document.getElementById(`${type}Search`);
+            const value = input.value.trim();
+            if (value && !selectedBuildings.includes(value)) {
+                if (type === 'building') {
                     selectedBuildings.push(value);
                     updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-                } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
+                } else if (type === 'pkgTenCon') {
                     selectedPkgTenCon.push(value);
                     updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
                 }
-                updateFilteredData(); // Ensure this triggers the filtering
-                inputElement.value = ''; // Clear the input field after adding the item
+                updateFilteredData();
+                input.value = '';
             }
         }
 
@@ -680,6 +724,10 @@
             customInfoWindows = [];
         }
 
+        function toggleTagInfoWindow() {
+            displayTagInfoWindows();
+        }
+
         function displayTagInfoWindows() {
             const tagCheckbox = document.getElementById('tagSearchedBuilding');
             const hasActiveSearchCriteria = selectedBuildings.length > 0 || 
@@ -761,10 +809,6 @@
                     infoWindow.div.classList.remove('zoomed-out');
                 }
             });
-        }
-
-        function toggleTagInfoWindow() {
-            displayTagInfoWindows();
         }
 
         function combinedSearch() {
