@@ -238,6 +238,46 @@
             transform: scale(0.8);
             margin-right: 5px;
         }
+
+        .map-controls {
+        position: absolute;
+        top: 10px;
+        right: 60px;
+        display: flex;
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 5px;
+        padding: 5px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .map-controls button {
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        margin: 0 2px;
+        cursor: pointer;
+        font-size: 14px;
+        border-radius: 3px;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .map-controls button:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    .map-controls button:active {
+        background-color: #003d80;
+        transform: translateY(1px);
+    }
+
+    #textSizeDisplay {
+        margin: 0 8px;
+        font-size: 14px;
+        font-weight: bold;
+    }       
     </style>
 </head>
 <body onload="initMap()">
@@ -318,14 +358,12 @@
     <div id="revision">Status as of: 30 July 2024</div>
 
     <!-- Text Resize and Label Toggle Buttons -->
-    <div id="textResizeButtons" style="position: absolute; top: 10px; right: 60px;">
-        <button onclick="resizeText(1)">A+</button>
-        <span id="textSizeDisplay">11</span>
-        <button onclick="resizeText(-1)">A-</button>
-    </div>
-    <button id="toggleLabels" onclick="toggleBuildingLabels()" style="position: absolute; top: 10px; right: 150px;">
-        Show Labels
-    </button>
+    <div class="map-controls">
+    <button id="toggleLabels" onclick="toggleBuildingLabels()">Show Labels</button>
+    <button onclick="resizeText(-1)">A-</button>
+    <span id="textSizeDisplay">11</span>
+    <button onclick="resizeText(1)">A+</button>
+</div>
 
     <script>
         let map;
