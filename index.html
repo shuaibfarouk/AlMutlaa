@@ -5,6 +5,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-M7939L3V');</script>
+    <!-- End Google Tag Manager -->
+
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
     
     <!-- Google Fonts for Modern Typography -->
@@ -233,6 +241,11 @@
     </style>
 </head>
 <body onload="initMap()">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M7939L3V"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
     <div id="map"></div>
 
     <!-- Settings Button -->
@@ -1023,34 +1036,28 @@
         function loadVisibleLabels() {
             const bounds = map.getBounds();
             polygons.forEach(polygon => {
-                if (!polygon.getBounds) return; // Skip if getBounds is not defined
-                
-                const matchingData = jsonData.find(item => item["Component ID"] == polygon.componentId);
-                if (matchingData && bounds.intersects(polygon.getBounds())) {
-                    const center = polygon.getBounds().getCenter();
-                    if (!center) return; // Skip if we can't get a valid center
-                    
-                    if (!polygon.label) {
-                        const label = new google.maps.Marker({
-                            position: center,
-                            map: map,
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                scale: 0,
-                            },
-                            label: {
-                                text: matchingData["Building Type"] || '',
-                                color: "black",
-                                fontSize: baseTextSize + "px",
-                            },
-                        });
-                        polygon.label = label;
-                    } else {
-                        polygon.label.setPosition(center);
+                if (polygon.label) {
+                    if (bounds.contains(polygon.label.getPosition())) {
                         polygon.label.setMap(map);
+                    } else {
+                        polygon.label.setMap(null);
                     }
-                } else if (polygon.label) {
-                    polygon.label.setMap(null);
+                } else {
+                    const matchingData = jsonData.find(item => item["Component ID"] == polygon.componentId);
+                    const label = new google.maps.Marker({
+                        position: polygon.getBounds().getCenter(),
+                        map: bounds.contains(polygon.getBounds().getCenter()) ? map : null,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 0,
+                        },
+                        label: {
+                            text: matchingData ? (matchingData["Building Type"] || '') : '',
+                            color: "black",
+                            fontSize: "10px",
+                        },
+                    });
+                    polygon.label = label;
                 }
             });
         }
