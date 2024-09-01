@@ -9,10 +9,236 @@
     })(window,document,'script','dataLayer','GTM-M7939L3V');</script>
     <!-- End Google Tag Manager -->
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Website Title</title>
-    <!-- Add your CSS and other head elements here -->
+    <title>Google Maps - Building Viewer</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
+    
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+
+    <style>
+        /* General Styles for Modern Look */
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        #map {
+            filter: grayscale(10%) brightness(95%);
+        }
+
+        .settings-button {
+            position: absolute;
+            top: 60px;
+            right: 5px;
+            background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
+            background-size: contain;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.2));
+        }
+
+        .menu {
+            position: absolute;
+            top: 80px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 10px;
+            z-index: 1000;
+            width: 250px;
+            font-size: 14px;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .menu input[type="text"], .menu select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu button {
+            background-color: #007BFF;
+            color: white;
+            padding: 6px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .menu button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .menu button:active {
+            background-color: #003d80;
+            transform: translateY(1px);
+        }
+
+        .search-section {
+            margin-top: 8px;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+        }
+
+        .autocomplete {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+
+        .autocomplete-active {
+            background-color: DodgerBlue !important;
+            color: #ffffff;
+        }
+
+        .selected-item {
+            background-color: #e9ecef;
+            padding: 4px;
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .color-picker {
+            margin-left: 10px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        .remove-item {
+            cursor: pointer;
+            color: red;
+            margin-left: 10px;
+        }
+
+        .info-window {
+            max-width: 350px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            color: #333;
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-window table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-window th, .info-window td {
+            border: 1px solid #ddd;
+            padding: 6px 10px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .info-window th {
+            background-color: #f8f9fa;
+            font-weight: 700;
+        }
+
+        .gm-ui-hover-effect {
+            width: 20px;
+            height: 20px;
+        }
+
+        #revision {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        #building-count {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .custom-info-window {
+            background-color: rgba(0, 123, 255, 0.9);
+            color: #FFFFFF;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            transition: all 0.3s ease;
+            width: 100px;
+            text-align: center;
+            line-height: 1.2;
+            position: absolute;
+            z-index: 1000;
+        }
+
+        .custom-info-window.zoomed-out {
+            font-size: 8px;
+            padding: 2px 4px;
+            width: 80px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            transform: scale(0.8);
+            margin-right: 5px;
+        }
+    </style>
 </head>
 <body onload="initMap()">
     <!-- Google Tag Manager (noscript) -->
@@ -34,7 +260,7 @@
             <button onclick="addItem('building')">Add</button>
         </div>
         <div id="selectedBuildings"></div>
-
+        
         <div class="search-section">
             <div class="autocomplete">
                 <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
@@ -57,6 +283,7 @@
             </select>
             <button onclick="addBuildingOperationalStatus()">Add</button>
             <div id="selectedBuildingOperationalStatuses"></div>
+
         </div>
 
         <div class="search-section">
@@ -87,10 +314,7 @@
         <button onclick="clearSearch()">Clear</button>
         <div id="building-count"></div>
     </div>
-
-    <div id="revision">
-        Status as of: 30 July 2024
-    </div>
+    <div id="revision">Status as of: 30 July 2024</div>
 
     <!-- Text Resize and Label Toggle Buttons -->
     <div id="textResizeButtons" style="position: absolute; top: 10px; right: 60px;">
@@ -102,7 +326,6 @@
         Show Labels
     </button>
 
-    <!-- Add your JavaScript files here -->
     <script>
         let map;
         let jsonData = {};
@@ -215,7 +438,7 @@
 
         function loadKML() {
             const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
-
+            
             fetch(kmlUrl)
                 .then(response => response.text())
                 .then(kmlData => {
@@ -243,7 +466,7 @@
                         const componentId = getComponentId(placemark);
                         polygon.componentId = componentId;
                         polygons.push(polygon);
-
+                        
                         polygon.addListener('click', function(event) {
                             handlePolygonClick(event, componentId);
                         });
@@ -531,7 +754,7 @@
                     colorPicker.value = colorMapping[item] || '#00aaff';
                     colorPicker.oninput = (e) => {
                         colorMapping[item] = e.target.value;
-                        applyUnifiedColors();
+                        updateFilteredData();
                     };
                     div.appendChild(colorPicker);
                 }
@@ -542,9 +765,9 @@
 
         function updateFilteredData() {
             filteredData = jsonData.filter(item => {
-                let matchesBuildingType = selectedBuildings.length === 0 || selectedBuildings.some(building => item["Building Type"].toUpperCase().includes(building.toUpperCase()));
+                let matchesBuildingType = selectedBuildings.length === 0 || selectedBuildings.includes(item["Building Type"]);
                 let matchesBuildingStatus = selectedBuildingStatuses.length === 0 || selectedBuildingStatuses.includes(item["Status Building"]);
-                let matchesPkgTenCon = selectedPkgTenCon.length === 0 || selectedPkgTenCon.some(pkg => item["Package-Tender-Contract"].toUpperCase().includes(pkg.toUpperCase()));
+                let matchesPkgTenCon = selectedPkgTenCon.length === 0 || selectedPkgTenCon.includes(item["Package-Tender-Contract"]);
                 let matchesOperationalStatus = selectedBuildingOperationalStatuses.length === 0 || selectedBuildingOperationalStatuses.includes(item["Building Operational Status"]);
                 let matchesFiscalYear = selectedFiscalYearTenders.length === 0 || selectedFiscalYearTenders.includes(item["Fiscal Year Based on Tender"]);
 
@@ -553,51 +776,50 @@
 
             applyUnifiedColors();
             updateBuildingCount();
-            displayTagInfoWindows();
+            if (labelsVisible) {
+                loadVisibleLabels();
+            }
         }
 
         function applyUnifiedColors() {
-            const matchedColor = '#00aaff';
-            const nonMatchedColor = '#e6e6e6';
-
             polygons.forEach(polygon => {
-                const componentId = polygon.componentId;
-                const matchingData = filteredData.find(item => item["Component ID"] == componentId);
-                let color = nonMatchedColor;
+                const matchingData = jsonData.find(item => item["Component ID"] == polygon.componentId);
+                let matchedColor = '#00aaff';
+                let matched = false;
 
                 if (matchingData) {
-                    const criteriaType = document.getElementById('colorCriteriaSelect').value;
-                    switch (criteriaType) {
-                        case 'building':
-                            color = colorMapping[matchingData["Building Type"]] || matchedColor;
-                            break;
-                        case 'pkgTenCon':
-                            color = colorMapping[matchingData["Package-Tender-Contract"]] || matchedColor;
-                            break;
-                        case 'status':
-                            color = colorMapping[matchingData["Status Building"]] || matchedColor;
-                            break;
-                        case 'operational':
-                            color = colorMapping[matchingData["Building Operational Status"]] || matchedColor;
-                            break;
-                        case 'fiscal':
-                            color = colorMapping[matchingData["Fiscal Year Based on Tender"]] || matchedColor;
-                            break;
-                        default:
-                            color = matchedColor;
+                    if (selectedBuildings.includes(matchingData["Building Type"])) {
+                        matchedColor = colorMapping[matchingData["Building Type"]] || matchedColor;
+                        matched = true;
+                    }
+                    if (selectedPkgTenCon.includes(matchingData["Package-Tender-Contract"])) {
+                        matchedColor = colorMapping[matchingData["Package-Tender-Contract"]] || matchedColor;
+                        matched = true;
+                    }
+                    if (selectedBuildingStatuses.includes(matchingData["Status Building"])) {
+                        matchedColor = colorMapping[matchingData["Status Building"]] || matchedColor;
+                        matched = true;
+                    }
+                    if (selectedBuildingOperationalStatuses.includes(matchingData["Building Operational Status"])) {
+                        matchedColor = colorMapping[matchingData["Building Operational Status"]] || matchedColor;
+                        matched = true;
+                    }
+                    if (selectedFiscalYearTenders.includes(matchingData["Fiscal Year Based on Tender"])) {
+                        matchedColor = colorMapping[matchingData["Fiscal Year Based on Tender"]] || matchedColor;
+                        matched = true;
                     }
                 }
 
                 polygon.setOptions({
-                    fillColor: color,
-                    strokeColor: color
+                    fillColor: matchedColor,
+                    strokeColor: matched ? 'black' : '#00aaff'
                 });
 
-                // Update label color
                 if (polygon.label) {
+                    const labelColor = matched ? "black" : "darkgray";
                     polygon.label.setLabel({
                         text: polygon.label.getLabel().text,
-                        color: matchingData ? "black" : "darkgray",  // Matching = black, Non-Matching = dark gray
+                        color: labelColor,
                         fontSize: polygon.label.getLabel().fontSize
                     });
                 }
@@ -605,79 +827,86 @@
         }
 
         function updateBuildingCount() {
-            const countElement = document.getElementById('building-count');
-            const count = filteredData.length;
-            countElement.textContent = `Showing ${count} Result${count === 1 ? '' : 's'}`;
+            const buildingCount = document.getElementById('building-count');
+            buildingCount.textContent = `Buildings found: ${filteredData.length}`;
         }
 
-        function clearSearch() {
-            selectedBuildings = [];
-            selectedPkgTenCon = [];
-            selectedBuildingStatuses = [];
-            selectedBuildingOperationalStatuses = [];
-            selectedFiscalYearTenders = [];
-            colorMapping = {};
+        function resizeText(change) {
+            baseTextSize = Math.max(8, Math.min(16, baseTextSize + change));
+            document.getElementById('textSizeDisplay').innerText = baseTextSize;
+            if (labelsVisible) {
+                updateLabelSize();
+            }
+        }
 
+        function updateLabelSize() {
+            const zoom = map.getZoom();
+            const fontSize = Math.max(8, Math.min(16, baseTextSize + zoom - 12)) + "px";
+            polygons.forEach(polygon => {
+                if (polygon.label) {
+                    const currentLabel = polygon.label.getLabel();
+                    polygon.label.setLabel({...currentLabel, fontSize: fontSize});
+                }
+            });
+        }
+
+        function toggleBuildingLabels() {
+            labelsVisible = !labelsVisible;
+            if (labelsVisible) {
+                loadVisibleLabels();
+            } else {
+                polygons.forEach(polygon => {
+                    if (polygon.label) {
+                        polygon.label.setMap(null);
+                    }
+                });
+            }
+            document.getElementById('toggleLabels').innerText = labelsVisible ? 'Hide Labels' : 'Show Labels';
+        }
+
+        function loadVisibleLabels() {
+            const bounds = map.getBounds();
+            polygons.forEach(polygon => {
+                if (polygon.label) {
+                    if (bounds.contains(polygon.label.getPosition())) {
+                        polygon.label.setMap(map);
+                    } else {
+                        polygon.label.setMap(null);
+                    }
+                } else {
+                    const matchingData = jsonData.find(item => item["Component ID"] == polygon.componentId);
+                    const label = new google.maps.Marker({
+                        position: polygon.getBounds().getCenter(),
+                        map: bounds.contains(polygon.getBounds().getCenter()) ? map : null,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 0,
+                        },
+                        label: {
+                            text: matchingData ? (matchingData["Building Type"] || '') : '',
+                            color: "black",
+                            fontSize: baseTextSize + "px",
+                        },
+                    });
+                    polygon.label = label;
+                }
+            });
+        }
+
+        function handleColorCriteriaChange() {
             updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
             updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
             updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
             updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
             updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
-
-            document.getElementById('buildingSearch').value = '';
-            document.getElementById('pkgTenConSearch').value = '';
-            document.getElementById('buildingStatusSelect').selectedIndex = 0;
-            document.getElementById('buildingOperationalStatusSelect').selectedIndex = 0;
-            document.getElementById('fiscalYearTenderSelect').selectedIndex = 0;
-            document.getElementById('colorCriteriaSelect').selectedIndex = 0;
-
-            filteredData = jsonData;
-
-            polygons.forEach(polygon => {
-                polygon.setOptions({
-                    fillColor: '#00aaff',
-                    strokeColor: '#00aaff'
-                });
-            });
-
-            updateBuildingCount();
-            closeAllTagInfoWindows();
-            document.getElementById('tagSearchedBuilding').checked = false;
-            populateAutocompleteAndDropdowns();
+            updateFilteredData();
         }
 
-        function handleColorCriteriaChange() {
-            const criteriaType = document.getElementById('colorCriteriaSelect').value;
-            let selectedItems;
-            let containerId;
-
-            switch (criteriaType) {
-                case 'building':
-                    selectedItems = selectedBuildings;
-                    containerId = 'selectedBuildings';
-                    break;
-                case 'pkgTenCon':
-                    selectedItems = selectedPkgTenCon;
-                    containerId = 'selectedPkgTenCon';
-                    break;
-                case 'status':
-                    selectedItems = selectedBuildingStatuses;
-                    containerId = 'selectedBuildingStatuses';
-                    break;
-                case 'operational':
-                    selectedItems = selectedBuildingOperationalStatuses;
-                    containerId = 'selectedBuildingOperationalStatuses';
-                    break;
-                case 'fiscal':
-                    selectedItems = selectedFiscalYearTenders;
-                    containerId = 'selectedFiscalYearTenders';
-                    break;
-                default:
-                    return;
-            }
-
-            updateSelectedItemsDisplay(containerId, selectedItems);
-            applyUnifiedColors();
+        function closeAllTagInfoWindows() {
+            customInfoWindows.forEach(infoWindow => {
+                infoWindow.setMap(null);
+            });
+            customInfoWindows = [];
         }
 
         function displayTagInfoWindows() {
@@ -727,7 +956,7 @@
             draw() {
                 const overlayProjection = this.getProjection();
                 const position = overlayProjection.fromLatLngToDivPixel(this.position);
-
+                
                 if (this.div) {
                     this.div.style.left = (position.x - 50) + 'px';
                     this.div.style.top = (position.y - 25) + 'px';
@@ -763,13 +992,6 @@
             });
         }
 
-        function closeAllTagInfoWindows() {
-            customInfoWindows.forEach(infoWindow => {
-                infoWindow.setMap(null);
-            });
-            customInfoWindows = [];
-        }
-
         function toggleTagInfoWindow() {
             displayTagInfoWindows();
         }
@@ -778,65 +1000,25 @@
             updateFilteredData();
         }
 
-        function updateLabelSize() {
-            const zoom = map.getZoom();
-            const fontSize = Math.max(8, Math.min(16, baseTextSize + zoom - 12)) + "px";
-            polygons.forEach(polygon => {
-                if (polygon.label) {
-                    const currentLabel = polygon.label.getLabel();
-                    polygon.label.setLabel({...currentLabel, fontSize: fontSize});
-                }
-            });
-        }
-
-        function resizeText(change) {
-            baseTextSize = Math.max(8, Math.min(16, baseTextSize + change));
-            document.getElementById('textSizeDisplay').innerText = baseTextSize;
-            updateLabelSize();
-        }
-
-        function toggleBuildingLabels() {
-            labelsVisible = !labelsVisible;
-            if (labelsVisible) {
-                loadVisibleLabels();
-                document.getElementById('toggleLabels').innerText = 'Hide Labels';
-            } else {
-                polygons.forEach(polygon => {
-                    if (polygon.label) {
-                        polygon.label.setMap(null);
-                    }
-                });
-                document.getElementById('toggleLabels').innerText = 'Show Labels';
-            }
-        }
-
-        function loadVisibleLabels() {
-            const bounds = map.getBounds();
-            polygons.forEach(polygon => {
-                if (polygon.label) {
-                    if (bounds.contains(polygon.label.getPosition())) {
-                        polygon.label.setMap(map);
-                    } else {
-                        polygon.label.setMap(null);
-                    }
-                } else {
-                    const matchingData = jsonData.find(item => item["Component ID"] == polygon.componentId);
-                    const label = new google.maps.Marker({
-                        position: polygon.getBounds().getCenter(),
-                        map: bounds.contains(polygon.getBounds().getCenter()) ? map : null,
-                        icon: {
-                            path: google.maps.SymbolPath.CIRCLE,
-                            scale: 0,
-                        },
-                        label: {
-                            text: matchingData ? (matchingData["Building Type"] || '') : '',
-                            color: "black",
-                            fontSize: "10px",
-                        },
-                    });
-                    polygon.label = label;
-                }
-            });
+        function clearSearch() {
+            selectedBuildings = [];
+            selectedPkgTenCon = [];
+            selectedBuildingStatuses = [];
+            selectedBuildingOperationalStatuses = [];
+            selectedFiscalYearTenders = [];
+            document.getElementById('buildingSearch').value = '';
+            document.getElementById('pkgTenConSearch').value = '';
+            document.getElementById('buildingStatusSelect').value = '';
+            document.getElementById('buildingOperationalStatusSelect').value = '';
+            document.getElementById('fiscalYearTenderSelect').value = '';
+            updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+            updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
+            updateSelectedItemsDisplay('selectedBuildingStatuses', selectedBuildingStatuses);
+            updateSelectedItemsDisplay('selectedBuildingOperationalStatuses', selectedBuildingOperationalStatuses);
+            updateSelectedItemsDisplay('selectedFiscalYearTenders', selectedFiscalYearTenders);
+            updateFilteredData();
+            closeAllTagInfoWindows();
+            document.getElementById('tagSearchedBuilding').checked = false;
         }
     </script>
 </body>
