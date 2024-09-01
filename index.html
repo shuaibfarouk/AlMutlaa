@@ -750,69 +750,75 @@
             });
         }
 
-        function updateFilteredData() {
-            filteredData = jsonData.filter(item => {
-                let matchesBuildingType = selectedBuildings.length === 0 || selectedBuildings.some(building => item["Building Type"].toUpperCase().includes(building.toUpperCase()));
-                let matchesBuildingStatus = selectedBuildingStatuses.length === 0 || selectedBuildingStatuses.includes(item["Status Building"]);
-                let matchesPkgTenCon = selectedPkgTenCon.length === 0 || selectedPkgTenCon.some(pkg => item["Package-Tender-Contract"].toUpperCase().includes(pkg.toUpperCase()));
-                let matchesOperationalStatus = selectedBuildingOperationalStatuses.length === 0 || selectedBuildingOperationalStatuses.includes(item["Building Operational Status"]);
-                let matchesFiscalYear = selectedFiscalYearTenders.length === 0 || selectedFiscalYearTenders.includes(item["Fiscal Year Based on Tender"]);
+function updateFilteredData() {
+    filteredData = jsonData.filter(item => {
+        let matchesBuildingType = selectedBuildings.length === 0 || selectedBuildings.some(building => item["Building Type"].toUpperCase().includes(building.toUpperCase()));
+        let matchesBuildingStatus = selectedBuildingStatuses.length === 0 || selectedBuildingStatuses.includes(item["Status Building"]);
+        let matchesPkgTenCon = selectedPkgTenCon.length === 0 || selectedPkgTenCon.some(pkg => 
+            item["Package-Tender-Contract"] && item["Package-Tender-Contract"].toUpperCase().includes(pkg.toUpperCase())
+        );
+        let matchesOperationalStatus = selectedBuildingOperationalStatuses.length === 0 || selectedBuildingOperationalStatuses.includes(item["Building Operational Status"]);
+        let matchesFiscalYear = selectedFiscalYearTenders.length === 0 || selectedFiscalYearTenders.includes(item["Fiscal Year Based on Tender"]);
 
-                return matchesBuildingType && matchesBuildingStatus && matchesPkgTenCon && matchesOperationalStatus && matchesFiscalYear;
-            });
+        return matchesBuildingType && matchesBuildingStatus && matchesPkgTenCon && matchesOperationalStatus && matchesFiscalYear;
+    });
 
-            applyUnifiedColors();
-            updateBuildingCount();
-            displayTagInfoWindows();
+    applyUnifiedColors();
+    updateBuildingCount();
+    displayTagInfoWindows();
+}
+
+function applyUnifiedColors() {
+    const matchedColor = '#00aaff';
+    const nonMatchedColor = '#e6e6e6';
+
+    polygons.forEach(polygon => {
+        const componentId = polygon.componentId;
+        const matchingData = jsonData.find(item => item["Component ID"] == componentId);
+        let color = nonMatchedColor;
+
+        if (matchingData) {
+            const criteriaType = document.getElementById('colorCriteriaSelect').value;
+            const isFiltered = filteredData.some(item => item["Component ID"] == componentId);
+
+            if (isFiltered) {
+                switch (criteriaType) {
+                    case 'building':
+                        color = colorMapping[matchingData["Building Type"]] || matchedColor;
+                        break;
+                    case 'pkgTenCon':
+                        color = colorMapping[matchingData["Package-Tender-Contract"]] || matchedColor;
+                        break;
+                    case 'status':
+                        color = colorMapping[matchingData["Status Building"]] || matchedColor;
+                        break;
+                    case 'operational':
+                        color = colorMapping[matchingData["Building Operational Status"]] || matchedColor;
+                        break;
+                    case 'fiscal':
+                        color = colorMapping[matchingData["Fiscal Year Based on Tender"]] || matchedColor;
+                        break;
+                    default:
+                        color = matchedColor;
+                }
+            }
         }
 
-        function applyUnifiedColors() {
-            const matchedColor = '#00aaff';
-            const nonMatchedColor = '#e6e6e6';
-
-            polygons.forEach(polygon => {
-                const componentId = polygon.componentId;
-                const matchingData = filteredData.find(item => item["Component ID"] == componentId);
-                let color = nonMatchedColor;
-
-                if (matchingData) {
-                    const criteriaType = document.getElementById('colorCriteriaSelect').value;
-                    switch (criteriaType) {
-                        case 'building':
-                            color = colorMapping[matchingData["Building Type"]] || matchedColor;
-                            break;
-                        case 'pkgTenCon':
-                            color = colorMapping[matchingData["Package-Tender-Contract"]] || matchedColor;
-                            break;
-                        case 'status':
-                            color = colorMapping[matchingData["Status Building"]] || matchedColor;
-                            break;
-                        case 'operational':
-                            color = colorMapping[matchingData["Building Operational Status"]] || matchedColor;
-                            break;
-                        case 'fiscal':
-                            color = colorMapping[matchingData["Fiscal Year Based on Tender"]] || matchedColor;
-                            break;
-                        default:
-                            color = matchedColor;
-                    }
-                }
-
-                polygon.setOptions({
-                    fillColor: color,
-                    strokeColor: color
-                });
+        polygon.setOptions({
+            fillColor: color,
+            strokeColor: color
+        });
 
                 // Update label color
                 if (polygon.label) {
-                    polygon.label.setLabel({
-                        text: polygon.label.getLabel().text,
-                        color: matchingData ? "black" : "darkgray",  // Matching = black, Non-Matching = dark gray
-                        fontSize: polygon.label.getLabel().fontSize
-                    });
-                }
+            polygon.label.setLabel({
+                text: polygon.label.getLabel().text,
+                color: color !== nonMatchedColor ? "black" : "darkgray",
+                fontSize: polygon.label.getLabel().fontSize
             });
         }
+    });
+}
         function updateBuildingCount() {
             const countElement = document.getElementById('building-count');
             const count = filteredData.length;
