@@ -855,7 +855,7 @@ function updateFilteredData() {
 
     applyUnifiedColors();
     updateBuildingCount();
-    displayTagInfoWindows();
+    displayTagInfoWindows();  // Make this is call here
 }
 
 function applyUnifiedColors() {
@@ -983,6 +983,7 @@ function applyUnifiedColors() {
         }
 
         function displayTagInfoWindows() {
+    console.log("Displaying tag info windows");
     const tagCheckbox = document.getElementById('tagSearchedBuilding');
     const hasActiveSearchCriteria = selectedBuildings.length > 0 || 
                                     selectedPkgTenCon.length > 0 || 
@@ -993,8 +994,9 @@ function applyUnifiedColors() {
     closeAllTagInfoWindows();
 
     if (tagCheckbox.checked && hasActiveSearchCriteria && filteredData.length > 0) {
+        console.log("Creating info windows for", filteredData.length, "buildings");
         filteredData.forEach(item => {
-            const matchingPolygon = polygons.find(polygon => polygon.componentId === item["Component ID"]);
+            const matchingPolygon = polygons.find(polygon => polygon.componentId === item["Component ID"].toString());
             if (matchingPolygon) {
                 const bounds = matchingPolygon.getBounds();
                 const center = bounds.getCenter();
@@ -1006,7 +1008,6 @@ function applyUnifiedColors() {
         updateInfoWindowsScale();
     }
 }
-
         class CustomInfoWindow extends google.maps.OverlayView {
     constructor(position, data) {
         super();
@@ -1020,7 +1021,7 @@ function applyUnifiedColors() {
         this.div.className = 'custom-info-window';
         this.div.innerHTML = this.getContent();
         const panes = this.getPanes();
-        panes.floatPane.appendChild(this.div);
+        panes.overlayMouseTarget.appendChild(this.div);
     }
 
     draw() {
@@ -1082,8 +1083,9 @@ function applyUnifiedColors() {
         }
 
         function toggleTagInfoWindow() {
-            displayTagInfoWindows();
-        }
+    console.log("Toggle tag info window called");
+    displayTagInfoWindows();
+}
 
         function combinedSearch() {
             updateFilteredData();
