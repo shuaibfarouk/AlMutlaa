@@ -439,7 +439,11 @@
                     }
                 ]
             });
-
+map.addListener('idle', function() {
+        if (document.getElementById('tagSearchedBuilding').checked) {
+            customInfoWindows.forEach(infoWindow => infoWindow.draw());
+        }
+    });
             // Use throttling for the zoom_changed listener
             map.addListener('zoom_changed', throttle(function() {
                 if (labelsVisible) {
@@ -1004,58 +1008,71 @@ function applyUnifiedColors() {
 }
 
         class CustomInfoWindow extends google.maps.OverlayView {
-            constructor(position, data) {
-                super();
-                this.position = position;
-                this.data = data;
+    constructor(position, data) {
+        super();
+        this.position = position;
+        this.data = data;
+        this.div = null;
+    }
+
+    onAdd() {
+        this.div = document.createElement('div');
+        this.div.className = 'custom-info-window';
+        this.div.innerHTML = this.getContent();
+        const panes = this.getPanes();
+        panes.floatPane.appendChild(this.div);
+    }
+
+    draw() {
+        const overlayProjection = this.getProjection();
+        const position = overlayProjection.fromLatLngToDivPixel(this.position);
+        
+        if (this.div) {
+            this.div.style.left = (position.x - 50) + 'px';
+            this.div.style.top = (position.y - 25) + 'px';
+        }
+    }
+
+    onRemove() {
+        if (this.div) {
+            this.div.parentNode.removeChild(this.div);
+            this.div = null;
+        }
+    }
+
+    getContent() {
+        return `
+            <strong>${this.data["Building Type"] || 'N/A'}</strong><br>
+            ${this.data["Package-Tender-Contract"] || 'N/A'}<br>
+            ${this.data["Status Building"] || 'N/A'}
+        `;
+    }
+
+    setMap(map) {
+        if (map) {
+            super.setMap(map);
+        } else {
+            if (this.div) {
+                this.div.parentNode.removeChild(this.div);
                 this.div = null;
             }
-
-            onAdd() {
-                this.div = document.createElement('div');
-                this.div.className = 'custom-info-window';
-                this.div.innerHTML = this.getContent();
-                this.getPanes().overlayMouseTarget.appendChild(this.div);
-            }
-
-            draw() {
-                const overlayProjection = this.getProjection();
-                const position = overlayProjection.fromLatLngToDivPixel(this.position);
-                
-                if (this.div) {
-                    this.div.style.left = (position.x - 50) + 'px';
-                    this.div.style.top = (position.y - 25) + 'px';
-                    this.div.style.position = 'absolute';
-                    this.div.style.visibility = 'visible';
-                }
-            }
-
-            onRemove() {
-                if (this.div) {
-                    this.div.parentNode.removeChild(this.div);
-                    this.div = null;
-                }
-            }
-
-            getContent() {
-                return `
-                    <strong>${this.data["Building Type"] || 'N/A'}</strong><br>
-                    ${this.data["Package-Tender-Contract"] || 'N/A'}<br>
-                    ${this.data["Status Building"] || 'N/A'}
-                `;
-            }
+            super.setMap(null);
         }
+    }
+}
 
         function updateInfoWindowsScale() {
-            const zoomThreshold = 14;
-            customInfoWindows.forEach(infoWindow => {
-                if (map.getZoom() < zoomThreshold) {
-                    infoWindow.div.classList.add('zoomed-out');
-                } else {
-                    infoWindow.div.classList.remove('zoomed-out');
-                }
-            });
+    const zoomThreshold = 14;
+    customInfoWindows.forEach(infoWindow => {
+        if (infoWindow.div) {
+            if (map.getZoom() < zoomThreshold) {
+                infoWindow.div.classList.add('zoomed-out');
+            } else {
+                infoWindow.div.classList.remove('zoomed-out');
+            }
         }
+    });
+}
 
         function closeAllTagInfoWindows() {
             customInfoWindows.forEach(infoWindow => {
