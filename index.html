@@ -831,7 +831,7 @@ function updateFilteredData() {
 
         let matchesPkgTenCon = selectedPkgTenCon.length === 0 || 
             (item["Package-Tender-Contract"] && selectedPkgTenCon.some(pkg => 
-                item["Package-Tender-Contract"].toLowerCase().includes(pkg.toLowerCase())
+                item["Package-Tender-Contract"].toLowerCase() === pkg.toLowerCase()
             ));
 
         let matchesOperationalStatus = selectedBuildingOperationalStatuses.length === 0 || 
