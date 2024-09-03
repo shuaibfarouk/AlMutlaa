@@ -657,30 +657,29 @@ map.addListener('idle', function() {
         }
 
         function autocomplete(inp, arr) {
-            var currentFocus;
-            inp.addEventListener("input", function(e) {
-                var a, b, i, val = this.value;
-                closeAllLists();
-                if (!val) { return false;}
-                currentFocus = -1;
-                a = document.createElement("DIV");
-                a.setAttribute("id", this.id + "autocomplete-list");
-                a.setAttribute("class", "autocomplete-items");
-                this.parentNode.appendChild(a);
-                for (i = 0; i < arr.length; i++) {
-                    if (arr[i].toUpperCase().indexOf(val.toUpperCase()) !== -1) {
-                        b = document.createElement("DIV");
-                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                        b.innerHTML += arr[i].substr(val.length);
-                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-                        b.addEventListener("click", function(e) {
-                            inp.value = this.getElementsByTagName("input")[0].value;
-                            closeAllLists();
-                        });
-                        a.appendChild(b);
-                    }
-                }
-            });
+    var currentFocus;
+    inp.addEventListener("input", function(e) {
+        var a, b, i, val = this.value;
+        closeAllLists();
+        if (!val) { return false;}
+        currentFocus = -1;
+        a = document.createElement("DIV");
+        a.setAttribute("id", this.id + "autocomplete-list");
+        a.setAttribute("class", "autocomplete-items");
+        this.parentNode.appendChild(a);
+        for (i = 0; i < arr.length; i++) {
+            if (arr[i].toLowerCase().indexOf(val.toLowerCase()) !== -1) {
+                b = document.createElement("DIV");
+                b.innerHTML = arr[i].replace(new RegExp(val, "gi"), match => `<strong>${match}</strong>`);
+                b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                b.addEventListener("click", function(e) {
+                    inp.value = this.getElementsByTagName("input")[0].value;
+                    closeAllLists();
+                });
+                a.appendChild(b);
+            }
+        }
+    });
             inp.addEventListener("keydown", function(e) {
                 var x = document.getElementById(this.id + "autocomplete-list");
                 if (x) x = x.getElementsByTagName("div");
@@ -723,20 +722,20 @@ map.addListener('idle', function() {
         }
 
         function addItem(type) {
-            const inputElement = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
-            const value = inputElement.value.trim();
-            if (value) {
-                if (type === 'building' && !selectedBuildings.includes(value)) {
-                    selectedBuildings.push(value);
-                    updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
-                } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
-                    selectedPkgTenCon.push(value);
-                    updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
-                }
-                updateFilteredData();
-                inputElement.value = '';
-            }
+    const inputElement = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
+    const value = inputElement.value.trim();
+    if (value) {
+        if (type === 'building' && !selectedBuildings.includes(value)) {
+            selectedBuildings.push(value);
+            updateSelectedItemsDisplay('selectedBuildings', selectedBuildings);
+        } else if (type === 'pkgTenCon' && !selectedPkgTenCon.includes(value)) {
+            selectedPkgTenCon.push(value);
+            updateSelectedItemsDisplay('selectedPkgTenCon', selectedPkgTenCon);
         }
+        updateFilteredData();
+        inputElement.value = '';
+    }
+}
 
         function addBuildingStatus() {
             const select = document.getElementById('buildingStatusSelect');
@@ -822,7 +821,7 @@ function updateFilteredData() {
     filteredData = jsonData.filter(item => {
         let matchesBuildingType = selectedBuildings.length === 0 || 
             (item["Building Type"] && selectedBuildings.some(building => 
-                item["Building Type"].toLowerCase().includes(building.toLowerCase())
+                item["Building Type"].toLowerCase() === building.toLowerCase()
             ));
 
         let matchesBuildingStatus = selectedBuildingStatuses.length === 0 || 
@@ -855,7 +854,7 @@ function updateFilteredData() {
 
     applyUnifiedColors();
     updateBuildingCount();
-    displayTagInfoWindows();  // Make this is call here
+    displayTagInfoWindows();
 }
 
 function applyUnifiedColors() {
