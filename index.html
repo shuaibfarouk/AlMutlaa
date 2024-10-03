@@ -15,11 +15,11 @@
     
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
     
-    <!-- Google Fonts for Modern Typography -->
+       <!-- Google Fonts for Modern Typography -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
 
     <style>
-        /* General Styles for Modern Look */
+        /* Styles for Modern Look */
         html, body, #map {
             width: 100%;
             height: 100%;
@@ -37,7 +37,7 @@
             position: absolute;
             top: 60px;
             right: 5px;
-            background: url('https://shuaibfarouk.github.io/AlMutlaa/images/settings.png') no-repeat center;
+            background: url('https://testworks.tech/images/settings.png') no-repeat center;
             background-size: contain;
             width: 40px;
             height: 40px;
@@ -463,10 +463,9 @@ map.addListener('idle', function() {
         }
 
         function loadJSONData() {
-    fetch('https://shuaibfarouk.github.io/AlMutlaa/components%20data.json')
+    fetch('https://testworks.tech/components_data.json')
         .then(response => response.json())
         .then(data => {
-            console.log("JSON data loaded:", data);
             jsonData = data;
             filteredData = data;
             data.forEach(item => {
@@ -476,7 +475,6 @@ map.addListener('idle', function() {
                 if (item["Fiscal Year Based on Tender"]) fiscalYearTenders.add(item["Fiscal Year Based on Tender"]);
             });
             populateAutocompleteAndDropdowns();
-            console.log("Data processing complete");
         })
         .catch(error => {
             console.error('Error loading JSON data:', error);
@@ -485,7 +483,7 @@ map.addListener('idle', function() {
 }
 
         function loadKML() {
-            const kmlUrl = 'https://shuaibfarouk.github.io/AlMutlaa/al%20mutlaa%20KML.kml';
+            const kmlUrl = 'https://testworks.tech/al_mutlaa_KML.kml';
             
             fetch(kmlUrl)
                 .then(response => response.text())
@@ -721,7 +719,7 @@ map.addListener('idle', function() {
             });
         }
 
-        function addItem(type) {
+function addItem(type) {
     const inputElement = type === 'building' ? document.getElementById('buildingSearch') : document.getElementById('pkgTenConSearch');
     const value = inputElement.value.trim();
     if (value) {
@@ -811,14 +809,9 @@ map.addListener('idle', function() {
         }
 
 function updateFilteredData() {
-    console.log("Filtering data...");
-    console.log("Selected Buildings:", selectedBuildings);
-    console.log("Selected PkgTenCon:", selectedPkgTenCon);
-    console.log("Selected Building Statuses:", selectedBuildingStatuses);
-    console.log("Selected Operational Statuses:", selectedBuildingOperationalStatuses);
-    console.log("Selected Fiscal Years:", selectedFiscalYearTenders);
-
     filteredData = jsonData.filter(item => {
+        if (!item) return false;
+
         let matchesBuildingType = selectedBuildings.length === 0 || 
             (item["Building Type"] && selectedBuildings.some(building => 
                 item["Building Type"].toLowerCase() === building.toLowerCase()
@@ -844,13 +837,11 @@ function updateFilteredData() {
                 item["Fiscal Year Based on Tender"].toLowerCase() === year.toLowerCase()
             ));
 
-        let hasMatchingPolygon = polygons.some(polygon => polygon.componentId === item["Component ID"].toString());
+        let hasMatchingPolygon = polygons.some(polygon => polygon.componentId === (item["Component ID"] || '').toString());
 
         return matchesBuildingType && matchesBuildingStatus && matchesPkgTenCon && 
                matchesOperationalStatus && matchesFiscalYear && hasMatchingPolygon;
     });
-
-    console.log("Filtered Data:", filteredData);
 
     applyUnifiedColors();
     updateBuildingCount();
@@ -863,7 +854,8 @@ function applyUnifiedColors() {
 
     polygons.forEach(polygon => {
         const componentId = polygon.componentId;
-        const matchingData = filteredData.find(item => item["Component ID"] == componentId);
+        const matchingData = filteredData.find(item => item && item["Component ID"] == componentId);
+        
         let color = nonMatchedColor;
 
         if (matchingData) {
@@ -895,9 +887,7 @@ function applyUnifiedColors() {
             strokeColor: color
         });
 
-
-                // Update label color
-                 if (polygon.label) {
+        if (polygon.label) {
             polygon.label.setLabel({
                 text: polygon.label.getLabel().text,
                 color: color !== nonMatchedColor ? "black" : "darkgray",
@@ -906,6 +896,7 @@ function applyUnifiedColors() {
         }
     });
 }
+
         function updateBuildingCount() {
     const countElement = document.getElementById('building-count');
     const count = filteredData.length;
@@ -947,42 +938,43 @@ function applyUnifiedColors() {
             populateAutocompleteAndDropdowns();
         }
 
-        function handleColorCriteriaChange() {
-            const criteriaType = document.getElementById('colorCriteriaSelect').value;
-            let selectedItems;
-            let containerId;
+function handleColorCriteriaChange() {
+    const criteriaType = document.getElementById('colorCriteriaSelect').value;
+    let selectedItems;
+    let containerId;
 
-            switch (criteriaType) {
-                case 'building':
-                    selectedItems = selectedBuildings;
-                    containerId = 'selectedBuildings';
-                    break;
-                case 'pkgTenCon':
-                    selectedItems = selectedPkgTenCon;
-                    containerId = 'selectedPkgTenCon';
-                    break;
-                case 'status':
-                    selectedItems = selectedBuildingStatuses;
-                    containerId = 'selectedBuildingStatuses';
-                    break;
-                case 'operational':
-                    selectedItems = selectedBuildingOperationalStatuses;
-                    containerId = 'selectedBuildingOperationalStatuses';
-                    break;
-                case 'fiscal':
-                    selectedItems = selectedFiscalYearTenders;
-                    containerId = 'selectedFiscalYearTenders';
-                    break;
-                default:
-                    return;
-            }
+    switch (criteriaType) {
+        case 'building':
+            selectedItems = selectedBuildings;
+            containerId = 'selectedBuildings';
+            break;
+        case 'pkgTenCon':
+            selectedItems = selectedPkgTenCon;
+            containerId = 'selectedPkgTenCon';
+            break;
+        case 'status':
+            selectedItems = selectedBuildingStatuses;
+            containerId = 'selectedBuildingStatuses';
+            break;
+        case 'operational':
+            selectedItems = selectedBuildingOperationalStatuses;
+            containerId = 'selectedBuildingOperationalStatuses';
+            break;
+        case 'fiscal':
+            selectedItems = selectedFiscalYearTenders;
+            containerId = 'selectedFiscalYearTenders';
+            break;
+        default:
+            return;
+    }
 
-            updateSelectedItemsDisplay(containerId, selectedItems);
-            applyUnifiedColors();
-        }
+    updateSelectedItemsDisplay(containerId, selectedItems);
+    applyUnifiedColors();
+}
 
-        function displayTagInfoWindows() {
-    console.log("Displaying tag info windows");
+
+
+      function displayTagInfoWindows() {
     const tagCheckbox = document.getElementById('tagSearchedBuilding');
     const hasActiveSearchCriteria = selectedBuildings.length > 0 || 
                                     selectedPkgTenCon.length > 0 || 
@@ -993,7 +985,6 @@ function applyUnifiedColors() {
     closeAllTagInfoWindows();
 
     if (tagCheckbox.checked && hasActiveSearchCriteria && filteredData.length > 0) {
-        console.log("Creating info windows for", filteredData.length, "buildings");
         filteredData.forEach(item => {
             const matchingPolygon = polygons.find(polygon => polygon.componentId === item["Component ID"].toString());
             if (matchingPolygon) {
@@ -1007,6 +998,8 @@ function applyUnifiedColors() {
         updateInfoWindowsScale();
     }
 }
+
+
         class CustomInfoWindow extends google.maps.OverlayView {
     constructor(position, data) {
         super();
@@ -1081,10 +1074,11 @@ function applyUnifiedColors() {
             customInfoWindows = [];
         }
 
-        function toggleTagInfoWindow() {
-    console.log("Toggle tag info window called");
+function toggleTagInfoWindow() {
     displayTagInfoWindows();
 }
+
+
 
         function combinedSearch() {
             updateFilteredData();
