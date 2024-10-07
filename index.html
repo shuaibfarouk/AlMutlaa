@@ -451,31 +451,30 @@
             map.setZoom(map.getZoom() + 0.5);
         }
     }, { passive: false });
-            
-    });
 
-map.addListener('idle', function() {
+    map.addListener('idle', function() {
         if (document.getElementById('tagSearchedBuilding').checked) {
             customInfoWindows.forEach(infoWindow => infoWindow.draw());
         }
     });
-            // Use throttling for the zoom_changed listener
-            map.addListener('zoom_changed', throttle(function() {
-                if (labelsVisible) {
-                    updateLabelSize();
-                    updateInfoWindowsScale();
-                }
-            }, 100));
 
-            map.addListener('bounds_changed', throttle(function() {
-                if (labelsVisible) {
-                    loadVisibleLabels();
-                }
-            }, 100));
-
-            loadJSONData();
-            loadKML();
+    // Use throttling for the zoom_changed listener
+    map.addListener('zoom_changed', throttle(function() {
+        if (labelsVisible) {
+            updateLabelSize();
+            updateInfoWindowsScale();
         }
+    }, 100));
+
+    map.addListener('bounds_changed', throttle(function() {
+        if (labelsVisible) {
+            loadVisibleLabels();
+        }
+    }, 100));
+
+    loadJSONData();
+    loadKML();
+}
 
         function loadJSONData() {
     fetch('components_data.json')
