@@ -461,7 +461,6 @@ map.addListener('idle', function() {
             loadJSONData();
             loadKML();
         }
-
         function loadJSONData() {
     fetch('https://testworks.tech/components_data.json')
         .then(response => response.json())
