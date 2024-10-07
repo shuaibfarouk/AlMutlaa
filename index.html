@@ -13,7 +13,7 @@
     })(window,document,'script','dataLayer','GTM-M7939L3V');</script>
     <!-- End Google Tag Manager -->
     
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_qYyUqFXxc0pJOZJd6qfPk8SQGPLl0Hk&libraries=drawing"></script>
     
     <!-- Google Fonts for Modern Typography -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
@@ -37,7 +37,7 @@
             position: absolute;
             top: 60px;
             right: 5px;
-            background: url('images/settings.png') no-repeat center;
+            background: url('https://testworks.tech/images/settings.png') no-repeat center;
             background-size: contain;
             width: 40px;
             height: 40px;
@@ -404,7 +404,6 @@
                 center: { lat: 29.478324, lng: 47.607149 },
                 zoom: 12,
                 mapTypeId: 'roadmap',
-                scrollwheel: false, // Disable default scroll zoom
                 styles: [
                     {
                         "elementType": "geometry",
@@ -440,44 +439,31 @@
                     }
                 ]
             });
-
-            // Add custom zoom control
-    document.getElementById('map').addEventListener('wheel', (e) => {
-        e.preventDefault(); // Prevent the default scroll behavior
-        const delta = e.deltaY || e.detail || e.wheelDelta;
-        if (delta > 0) {
-            map.setZoom(map.getZoom() - 0.5);
-        } else {
-            map.setZoom(map.getZoom() + 0.5);
-        }
-    }, { passive: false });
-
-    map.addListener('idle', function() {
+map.addListener('idle', function() {
         if (document.getElementById('tagSearchedBuilding').checked) {
             customInfoWindows.forEach(infoWindow => infoWindow.draw());
         }
     });
+            // Use throttling for the zoom_changed listener
+            map.addListener('zoom_changed', throttle(function() {
+                if (labelsVisible) {
+                    updateLabelSize();
+                    updateInfoWindowsScale();
+                }
+            }, 100));
 
-    // Use throttling for the zoom_changed listener
-    map.addListener('zoom_changed', throttle(function() {
-        if (labelsVisible) {
-            updateLabelSize();
-            updateInfoWindowsScale();
+            map.addListener('bounds_changed', throttle(function() {
+                if (labelsVisible) {
+                    loadVisibleLabels();
+                }
+            }, 100));
+
+            loadJSONData();
+            loadKML();
         }
-    }, 100));
-
-    map.addListener('bounds_changed', throttle(function() {
-        if (labelsVisible) {
-            loadVisibleLabels();
-        }
-    }, 100));
-
-    loadJSONData();
-    loadKML();
-}
 
         function loadJSONData() {
-    fetch('components_data.json')
+    fetch('https://testworks.tech/components_data.json')
         .then(response => response.json())
         .then(data => {
             jsonData = data;
@@ -497,7 +483,7 @@
 }
 
         function loadKML() {
-            const kmlUrl = 'al_mutlaa_KML.kml';
+            const kmlUrl = 'https://testworks.tech/al_mutlaa_KML.kml';
             
             fetch(kmlUrl)
                 .then(response => response.text())
@@ -561,7 +547,7 @@
                 const matchingData = jsonData.find(item => item["Component ID"] == componentId);
 
                 if (matchingData) {
-                    const content = `
+                    const content = 
                         <div class="info-window">
                             <table>
                                 <tr>
@@ -629,7 +615,7 @@
                                 </tr>
                             </table>
                         </div>
-                    `;
+                    ;
 
                     const infoWindow = new google.maps.InfoWindow({
                         content: content,
@@ -662,9 +648,9 @@
         }
 
         function populateSelect(selectElement, dataSet, defaultOption) {
-            selectElement.innerHTML = `<option value="">${defaultOption}</option>`;
+            selectElement.innerHTML = <option value="">${defaultOption}</option>;
             dataSet.forEach(item => {
-                selectElement.innerHTML += `<option value="${item}">${item}</option>`;
+                selectElement.innerHTML += <option value="${item}">${item}</option>;
             });
         }
 
@@ -682,7 +668,7 @@
         for (i = 0; i < arr.length; i++) {
             if (arr[i].toLowerCase().indexOf(val.toLowerCase()) !== -1) {
                 b = document.createElement("DIV");
-                b.innerHTML = arr[i].replace(new RegExp(val, "gi"), match => `<strong>${match}</strong>`);
+                b.innerHTML = arr[i].replace(new RegExp(val, "gi"), match => <strong>${match}</strong>);
                 b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
                 b.addEventListener("click", function(e) {
                     inp.value = this.getElementsByTagName("input")[0].value;
@@ -914,7 +900,7 @@ function applyUnifiedColors() {
         function updateBuildingCount() {
     const countElement = document.getElementById('building-count');
     const count = filteredData.length;
-    countElement.textContent = `Showing ${count} Result${count === 1 ? '' : 's'}`;
+    countElement.textContent = Showing ${count} Result${count === 1 ? '' : 's'};
 }
         function clearSearch() {
             selectedBuildings = [];
@@ -1048,11 +1034,11 @@ function handleColorCriteriaChange() {
     }
 
     getContent() {
-        return `
+        return 
             <strong>${this.data["Building Type"] || 'N/A'}</strong><br>
             ${this.data["Package-Tender-Contract"] || 'N/A'}<br>
             ${this.data["Status Building"] || 'N/A'}
-        `;
+        ;
     }
 
     setMap(map) {
