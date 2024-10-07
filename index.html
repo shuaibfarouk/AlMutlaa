@@ -37,7 +37,7 @@
             position: absolute;
             top: 60px;
             right: 5px;
-            background: url('https://testworks.tech/images/settings.png') no-repeat center;
+            background: url(images/settings.png') no-repeat center;
             background-size: contain;
             width: 40px;
             height: 40px;
@@ -463,7 +463,7 @@ map.addListener('idle', function() {
         }
         
         function loadJSONData() {
-    fetch('https://testworks.tech/components_data.json')
+    fetch(components_data.json')
         .then(response => response.json())
         .then(data => {
             jsonData = data;
@@ -483,7 +483,7 @@ map.addListener('idle', function() {
 }
 
         function loadKML() {
-            const kmlUrl = 'https://testworks.tech/al_mutlaa_KML.kml';
+            const kmlUrl = 'al_mutlaa_KML.kml'; //github file path
             
             fetch(kmlUrl)
                 .then(response => response.text())
