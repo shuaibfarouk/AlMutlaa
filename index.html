@@ -404,6 +404,7 @@
                 center: { lat: 29.478324, lng: 47.607149 },
                 zoom: 12,
                 mapTypeId: 'roadmap',
+                scrollwheel: false, // Disable default scroll zoom
                 styles: [
                     {
                         "elementType": "geometry",
@@ -439,6 +440,17 @@
                     }
                 ]
             });
+
+            // Add custom zoom control
+    map.addListener('wheel', (e) => {
+        if (e.deltaY < 0) {
+            map.setZoom(map.getZoom() + 0.5);
+        } else {
+            map.setZoom(map.getZoom() - 0.5);
+        }
+        e.preventDefault();
+    });
+
 map.addListener('idle', function() {
         if (document.getElementById('tagSearchedBuilding').checked) {
             customInfoWindows.forEach(infoWindow => infoWindow.draw());
