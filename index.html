@@ -442,13 +442,16 @@
             });
 
             // Add custom zoom control
-    map.addListener('wheel', (e) => {
-        if (e.deltaY < 0) {
-            map.setZoom(map.getZoom() + 0.5);
-        } else {
+    document.getElementById('map').addEventListener('wheel', (e) => {
+        e.preventDefault(); // Prevent the default scroll behavior
+        const delta = e.deltaY || e.detail || e.wheelDelta;
+        if (delta > 0) {
             map.setZoom(map.getZoom() - 0.5);
+        } else {
+            map.setZoom(map.getZoom() + 0.5);
         }
-        e.preventDefault();
+    }, { passive: false });
+            
     });
 
 map.addListener('idle', function() {
