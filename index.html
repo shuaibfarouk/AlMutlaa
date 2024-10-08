@@ -12,9 +12,9 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-M7939L3V');</script>
     <!-- End Google Tag Manager -->
-    
+
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCobCO1jQNA8cIv-IwQU9uzR9qoQaqvFiY&libraries=drawing"></script>
-    
+
     <!-- Google Fonts for Modern Typography -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
 
@@ -286,7 +286,7 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M7939L3V"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    
+
     <div id="map"></div>
 
     <!-- Settings Button -->
@@ -301,7 +301,7 @@
             <button onclick="addItem('building')">Add</button>
         </div>
         <div id="selectedBuildings"></div>
-        
+
         <div class="search-section">
             <div class="autocomplete">
                 <input id="pkgTenConSearch" type="text" placeholder="Enter Package/Tender/Contract">
@@ -461,9 +461,9 @@ map.addListener('idle', function() {
             loadJSONData();
             loadKML();
         }
-        
+
         function loadJSONData() {
-    fetch('components_data.json')  //github file path
+    fetch('components_data.json')
         .then(response => response.json())
         .then(data => {
             jsonData = data;
@@ -483,8 +483,8 @@ map.addListener('idle', function() {
 }
 
         function loadKML() {
-            const kmlUrl = 'al_mutlaa_KML.kml'; //github file path
-            
+            const kmlUrl = 'al_mutlaa_KML.kml';
+
             fetch(kmlUrl)
                 .then(response => response.text())
                 .then(kmlData => {
@@ -512,7 +512,7 @@ map.addListener('idle', function() {
                         const componentId = getComponentId(placemark);
                         polygon.componentId = componentId;
                         polygons.push(polygon);
-                        
+
                         polygon.addListener('click', function(event) {
                             handlePolygonClick(event, componentId);
                         });
@@ -615,7 +615,7 @@ map.addListener('idle', function() {
                                 </tr>
                             </table>
                         </div>
-                    ;
+                    `;
 
                     const infoWindow = new google.maps.InfoWindow({
                         content: content,
@@ -650,7 +650,7 @@ map.addListener('idle', function() {
         function populateSelect(selectElement, dataSet, defaultOption) {
             selectElement.innerHTML = `<option value="">${defaultOption}</option>`;
             dataSet.forEach(item => {
-                selectElement.innerHTML += <option value="${item}">${item}</option>;
+                selectElement.innerHTML += `<option value="${item}">${item}</option>`;
             });
         }
 
@@ -668,7 +668,7 @@ map.addListener('idle', function() {
         for (i = 0; i < arr.length; i++) {
             if (arr[i].toLowerCase().indexOf(val.toLowerCase()) !== -1) {
                 b = document.createElement("DIV");
-                b.innerHTML = arr[i].replace(new RegExp(val, "gi"), match => <strong>${match}</strong>);
+                b.innerHTML = arr[i].replace(new RegExp(val, "gi"), match => `<strong>${match}</strong>`);
                 b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
                 b.addEventListener("click", function(e) {
                     inp.value = this.getElementsByTagName("input")[0].value;
@@ -855,12 +855,12 @@ function applyUnifiedColors() {
     polygons.forEach(polygon => {
         const componentId = polygon.componentId;
         const matchingData = filteredData.find(item => item && item["Component ID"] == componentId);
-        
+
         let color = nonMatchedColor;
 
         if (matchingData) {
             const criteriaType = document.getElementById('colorCriteriaSelect').value;
-            
+
             switch (criteriaType) {
                 case 'building':
                     color = colorMapping[matchingData["Building Type"]] || matchedColor;
@@ -1019,7 +1019,7 @@ function handleColorCriteriaChange() {
     draw() {
         const overlayProjection = this.getProjection();
         const position = overlayProjection.fromLatLngToDivPixel(this.position);
-        
+
         if (this.div) {
             this.div.style.left = (position.x - 50) + 'px';
             this.div.style.top = (position.y - 25) + 'px';
@@ -1035,10 +1035,10 @@ function handleColorCriteriaChange() {
 
     getContent() {
         return `
-    <strong>${this.data["Building Type"] || 'N/A'}</strong><br>
-    ${this.data["Package-Tender-Contract"] || 'N/A'}<br>
-    ${this.data["Status Building"] || 'N/A'}
-`;
+            <strong>${this.data["Building Type"] || 'N/A'}</strong><br>
+            ${this.data["Package-Tender-Contract"] || 'N/A'}<br>
+            ${this.data["Status Building"] || 'N/A'}
+        `;
     }
 
     setMap(map) {
@@ -1120,12 +1120,12 @@ function toggleTagInfoWindow() {
     const bounds = map.getBounds();
     polygons.forEach(polygon => {
         if (!polygon.getBounds) return; // Skip if getBounds is not defined
-        
+
         const matchingData = jsonData.find(item => item["Component ID"] == polygon.componentId);
         if (matchingData && bounds.intersects(polygon.getBounds())) {
             const center = polygon.getBounds().getCenter();
             if (!center) return; // Skip if we can't get a valid center
-            
+
             if (!polygon.label) {
                 const label = new google.maps.Marker({
                     position: center,
